@@ -1,0 +1,56 @@
+app:
+  scheduler:
+    enable: true
+    interval: 600s
+    force-check-delay: 10s
+  retry:
+    max-attempts: 5
+    delay: 500
+    multiplier: 2
+
+spring:
+  application:
+    name: project
+  liquibase:
+    enabled: false
+  datasource:
+    url: jdbc:postgresql://localhost:5432/project
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        enable_lazy_load_no_trans: true
+  cache:
+    cache-names:
+      - rate-limit-buckets-project
+    caffeine:
+      spec: maximumSize=100000,expireAfterAccess=3600s
+
+bucket4j:
+  enabled: true
+  filters:
+    - cache-name: rate-limit-buckets-project
+      url: /.*
+      http-response-body: "{ \"status\": 429, \"error\": \"Too Many Requests\", \"message\": \"You have exhausted your API Request Quota\" }"
+      rate-limits:
+          cache-key: "getRemoteAddr()"
+          bandwidths:
+            - capacity: 1000
+              time: 1
+              unit: minutes
+              refill-speed: interval
+
+server:
+  port: 8080
+  forward-headers-strategy: NATIVE
+
+logging:
+  config: classpath:log4j2-plain.xml
+
+spring-doc:
+  swagger-ui:
+    path: /swagger-ui
+  default-produces-media-type: application/json
