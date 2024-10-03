@@ -20,8 +20,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "user", indexes = @Index(columnList = "login"))
-public class User {
+@Table(name = "application_user", indexes = @Index(columnList = "login"))
+public class ApplicationUser {
     @Id
     @GeneratedValue
     @Column(nullable = false)

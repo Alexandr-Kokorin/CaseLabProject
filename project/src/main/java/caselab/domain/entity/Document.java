@@ -32,7 +32,7 @@ public class Document {
     private DocumentType documentType;
 
     @ManyToMany(mappedBy = "documents")
-    private List<User> users;
+    private List<ApplicationUser> applicationUsers;
 
     @OneToMany(mappedBy = "document")
     private List<AttributeValue> attributeValues;
