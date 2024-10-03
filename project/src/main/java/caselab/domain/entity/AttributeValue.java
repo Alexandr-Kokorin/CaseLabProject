@@ -18,6 +18,7 @@ import lombok.Setter;
 @Entity
 @Table(name = "document_attribute_value")
 public class AttributeValue {
+
     @Id
     @ManyToOne
     @JoinColumn(name = "document_id", nullable = false)
@@ -25,9 +26,9 @@ public class AttributeValue {
 
     @Id
     @ManyToOne
-    @JoinColumn(name="attribute_id", nullable = false)
+    @JoinColumn(name = "attribute_id", nullable = false)
     private Attribute attribute;
 
     @Column
-    private String value;
+    private String appValue;
 }
