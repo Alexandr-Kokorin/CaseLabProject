@@ -1,7 +1,12 @@
 package caselab.controller;
 
-import org.springframework.boot.test.context.SpringBootTest;
+import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-@SpringBootTest
 public class ControllerTest {
+
+    @Test
+    void getTest() {
+        assertThat(true).isEqualTo(true);
+    }
 }

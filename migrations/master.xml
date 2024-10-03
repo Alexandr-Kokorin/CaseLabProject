@@ -7,13 +7,25 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd
        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-    <changeSet id="customer" author="me">
-        <sqlFile path="sql/customer.sql" relativeToChangelogFile="true"/>
+    <changeSet id="application_user" author="me">
+        <sqlFile path="sql/application_user.sql" relativeToChangelogFile="true"/>
     </changeSet>
-    <changeSet id="role" author="me">
-        <sqlFile path="sql/role.sql" relativeToChangelogFile="true"/>
+    <changeSet id="attribute" author="me">
+        <sqlFile path="sql/attribute.sql" relativeToChangelogFile="true"/>
     </changeSet>
-    <changeSet id="type" author="me">
-        <sqlFile path="sql/type.sql" relativeToChangelogFile="true"/>
+    <changeSet id="document" author="me">
+        <sqlFile path="sql/document.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+    <changeSet id="document_attribute_value" author="me">
+        <sqlFile path="sql/document_attribute_value.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+    <changeSet id="document_type" author="me">
+        <sqlFile path="sql/document_type.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+    <changeSet id="document_type_to_attribute" author="me">
+        <sqlFile path="sql/document_type_to_attribute.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+    <changeSet id="user_to_document" author="me">
+        <sqlFile path="sql/user_to_document.sql" relativeToChangelogFile="true"/>
     </changeSet>
 </databaseChangeLog>
