@@ -17,14 +17,14 @@ services:
     depends_on:
       - postgresql
     command:
-      - --changelog-file=master.xml
+      - --changelog-file=db.changelog-master.yml
       - --driver=org.postgresql.Driver
       - --url=jdbc:postgresql://postgresql:5432/project
       - --username=postgres
       - --password=postgres
       - update
     volumes:
-      - ./migrations:/liquibase/changelog/
+      - ./migrations/db/changelog:/liquibase/changelog/
     networks:
       - backend
 
