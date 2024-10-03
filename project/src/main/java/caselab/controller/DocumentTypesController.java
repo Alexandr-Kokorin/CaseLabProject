@@ -2,7 +2,6 @@ package caselab.controller;
 
 import caselab.domain.entity.DocumentType;
 import caselab.service.DocumentTypesService;
-import java.util.ArrayList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
