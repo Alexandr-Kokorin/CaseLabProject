@@ -28,14 +28,14 @@ services:
       postgresql:
         condition: service_healthy
     command:
-      - --changelog-file=master.xml
+      - --changelog-file=db.changelog-master.yml
       - --driver=org.postgresql.Driver
       - --url=jdbc:postgresql://${POSTGRES_CONTAINER_NAME}:5432/${POSTGRES_DB}
       - --username=${POSTGRES_USER}
       - --password=${POSTGRES_PASSWORD}
       - update
     volumes:
-      - ./migrations:/liquibase/changelog/
+      - ./migrations/db/changelog:/liquibase/changelog/
     networks:
       - backend
 
