@@ -15,8 +15,16 @@ public class DocumentTypesService {
         this.documentTypesRepository = documentTypesRepository;
     }
 
-    public Optional<DocumentType> findDocumentType(Long id) {
+    public Optional<DocumentType> findDocumentTypeById(Long id) {
         return documentTypesRepository.findById(id);
+    }
+
+    public DocumentType createDocumentType(DocumentType documentType) {
+        return documentTypesRepository.save(documentType);
+    }
+
+    public void deleteDocumentTypeById(Long id) {
+        documentTypesRepository.deleteById(id);
     }
 
 }
