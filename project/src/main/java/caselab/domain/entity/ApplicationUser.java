@@ -9,11 +9,11 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import java.util.List;
 
 @Getter
 @Setter
@@ -22,6 +22,7 @@ import java.util.List;
 @Entity
 @Table(name = "application_user", indexes = @Index(columnList = "login"))
 public class ApplicationUser {
+
     @Id
     @GeneratedValue
     @Column(nullable = false)
@@ -38,8 +39,8 @@ public class ApplicationUser {
 
     @ManyToMany
     @JoinTable(
-        name="user_to_document",
-        joinColumns = @JoinColumn(name="document_id", nullable = false),
+        name = "user_to_document",
+        joinColumns = @JoinColumn(name = "document_id", nullable = false),
         inverseJoinColumns = @JoinColumn(name = "user_id", nullable = false)
     )
     private List<Document> documents;
