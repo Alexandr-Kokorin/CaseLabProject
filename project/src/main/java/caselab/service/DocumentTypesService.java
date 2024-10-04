@@ -1,5 +1,6 @@
 package caselab.service;
 
+import caselab.controller.types.payload.DocumentTypeDTO;
 import caselab.domain.entity.DocumentType;
 import caselab.domain.repository.DocumentTypesRepository;
 import java.util.Optional;
@@ -15,12 +16,23 @@ public class DocumentTypesService {
         return documentTypesRepository.findById(id);
     }
 
-    public DocumentType createDocumentType(DocumentType documentType) {
-        return documentTypesRepository.save(documentType);
+    public DocumentTypeDTO createDocumentType(DocumentTypeDTO documentTypeDTOForCreating) {
+        DocumentType documentTypeForCreating = convertDocumentTypeDTOToDocumentType(documentTypeDTOForCreating);
+        return convertDocumentTypeToDocumentTypeDTO(documentTypesRepository.save(documentTypeForCreating));
     }
 
     public void deleteDocumentTypeById(Long id) {
         documentTypesRepository.deleteById(id);
+    }
+
+    private DocumentTypeDTO convertDocumentTypeToDocumentTypeDTO(DocumentType documentType) {
+        return new DocumentTypeDTO(documentType.getName());
+    }
+
+    private DocumentType convertDocumentTypeDTOToDocumentType(DocumentTypeDTO documentTypeDTO) {
+        DocumentType documentType = new DocumentType();
+        documentType.setName(documentTypeDTO.name());
+        return documentType;
     }
 
 }

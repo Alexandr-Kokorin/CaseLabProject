@@ -1,6 +1,6 @@
 package caselab.controller.types;
 
-import caselab.domain.entity.DocumentType;
+import caselab.controller.types.payload.DocumentTypeDTO;
 import caselab.service.DocumentTypesService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ public class DocumentTypesController {
 
     @Operation(summary = "Добавить")
     @PostMapping
-    public DocumentType createDocumentType(@RequestBody DocumentType documentType) {
-        return documentTypesService.createDocumentType(documentType);
+    public DocumentTypeDTO createDocumentType(@RequestBody DocumentTypeDTO documentTypeDTO) {
+        return documentTypesService.createDocumentType(documentTypeDTO);
     }
 }
