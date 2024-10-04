@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS attribute
 --changeset hottabych04:3
 CREATE TABLE IF NOT EXISTS document_type
 (
-    id              BIGINT        NOT NULL,
+    id              BIGSERIAL,
     name            TEXT          NOT NULL,
 
     PRIMARY KEY (id)
