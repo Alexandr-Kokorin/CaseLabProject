@@ -54,3 +54,16 @@ spring-doc:
   swagger-ui:
     path: /swagger-ui
   default-produces-media-type: application/json
+
+management:
+  endpoint:
+    prometheus:
+      enabled: true
+    metrics:
+      enabled: true
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: '*'
