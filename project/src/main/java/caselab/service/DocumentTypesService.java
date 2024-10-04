@@ -5,15 +5,24 @@ import caselab.domain.entity.DocumentType;
 import caselab.domain.repository.DocumentTypesRepository;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 
+@SuppressWarnings({"MagicNumber", "LineLength"})
 @Service
 @RequiredArgsConstructor
 public class DocumentTypesService {
     private final DocumentTypesRepository documentTypesRepository;
 
-    public Optional<DocumentType> findDocumentTypeById(Long id) {
-        return documentTypesRepository.findById(id);
+    public DocumentTypeDTO findDocumentTypeById(Long id) {
+        Optional<DocumentType> optionalDocumentType = documentTypesRepository.findById(id);
+        if (optionalDocumentType.isPresent()) {
+            return convertDocumentTypeToDocumentTypeDTO(optionalDocumentType.get());
+        } else {
+            throw HttpClientErrorException.NotFound.create(HttpStatusCode.valueOf(404), String.format("Тип документа с id= %s не найден", id), HttpHeaders.EMPTY, null, null);
+        }
     }
 
     public DocumentTypeDTO createDocumentType(DocumentTypeDTO documentTypeDTOForCreating) {
