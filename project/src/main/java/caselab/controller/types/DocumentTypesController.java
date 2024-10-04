@@ -1,4 +1,4 @@
-package caselab.controller;
+package caselab.controller.types;
 
 import caselab.domain.entity.DocumentType;
 import caselab.service.DocumentTypesService;
