@@ -35,9 +35,10 @@ public class DocumentTypesService {
         Optional<DocumentType> optionalDocumentType = documentTypesRepository.findById(id);
         if (optionalDocumentType.isPresent()) {
             documentTypesRepository.deleteById(id);
+        }else{
+            throw HttpClientErrorException.NotFound.create(HttpStatusCode.valueOf(404),
+                "Тип документа не существует", HttpHeaders.EMPTY, null, null);
         }
-        throw HttpClientErrorException.NotFound.create(HttpStatusCode.valueOf(404),
-            "Тип документа не существует", HttpHeaders.EMPTY, null, null);
     }
 
     private DocumentTypeResponse convertDocumentTypeToDocumentTypeResponse(DocumentType documentType) {
