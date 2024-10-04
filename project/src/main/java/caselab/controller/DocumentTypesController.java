@@ -4,8 +4,6 @@ import caselab.domain.entity.DocumentType;
 import caselab.service.DocumentTypesService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,7 +18,7 @@ public class DocumentTypesController {
 
     @Operation(summary = "Добавить")
     @PostMapping
-    public ResponseEntity<Object> createDocumentType(@RequestBody DocumentType documentType) {
-        return new ResponseEntity<>(documentTypesService.createDocumentType(documentType), HttpStatus.OK);
+    public DocumentType createDocumentType(@RequestBody DocumentType documentType) {
+        return documentTypesService.createDocumentType(documentType);
     }
 }
