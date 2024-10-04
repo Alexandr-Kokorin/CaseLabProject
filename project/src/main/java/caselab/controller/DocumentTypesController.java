@@ -2,7 +2,8 @@ package caselab.controller;
 
 import caselab.domain.entity.DocumentType;
 import caselab.service.DocumentTypesService;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.swagger.v3.oas.annotations.Operation;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,15 +13,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/document_types")
+@RequiredArgsConstructor
 public class DocumentTypesController {
 
     private final DocumentTypesService documentTypesService;
 
-    @Autowired
-    public DocumentTypesController(DocumentTypesService documentTypesService) {
-        this.documentTypesService = documentTypesService;
-    }
-
+    @Operation(summary = "Добавить")
     @PostMapping
     public ResponseEntity<Object> createDocumentType(@RequestBody DocumentType documentType) {
         return new ResponseEntity<>(documentTypesService.createDocumentType(documentType), HttpStatus.OK);

@@ -3,13 +3,13 @@ package caselab.service;
 import caselab.domain.entity.DocumentType;
 import caselab.domain.repository.DocumentTypesRepository;
 import java.util.Optional;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class DocumentTypesService {
-    private DocumentTypesRepository documentTypesRepository;
+    private final DocumentTypesRepository documentTypesRepository;
 
     public Optional<DocumentType> findDocumentTypeById(Long id) {
         return documentTypesRepository.findById(id);
