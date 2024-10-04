@@ -11,6 +11,7 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import java.io.File;
 import java.nio.file.Path;
@@ -23,7 +24,7 @@ public abstract class IntegrationTest {
     public static PostgreSQLContainer<?> POSTGRES;
 
     static {
-        POSTGRES = new PostgreSQLContainer<>("postgres:15")
+        POSTGRES = new PostgreSQLContainer<>("postgres:16")
             .withDatabaseName("project")
             .withUsername("postgres")
             .withPassword("postgres");
