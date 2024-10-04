@@ -1,7 +1,10 @@
 package caselab.configuration;
 
 import caselab.domain.repository.ApplicationUserRepository;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -41,5 +44,15 @@ public class SecurityToolsConfig {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public String jwtSecretKey(@Value("${jwt.secret-key}") String jwtSecret) {
+        return jwtSecret;
+    }
+
+    @Bean
+    public Duration tokenTTL(@Value("${jwt.ttl}") long tokenTTL) {
+        return Duration.of(tokenTTL, ChronoUnit.MINUTES);
     }
 }

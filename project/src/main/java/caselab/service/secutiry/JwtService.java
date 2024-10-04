@@ -4,19 +4,24 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Service;
-import javax.crypto.SecretKey;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Map;
 import java.util.function.Function;
+import javax.crypto.SecretKey;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class JwtService {
 
-    private static final String SECRET_KEY = "55d731c263e1ddb8e50eec214ccf010207b82cfb415c76976751a12f1f04c2ca";
+    private final String jwtSecretKey;
+    private final Duration tokenTTL;
 
     public String extractLogin(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -36,13 +41,15 @@ public class JwtService {
         return claimsResolver.apply(claims);
     }
 
-    public String generateToken(Map<String, Object> extraClaims,
-        UserDetails userDetails) {
+    public String generateToken(
+        Map<String, Object> extraClaims,
+        UserDetails userDetails
+    ) {
         return Jwts.builder()
             .claims(extraClaims)
             .subject(userDetails.getUsername())
             .issuedAt(new Date(System.currentTimeMillis()))
-            .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 30)) // 30 минут
+            .expiration(new Date(System.currentTimeMillis() + tokenTTL.get(ChronoUnit.MILLIS)))
             .signWith(getSignInKey(), Jwts.SIG.HS256)
             .compact();
     }
@@ -65,7 +72,7 @@ public class JwtService {
     }
 
     private SecretKey getSignInKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
+        byte[] keyBytes = Decoders.BASE64.decode(jwtSecretKey);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }
