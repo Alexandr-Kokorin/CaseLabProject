@@ -1,13 +1,11 @@
-FROM eclipse-temurin:21.0.2_13-jdk-jammy AS builder
+FROM maven:3.9.7-eclipse-temurin-21 AS builder
 WORKDIR /opt/app
-COPY .mvn/ .mvn/
-COPY mvnw pom.xml ./
+COPY pom.xml .
 COPY project/pom.xml project/pom.xml
 COPY .git/ .git/
-RUN sed -i 's/\r$//' mvnw
-RUN ./mvnw dependency:go-offline
 COPY project/src/ project/src/
-RUN ./mvnw -DskipTests=true clean install
+RUN mvn dependency:go-offline
+RUN mvn clean install -DskipTests
 
 FROM eclipse-temurin:21.0.2_13-jre-jammy AS final
 WORKDIR /opt/app
