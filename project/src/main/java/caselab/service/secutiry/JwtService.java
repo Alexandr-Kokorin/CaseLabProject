@@ -5,7 +5,6 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Map;
 import java.util.function.Function;
@@ -49,7 +48,7 @@ public class JwtService {
             .claims(extraClaims)
             .subject(userDetails.getUsername())
             .issuedAt(new Date(System.currentTimeMillis()))
-            .expiration(new Date(System.currentTimeMillis() + tokenTTL.get(ChronoUnit.MILLIS)))
+            .expiration(new Date(System.currentTimeMillis() + tokenTTL.toMillis()))
             .signWith(getSignInKey(), Jwts.SIG.HS256)
             .compact();
     }

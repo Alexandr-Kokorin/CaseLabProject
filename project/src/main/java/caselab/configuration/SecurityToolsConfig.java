@@ -2,7 +2,6 @@ package caselab.configuration;
 
 import caselab.domain.repository.ApplicationUserRepository;
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -53,6 +52,6 @@ public class SecurityToolsConfig {
 
     @Bean
     public Duration tokenTTL(@Value("${jwt.ttl}") long tokenTTL) {
-        return Duration.of(tokenTTL, ChronoUnit.MINUTES);
+        return Duration.ofMinutes(tokenTTL);
     }
 }
