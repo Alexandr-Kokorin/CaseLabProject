@@ -31,7 +31,12 @@ public class DocumentTypesService {
     }
 
     public void deleteDocumentTypeById(Long id) {
-        documentTypesRepository.deleteById(id);
+        Optional<DocumentType> optionalDocumentType = documentTypesRepository.findById(id);
+        if (optionalDocumentType.isPresent()) {
+            documentTypesRepository.deleteById(id);
+        }
+        throw HttpClientErrorException.NotFound.create(HttpStatusCode.valueOf(404),
+            "Тип документа не существует", HttpHeaders.EMPTY, null, null);
     }
 
     private DocumentTypeDTO convertDocumentTypeToDocumentTypeDTO(DocumentType documentType) {
