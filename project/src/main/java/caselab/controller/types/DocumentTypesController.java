@@ -1,6 +1,7 @@
 package caselab.controller.types;
 
-import caselab.controller.types.payload.DocumentTypeDTO;
+import caselab.controller.types.payload.DocumentTypeRequest;
+import caselab.controller.types.payload.DocumentTypeResponse;
 import caselab.service.DocumentTypesService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -22,13 +23,13 @@ public class DocumentTypesController {
 
     @Operation(summary = "Добавить тип документа")
     @PostMapping
-    public DocumentTypeDTO createDocumentType(@RequestBody DocumentTypeDTO documentTypeDTO) {
-        return documentTypesService.createDocumentType(documentTypeDTO);
+    public DocumentTypeResponse createDocumentType(@RequestBody DocumentTypeRequest documentTypeRequest) {
+        return documentTypesService.createDocumentType(documentTypeRequest);
     }
 
     @Operation(summary = "Получить тип документа по id")
     @GetMapping("/{id}")
-    public DocumentTypeDTO findDocumentTypeById(@PathVariable Long id) {
+    public DocumentTypeResponse findDocumentTypeById(@PathVariable Long id) {
         return documentTypesService.findDocumentTypeById(id);
     }
 
