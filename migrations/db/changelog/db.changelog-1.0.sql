@@ -3,11 +3,11 @@
 --changeset hottabych04:1
 CREATE TABLE IF NOT EXISTS application_user
 (
-    id                  BIGINT        NOT NULL,
+    id                  BIGSERIAL     NOT NULL,
     login               TEXT          NOT NULL,
     display_name        TEXT          NOT NULL,
     hashed_password     TEXT          NOT NULL,
-
+    role                TEXT          NOT NULL,
     PRIMARY KEY (id)
 )
 

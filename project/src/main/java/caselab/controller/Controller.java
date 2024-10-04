@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.constraints.Positive;
+import java.util.Optional;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,7 +37,7 @@ public class Controller {
                                         schema = @Schema(implementation = Response.class)))
     })
     @GetMapping(path = "/{id}")
-    public ResponseEntity<Response> get(@Positive @PathVariable long id) {
-        return ResponseEntity.ok(new Response(service.get()));
+    public ResponseEntity<?> get(@Positive @PathVariable long id) {
+        return ResponseEntity.of(Optional.empty());
     }
 }
