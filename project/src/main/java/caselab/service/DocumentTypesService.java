@@ -4,12 +4,9 @@ import caselab.controller.types.payload.DocumentTypeRequest;
 import caselab.controller.types.payload.DocumentTypeResponse;
 import caselab.domain.entity.DocumentType;
 import caselab.domain.repository.DocumentTypesRepository;
-import java.util.Optional;
+import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 
 @SuppressWarnings({"MagicNumber", "LineLength"})
 @Service
@@ -18,12 +15,9 @@ public class DocumentTypesService {
     private final DocumentTypesRepository documentTypesRepository;
 
     public DocumentTypeResponse findDocumentTypeById(Long id) {
-        Optional<DocumentType> optionalDocumentType = documentTypesRepository.findById(id);
-        if (optionalDocumentType.isPresent()) {
-            return convertDocumentTypeToDocumentTypeResponse(optionalDocumentType.get());
-        } else {
-            throw HttpClientErrorException.NotFound.create(HttpStatusCode.valueOf(404), String.format("Тип документа с id= %s не найден", id), HttpHeaders.EMPTY, null, null);
-        }
+        var optionalDocumentType = documentTypesRepository.findById(id).orElseThrow(() ->
+            getDocumentTypeNoSuchElementException(id));
+        return convertDocumentTypeToDocumentTypeResponse(optionalDocumentType);
     }
 
     public DocumentTypeResponse createDocumentType(DocumentTypeRequest documentTypeRequest) {
@@ -32,12 +26,9 @@ public class DocumentTypesService {
     }
 
     public void deleteDocumentTypeById(Long id) {
-        Optional<DocumentType> optionalDocumentType = documentTypesRepository.findById(id);
-        if (optionalDocumentType.isPresent()) {
-            documentTypesRepository.deleteById(id);
-        }else{
-            throw HttpClientErrorException.NotFound.create(HttpStatusCode.valueOf(404),
-                "Тип документа не существует", HttpHeaders.EMPTY, null, null);
+        var documentTypeExist = documentTypesRepository.existsById(id);
+        if (!documentTypeExist) {
+            throw getDocumentTypeNoSuchElementException(id);
         }
     }
 
@@ -49,6 +40,10 @@ public class DocumentTypesService {
         DocumentType documentType = new DocumentType();
         documentType.setName(documentTypeDTO.name());
         return documentType;
+    }
+
+    private NoSuchElementException getDocumentTypeNoSuchElementException(Long id) {
+        return new NoSuchElementException("Тип документа с id = %d не найден".formatted(id));
     }
 
 }
