@@ -1,5 +1,6 @@
 package caselab.domain.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -35,6 +36,6 @@ public class Document {
     @ManyToMany(mappedBy = "documents")
     private List<ApplicationUser> applicationUsers;
 
-    @OneToMany(mappedBy = "document")
+    @OneToMany(mappedBy = "document", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AttributeValue> attributeValues;
 }
