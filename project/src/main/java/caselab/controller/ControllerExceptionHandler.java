@@ -44,4 +44,5 @@ public class ControllerExceptionHandler {
 
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
+
 }
