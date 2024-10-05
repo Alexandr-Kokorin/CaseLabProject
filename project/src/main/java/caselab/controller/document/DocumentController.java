@@ -1,7 +1,9 @@
 package caselab.controller.document;
 
+import caselab.controller.document.payload.DocumentDTO;
 import caselab.domain.entity.Document;
 import caselab.service.document.DocumentService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,26 +24,31 @@ public class DocumentController {
 
     private final DocumentService documentService;
 
+    @Operation(summary = "Создать документ")
     @PostMapping
-    public Document createDocument(@RequestBody Document document) {
-        return documentService.createDocument(document);
+    public DocumentDTO createDocument(@RequestBody DocumentDTO documentDTO) {
+        return documentService.createDocument(documentDTO);
     }
 
+    @Operation(summary = "Получить документ по id")
     @GetMapping("/{id}")
-    public Document getDocumentById(@PathVariable Long id) {
+    public DocumentDTO getDocumentById(@PathVariable Long id) {
         return documentService.getDocumentById(id);
     }
 
+    @Operation(summary = "Получить страницу документов")
     @GetMapping
-    public Page<Document> getAllDocuments(Pageable pageable) {
+    public Page<DocumentDTO> getAllDocuments(Pageable pageable) {
         return documentService.getAllDocuments(pageable);
     }
 
+    @Operation(summary = "Обновить документ")
     @PutMapping("/{id}")
-    public Document updateDocument(@PathVariable Long id, @RequestBody Document documentDetails) {
-        return documentService.updateDocument(id, documentDetails);
+    public DocumentDTO updateDocument(@PathVariable Long id, @RequestBody DocumentDTO documentDTO) {
+        return documentService.updateDocument(id, documentDTO);
     }
 
+    @Operation(summary = "Удалить документ")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteDocument(@PathVariable Long id) {
         documentService.deleteDocument(id);

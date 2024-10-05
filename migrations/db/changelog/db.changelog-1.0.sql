@@ -51,7 +51,8 @@ CREATE TABLE IF NOT EXISTS document_attribute_value
 (
     document_id         BIGINT          NOT NULL REFERENCES document(id) ON DELETE CASCADE,
     attribute_id        BIGINT          NOT NULL REFERENCES attribute(id) ON DELETE CASCADE,
-    app_value           TEXT            NOT NULL
+    app_value           TEXT            NOT NULL,
+    PRIMARY KEY (document_id, attribute_id)
 )
 
 --changeset hottabych04:7
