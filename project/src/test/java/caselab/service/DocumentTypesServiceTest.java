@@ -15,9 +15,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 public class DocumentTypesServiceTest extends IntegrationTest {
+
     @Autowired
     private DocumentTypesService documentTypesService;
-
     @Autowired
     private DocumentTypesRepository documentTypesRepository;
 
@@ -75,6 +75,13 @@ public class DocumentTypesServiceTest extends IntegrationTest {
     @Test
     @Transactional
     @Rollback
+    public void deleteNotExistedDocumentTypeById(){
+        assertThrows(NoSuchElementException.class,() -> documentTypesService.deleteDocumentTypeById(1L));
+    }
+
+    @Test
+    @Transactional
+    @Rollback
     public void updateExistedDocumentType(){
         var requestForCreating = new DocumentTypeRequest("test");
         var requestForUpdating = new DocumentTypeRequest("test2");
@@ -93,12 +100,5 @@ public class DocumentTypesServiceTest extends IntegrationTest {
     @Rollback
     public void updateNotExistedDocumentType(){
         assertThrows(NoSuchElementException.class,() -> documentTypesService.updateDocumentType(1L, new DocumentTypeRequest("test2")));
-    }
-
-    @Test
-    @Transactional
-    @Rollback
-    public void deleteBotExistedDocumentTypeById(){
-        assertThrows(NoSuchElementException.class,() -> documentTypesService.findDocumentTypeById(1L));
     }
 }
