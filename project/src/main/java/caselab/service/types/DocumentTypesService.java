@@ -1,4 +1,4 @@
-package caselab.service;
+package caselab.service.types;
 
 import caselab.controller.types.payload.DocumentTypeRequest;
 import caselab.controller.types.payload.DocumentTypeResponse;
@@ -23,6 +23,16 @@ public class DocumentTypesService {
     public DocumentTypeResponse createDocumentType(DocumentTypeRequest documentTypeRequest) {
         DocumentType documentTypeForCreating = convertDocumentTypeRequestToDocumentType(documentTypeRequest);
         return convertDocumentTypeToDocumentTypeResponse(documentTypesRepository.save(documentTypeForCreating));
+    }
+
+    public DocumentTypeResponse updateDocumentType(Long id, DocumentTypeRequest documentTypeRequest) {
+        var documentTypeExist = documentTypesRepository.existsById(id);
+        if (!documentTypeExist) {
+            throw getDocumentTypeNoSuchElementException(id);
+        }
+        var documentTypeForUpdating = convertDocumentTypeRequestToDocumentType(documentTypeRequest);
+        documentTypeForUpdating.setId(id);
+        return convertDocumentTypeToDocumentTypeResponse(documentTypesRepository.save(documentTypeForUpdating));
     }
 
     public void deleteDocumentTypeById(Long id) {
