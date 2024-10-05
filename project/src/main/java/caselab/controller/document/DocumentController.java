@@ -1,7 +1,6 @@
 package caselab.controller.document;
 
 import caselab.controller.document.payload.DocumentDTO;
-import caselab.domain.entity.Document;
 import caselab.service.document.DocumentService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
