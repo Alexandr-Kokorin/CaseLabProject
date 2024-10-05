@@ -27,6 +27,9 @@ public class DocumentTypesServiceTest extends IntegrationTest {
 
         DocumentTypeResponse createdDocumentTypeDTO = documentTypesService.createDocumentType(documentTypeRequest);
 
+        assertThat(createdDocumentTypeDTO.id()).isNotNull();
         assertThat(createdDocumentTypeDTO.name()).isEqualTo(documentTypeRequest.name());
+        assertThat(documentTypesRepository.existsById(createdDocumentTypeDTO.id())).isEqualTo(true);
+        assertThat(documentTypesRepository.findAll().size()).isEqualTo(1);
     }
 }
