@@ -2,7 +2,6 @@ package caselab.controller;
 
 import caselab.controller.types.payload.DocumentTypeRequest;
 import caselab.controller.types.payload.DocumentTypeResponse;
-import caselab.domain.repository.DocumentTypesRepository;
 import caselab.service.DocumentTypesService;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.DisplayName;
@@ -13,6 +12,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.web.SecurityFilterChain;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -31,12 +31,12 @@ public class DocumentTypesControllerTest extends BaseControllerIT {
     @Nested
     @Tag("Create")
     @DisplayName("Create document type")
-    class CreateCategoryTest {
+    class CreateDocumentTypeTest {
 
         @SneakyThrows
         @Test
         @DisplayName("Should create document type with valid payload")
-        public void createCategory_success() {
+        public void createDocumentType_success() {
             var payload = new DocumentTypeRequest("test");
             var response = new DocumentTypeResponse(1L,payload.name());
 
@@ -57,6 +57,48 @@ public class DocumentTypesControllerTest extends BaseControllerIT {
             assertAll("Grouped assertions for created document type",
                 () -> assertEquals(actualDocumentType.id(), response.id()),
                 () -> assertEquals(actualDocumentType.name(), payload.name()));
+        }
+    }
+
+    @Nested
+    @Tag("GetById")
+    @DisplayName("Get document type by id")
+    class GetDocumentTypeByIdTest {
+
+        @SneakyThrows
+        @Test
+        @DisplayName("Should return document type when it exists")
+        public void getCategoryById_success() {
+            var createdDocumentType = new DocumentTypeResponse(1L, "Test Document Type");
+
+            when(documentTypesService.findDocumentTypeById(createdDocumentType.id())).thenReturn(createdDocumentType);
+
+            var mvcResponse = mockMvc.perform(get(DOCUMENT_TYPES_URI + "/" + createdDocumentType.id()))
+                .andExpectAll(
+                    status().isOk(),
+                    content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn()
+                .getResponse();
+
+            var actualDocumentType = objectMapper.readValue(mvcResponse.getContentAsString(), DocumentTypeResponse.class);
+
+            assertThat(actualDocumentType).isEqualTo(createdDocumentType);
+        }
+    }
+
+    @Nested
+    @Tag("Delete")
+    @DisplayName("Delete document type")
+    class DeleteDocumentTypeTest {
+
+        @SneakyThrows
+        @Test
+        @DisplayName("Should delete document type when it exists")
+        public void deleteDocumentType_success() {
+            var createdDocumentType = new DocumentTypeResponse(1L, "Test Document Type");
+
+            mockMvc.perform(delete(DOCUMENT_TYPES_URI + "/" +createdDocumentType.id()))
+                .andExpect(status().is2xxSuccessful());
         }
     }
 
