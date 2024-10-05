@@ -21,7 +21,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class DocumentTypesControllerTest extends BaseControllerIT {
+public class DocumentTypesControllerTest extends BaseControllerMockTest {
 
     private final String DOCUMENT_TYPES_URI = "/api/v1/document_types";
     @MockBean
