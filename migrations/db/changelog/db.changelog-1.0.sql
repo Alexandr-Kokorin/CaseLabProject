@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS application_user
 --changeset hottabych04:2
 CREATE TABLE IF NOT EXISTS attribute
 (
-    id             BIGINT         NOT NULL,
+    id             BIGSERIAL         NOT NULL,
     name           TEXT           NOT NULL,
     type           TEXT           NOT NULL,
 
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS document_type
 --changeset hottabych04:4
 CREATE TABLE IF NOT EXISTS document
 (
-    id                     BIGINT           NOT NULL,
+    id                     BIGSERIAL           NOT NULL,
     document_type_id       BIGINT           NOT NULL,
 
     PRIMARY KEY (id)
