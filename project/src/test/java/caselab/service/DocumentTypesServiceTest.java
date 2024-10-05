@@ -29,12 +29,11 @@ public class DocumentTypesServiceTest extends IntegrationTest {
 
         var createdDocumentType = documentTypesService.createDocumentType(request);
 
-
         assertAll("Grouped assertions for created document type",
             () -> assertThat(createdDocumentType.id()).isNotNull(),
-            () -> assertEquals(createdDocumentType.name(),request.name()),
+            () -> assertEquals(createdDocumentType.name(), request.name()),
             () -> assertTrue(documentTypesRepository.existsById(createdDocumentType.id())),
-            () -> assertEquals(documentTypesRepository.findAll().size(),1));
+            () -> assertEquals(documentTypesRepository.findAll().size(), 1));
     }
 
     @Test
@@ -48,15 +47,15 @@ public class DocumentTypesServiceTest extends IntegrationTest {
 
         assertAll("Grouped assertions for found document type",
             () -> assertThat(foundDocumentType).isNotNull(),
-            () -> assertThat(foundDocumentType.name()).isEqualTo(request.name()),
-            () -> assertEquals(foundDocumentType.id(),createdDocumentType.id()));
+            () -> assertEquals(foundDocumentType.name(), request.name()),
+            () -> assertEquals(foundDocumentType.id(), createdDocumentType.id()));
     }
 
     @Test
     @Transactional
     @Rollback
     public void findNotExistedDocumentTypeById(){
-        assertThrows(NoSuchElementException.class,()->documentTypesService.findDocumentTypeById(1L));
+        assertThrows(NoSuchElementException.class,() -> documentTypesService.findDocumentTypeById(1L));
     }
 
     @Test
@@ -68,16 +67,16 @@ public class DocumentTypesServiceTest extends IntegrationTest {
         var createdDocumentType = documentTypesService.createDocumentType(request);
 
         assertAll("Grouped assertions for deleted document type",
-            () -> assertDoesNotThrow(()->documentTypesService.deleteDocumentTypeById(createdDocumentType.id())),
+            () -> assertDoesNotThrow(() -> documentTypesService.deleteDocumentTypeById(createdDocumentType.id())),
             () -> assertFalse(documentTypesRepository.existsById(createdDocumentType.id())),
-            () -> assertEquals(documentTypesRepository.findAll().size(),0));
+            () -> assertEquals(documentTypesRepository.findAll().size(), 0));
     }
 
     @Test
     @Transactional
     @Rollback
     public void updateExistedDocumentType(){
-        var requestForCreating =  new DocumentTypeRequest("test");
+        var requestForCreating = new DocumentTypeRequest("test");
         var requestForUpdating = new DocumentTypeRequest("test2");
 
         var createdDocumentType = documentTypesService.createDocumentType(requestForCreating);
@@ -85,21 +84,21 @@ public class DocumentTypesServiceTest extends IntegrationTest {
 
         assertAll("Grouped assertions for updated document type",
             () -> assertThat(updatedDocumentType).isNotNull(),
-            () -> assertEquals(updatedDocumentType.name(),requestForUpdating.name()),
-            () -> assertEquals(documentTypesRepository.findAll().size(),1));
+            () -> assertEquals(updatedDocumentType.name(), requestForUpdating.name()),
+            () -> assertEquals(documentTypesRepository.findAll().size(), 1));
     }
 
     @Test
     @Transactional
     @Rollback
     public void updateNotExistedDocumentType(){
-        assertThrows(NoSuchElementException.class,()->documentTypesService.updateDocumentType(1L,new DocumentTypeRequest("test2")));
+        assertThrows(NoSuchElementException.class,() -> documentTypesService.updateDocumentType(1L, new DocumentTypeRequest("test2")));
     }
 
     @Test
     @Transactional
     @Rollback
     public void deleteBotExistedDocumentTypeById(){
-        assertThrows(NoSuchElementException.class,()->documentTypesService.findDocumentTypeById(1L));
+        assertThrows(NoSuchElementException.class,() -> documentTypesService.findDocumentTypeById(1L));
     }
 }

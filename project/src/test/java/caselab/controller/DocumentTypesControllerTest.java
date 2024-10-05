@@ -28,6 +28,7 @@ public class DocumentTypesControllerTest extends BaseControllerIT {
     private DocumentTypesService documentTypesService;
     @MockBean
     private SecurityFilterChain securityFilterChain;
+
     @Nested
     @Tag("Create")
     @DisplayName("Create document type")
@@ -38,7 +39,7 @@ public class DocumentTypesControllerTest extends BaseControllerIT {
         @DisplayName("Should create document type with valid payload")
         public void createDocumentType_success() {
             var payload = new DocumentTypeRequest("test");
-            var response = new DocumentTypeResponse(1L,payload.name());
+            var response = new DocumentTypeResponse(1L, payload.name());
 
             when(documentTypesService.createDocumentType(payload)).thenReturn(response);
 
@@ -82,7 +83,7 @@ public class DocumentTypesControllerTest extends BaseControllerIT {
 
             var actualDocumentType = objectMapper.readValue(mvcResponse.getContentAsString(), DocumentTypeResponse.class);
 
-            assertThat(actualDocumentType).isEqualTo(createdDocumentType);
+            assertEquals(actualDocumentType, createdDocumentType);
         }
     }
 
@@ -135,7 +136,7 @@ public class DocumentTypesControllerTest extends BaseControllerIT {
 
             var result = mockMvc.perform(delete(DOCUMENT_TYPES_URI + "/" +createdDocumentType.id())).andReturn();
 
-            assertEquals(result.getResponse().getStatus(),200);
+            assertEquals(result.getResponse().getStatus(), 200);
         }
     }
 
