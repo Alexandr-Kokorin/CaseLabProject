@@ -30,6 +30,7 @@ public class DocumentTypesService {
         if (!documentTypeExist) {
             throw getDocumentTypeNoSuchElementException(id);
         }
+        documentTypesRepository.deleteById(id);
     }
 
     private DocumentTypeResponse convertDocumentTypeToDocumentTypeResponse(DocumentType documentType) {
