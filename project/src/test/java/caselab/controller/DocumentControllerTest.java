@@ -1,20 +1,24 @@
 package caselab.controller;
 
 import caselab.controller.document.payload.DocumentAttributeValueDTO;
-import caselab.controller.document.payload.DocumentDTO;
-import caselab.controller.document.payload.DocumentResponseDTO;
-import caselab.domain.entity.exception.ResourceNotFoundException;
+import caselab.controller.document.payload.DocumentRequest;
+import caselab.controller.document.payload.DocumentResponse;
 import caselab.service.document.DocumentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.web.SecurityFilterChain;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.NoSuchElementException;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
@@ -33,24 +37,28 @@ public class DocumentControllerTest extends BaseControllerMockTest {
     @MockBean
     private SecurityFilterChain securityFilterChain;
 
-    private DocumentDTO documentDTO;
-    private DocumentResponseDTO documentDTOResponse;
+    private DocumentRequest documentRequest;
+    private DocumentResponse documentResponse;
 
     @BeforeEach
     public void setup() {
-        documentDTO = new DocumentDTO();
-        documentDTO.setId(1L);
-        documentDTO.setDocumentTypeId(1L);
-        documentDTO.setApplicationUserIds(Arrays.asList(1L, 2L));
-        DocumentAttributeValueDTO attributeValueDTO = new DocumentAttributeValueDTO();
-        attributeValueDTO.setId(1L);
-        attributeValueDTO.setValue("Test Value");
-        documentDTO.setAttributeValues(Collections.singletonList(attributeValueDTO));
-        documentDTOResponse = new DocumentResponseDTO();
-        documentDTOResponse.setId(1L);
-        documentDTOResponse.setDocumentTypeId(1L);
-        documentDTOResponse.setApplicationUserIds(Arrays.asList(1L, 2L));
-        documentDTOResponse.setAttributeValues(Collections.singletonList(attributeValueDTO));
+        DocumentAttributeValueDTO attributeValueDTO = DocumentAttributeValueDTO.builder()
+            .id(1L)
+            .value("Test Value")
+            .build();
+        documentRequest = DocumentRequest.builder()
+            .id(1L)
+            .documentTypeId(1L)
+            .applicationUserIds(Arrays.asList(1L, 2L))
+            .attributeValues(Collections.singletonList(attributeValueDTO))
+            .build();
+
+        documentResponse = DocumentResponse.builder()
+            .id(1L)
+            .documentTypeId(1L)
+            .applicationUserIds(Arrays.asList(1L, 2L))
+            .attributeValues(Collections.singletonList(attributeValueDTO))
+            .build();
     }
 
     @Tag("Create")
@@ -58,15 +66,15 @@ public class DocumentControllerTest extends BaseControllerMockTest {
     @Test
     public void testCreateDocument() throws Exception {
         // Arrange
-        when(documentService.createDocument(any(DocumentDTO.class))).thenReturn(documentDTOResponse);
+        when(documentService.createDocument(any(DocumentRequest.class))).thenReturn(documentResponse);
 
         // Act & Assert
         mockMvc.perform(post(DOCUMENT_URI)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(documentDTO)))
+                .content(objectMapper.writeValueAsString(documentRequest)))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(documentDTOResponse.getId()))
-            .andExpect(jsonPath("$.documentTypeId").value(documentDTOResponse.getDocumentTypeId()))
+            .andExpect(jsonPath("$.id").value(documentResponse.id()))
+            .andExpect(jsonPath("$.documentTypeId").value(documentResponse.documentTypeId()))
             .andExpect(jsonPath("$.applicationUserIds[0]").value(1))
             .andExpect(jsonPath("$.attributeValues[0].id").value(1))
             .andExpect(jsonPath("$.attributeValues[0].value").value("Test Value"));
@@ -77,14 +85,14 @@ public class DocumentControllerTest extends BaseControllerMockTest {
     @Test
     public void testGetDocumentById() throws Exception {
         // Arrange
-        when(documentService.getDocumentById(1L)).thenReturn(documentDTOResponse);
+        when(documentService.getDocumentById(1L)).thenReturn(documentResponse);
 
         // Act & Assert
         mockMvc.perform(get(DOCUMENT_URI + "/1")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(documentDTOResponse.getId()))
-            .andExpect(jsonPath("$.documentTypeId").value(documentDTOResponse.getDocumentTypeId()));
+            .andExpect(jsonPath("$.id").value(documentResponse.id()))
+            .andExpect(jsonPath("$.documentTypeId").value(documentResponse.documentTypeId()));
     }
 
     @Tag("GetById")
@@ -92,7 +100,7 @@ public class DocumentControllerTest extends BaseControllerMockTest {
     @Test
     public void testGetDocumentById_NotFound() throws Exception {
         // Arrange
-        when(documentService.getDocumentById(1L)).thenThrow(new ResourceNotFoundException("Документ не найден"));
+        when(documentService.getDocumentById(1L)).thenThrow(new NoSuchElementException("Документ не найден"));
 
         // Act & Assert
         mockMvc.perform(get(DOCUMENT_URI + "/1")
@@ -105,15 +113,15 @@ public class DocumentControllerTest extends BaseControllerMockTest {
     @Test
     public void testUpdateDocument() throws Exception {
         // Arrange
-        when(documentService.updateDocument(eq(1L), any(DocumentDTO.class))).thenReturn(documentDTOResponse);
+        when(documentService.updateDocument(eq(1L), any(DocumentRequest.class))).thenReturn(documentResponse);
 
         // Act & Assert
         mockMvc.perform(put(DOCUMENT_URI + "/1")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(documentDTOResponse)))
+                .content(objectMapper.writeValueAsString(documentResponse)))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(documentDTOResponse.getId()))
-            .andExpect(jsonPath("$.documentTypeId").value(documentDTOResponse.getDocumentTypeId()));
+            .andExpect(jsonPath("$.id").value(documentResponse.id()))
+            .andExpect(jsonPath("$.documentTypeId").value(documentResponse.documentTypeId()));
     }
 
     @Tag("Delete")
@@ -126,6 +134,24 @@ public class DocumentControllerTest extends BaseControllerMockTest {
         // Act & Assert
         mockMvc.perform(delete(DOCUMENT_URI + "/1"))
             .andExpect(status().isNoContent());
+    }
+
+    @Tag("Get All")
+    @DisplayName("Should return All Documents")
+    @Test
+    public void testGetAllDocuments() throws Exception {
+        // Arrange
+        Page<DocumentResponse> documentPage = new PageImpl<>(List.of(documentResponse));
+        when(documentService.getAllDocuments(any(Pageable.class))).thenReturn(documentPage);
+
+        // Act & Assert
+        mockMvc.perform(get(DOCUMENT_URI)
+                .param("page", "0")
+                .param("size", "10")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content[0].id").value(documentResponse.id()))
+            .andExpect(jsonPath("$.content[0].documentTypeId").value(documentResponse.documentTypeId()));
     }
 
 }
