@@ -72,12 +72,12 @@ public class DocumentControllerTest extends BaseControllerMockTest {
         mockMvc.perform(post(DOCUMENT_URI)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(documentRequest)))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(documentResponse.id()))
-            .andExpect(jsonPath("$.documentTypeId").value(documentResponse.documentTypeId()))
-            .andExpect(jsonPath("$.applicationUserIds[0]").value(1))
-            .andExpect(jsonPath("$.attributeValues[0].id").value(1))
-            .andExpect(jsonPath("$.attributeValues[0].value").value("Test Value"));
+            .andExpectAll(status().isOk(),
+            jsonPath("$.id").value(documentResponse.id()),
+            jsonPath("$.documentTypeId").value(documentResponse.documentTypeId()),
+            jsonPath("$.applicationUserIds[0]").value(1),
+            jsonPath("$.attributeValues[0].id").value(1),
+            jsonPath("$.attributeValues[0].value").value("Test Value"));
     }
 
     @Tag("GetById")
@@ -90,9 +90,9 @@ public class DocumentControllerTest extends BaseControllerMockTest {
         // Act & Assert
         mockMvc.perform(get(DOCUMENT_URI + "/1")
                 .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(documentResponse.id()))
-            .andExpect(jsonPath("$.documentTypeId").value(documentResponse.documentTypeId()));
+            .andExpectAll(status().isOk(),
+            jsonPath("$.id").value(documentResponse.id()),
+            jsonPath("$.documentTypeId").value(documentResponse.documentTypeId()));
     }
 
     @Tag("GetById")
@@ -119,9 +119,9 @@ public class DocumentControllerTest extends BaseControllerMockTest {
         mockMvc.perform(put(DOCUMENT_URI + "/1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(documentResponse)))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(documentResponse.id()))
-            .andExpect(jsonPath("$.documentTypeId").value(documentResponse.documentTypeId()));
+            .andExpectAll(status().isOk(),
+            jsonPath("$.id").value(documentResponse.id()),
+            jsonPath("$.documentTypeId").value(documentResponse.documentTypeId()));
     }
 
     @Tag("Delete")
@@ -149,9 +149,9 @@ public class DocumentControllerTest extends BaseControllerMockTest {
                 .param("page", "0")
                 .param("size", "10")
                 .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content[0].id").value(documentResponse.id()))
-            .andExpect(jsonPath("$.content[0].documentTypeId").value(documentResponse.documentTypeId()));
+            .andExpectAll(status().isOk(),
+            jsonPath("$.content[0].id").value(documentResponse.id()),
+            jsonPath("$.content[0].documentTypeId").value(documentResponse.documentTypeId()));
     }
 
 }

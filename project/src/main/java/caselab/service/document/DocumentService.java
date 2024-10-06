@@ -13,9 +13,11 @@ import caselab.domain.repository.AttributeRepository;
 import caselab.domain.repository.DocumentRepository;
 import caselab.domain.repository.DocumentTypesRepository;
 import jakarta.transaction.Transactional;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -73,7 +75,6 @@ public class DocumentService {
         return documentRepository.findById(id)
             .orElseThrow(() -> new NoSuchElementException(DOCUMENT_NOT_FOUND + id));
     }
-
 
     private Document toEntity(DocumentRequest documentRequest) {
         Document document = new Document();
@@ -175,8 +176,8 @@ public class DocumentService {
         return new DocumentResponse(
             document.getId(),
             getDocumentTypeId(document),
-            getApplicationUserIds(document),
-            getAttributeValuesDTO(document)
+            getApplicationUserIds(document).orElse(Collections.emptyList()),
+            getAttributeValuesDTO(document).orElse(Collections.emptyList())
         );
     }
 
@@ -184,17 +185,17 @@ public class DocumentService {
         return document.getDocumentType() != null ? document.getDocumentType().getId() : null;
     }
 
-    private List<Long> getApplicationUserIds(Document document) {
-        return document.getApplicationUsers() != null
-            ? document.getApplicationUsers().stream().map(ApplicationUser::getId).collect(Collectors.toList())
-            : null;
+    private Optional<List<Long>> getApplicationUserIds(Document document) {
+        return Optional.ofNullable(document.getApplicationUsers())
+            .map(users -> users.stream()
+                .map(ApplicationUser::getId)
+                .collect(Collectors.toList()));
     }
 
-    private List<DocumentAttributeValueDTO> getAttributeValuesDTO(Document document) {
-        return document.getAttributeValues() != null
-            ? document.getAttributeValues().stream()
-            .map(av -> new DocumentAttributeValueDTO(av.getAttribute().getId(), av.getAppValue()))
-            .collect(Collectors.toList())
-            : null;
+    private Optional<List<DocumentAttributeValueDTO>> getAttributeValuesDTO(Document document) {
+        return Optional.ofNullable(document.getAttributeValues())
+            .map(attributeValues -> attributeValues.stream()
+                .map(av -> new DocumentAttributeValueDTO(av.getAttribute().getId(), av.getAppValue()))
+                .collect(Collectors.toList()));
     }
 }
