@@ -1,10 +1,11 @@
 package caselab.domain.entity;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapsId;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,16 +20,19 @@ import lombok.Setter;
 @Table(name = "document_attribute_value")
 public class AttributeValue {
 
-    @Id
+    @EmbeddedId
+    private AttributeValueId id = new AttributeValueId();
+
     @ManyToOne
+    @MapsId("documentId")
     @JoinColumn(name = "document_id", nullable = false)
     private Document document;
 
-    @Id
     @ManyToOne
+    @MapsId("attributeId")
     @JoinColumn(name = "attribute_id", nullable = false)
     private Attribute attribute;
 
-    @Column
+    @Column(name = "app_value")
     private String appValue;
 }

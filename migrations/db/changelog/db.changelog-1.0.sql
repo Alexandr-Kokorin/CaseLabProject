@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS application_user
 --changeset hottabych04:2
 CREATE TABLE IF NOT EXISTS attribute
 (
-    id             BIGINT         NOT NULL,
+    id             BIGSERIAL         NOT NULL,
     name           TEXT           NOT NULL,
     type           TEXT           NOT NULL,
 
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS document_type
 --changeset hottabych04:4
 CREATE TABLE IF NOT EXISTS document
 (
-    id                     BIGINT           NOT NULL,
+    id                     BIGSERIAL           NOT NULL,
     document_type_id       BIGINT           NOT NULL,
 
     PRIMARY KEY (id)
@@ -51,7 +51,8 @@ CREATE TABLE IF NOT EXISTS document_attribute_value
 (
     document_id         BIGINT          NOT NULL REFERENCES document(id) ON DELETE CASCADE,
     attribute_id        BIGINT          NOT NULL REFERENCES attribute(id) ON DELETE CASCADE,
-    app_value           TEXT            NOT NULL
+    app_value           TEXT            NOT NULL,
+    PRIMARY KEY (document_id, attribute_id)
 )
 
 --changeset hottabych04:7
