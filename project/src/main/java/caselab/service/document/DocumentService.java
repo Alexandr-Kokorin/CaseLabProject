@@ -3,6 +3,7 @@ package caselab.service.document;
 
 import caselab.controller.document.payload.DocumentAttributeValueDTO;
 import caselab.controller.document.payload.DocumentDTO;
+import caselab.controller.document.payload.DocumentResponseDTO;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.Attribute;
 import caselab.domain.entity.AttributeValue;
@@ -41,24 +42,24 @@ public class DocumentService {
     private final AttributeRepository attributeRepository;
 
 
-    public DocumentDTO createDocument(DocumentDTO documentDTO) {
+    public DocumentResponseDTO createDocument(DocumentDTO documentDTO) {
         Document document = toEntity(documentDTO);
         Document savedDocument = documentRepository.save(document);
         return toDTO(savedDocument);
     }
 
-    public DocumentDTO getDocumentById(Long id) {
+    public DocumentResponseDTO getDocumentById(Long id) {
         return toDTO(documentRepository.findById(id).orElseThrow(
             () -> new ResourceNotFoundException(DOCUMENT_NOT_FOUND + id)
         ));
     }
 
-    public Page<DocumentDTO> getAllDocuments(Pageable pageable) {
+    public Page<DocumentResponseDTO> getAllDocuments(Pageable pageable) {
         return documentRepository.findAll(pageable)
             .map(this::toDTO);
     }
 
-    public DocumentDTO updateDocument(Long id, DocumentDTO documentDTO) {
+    public DocumentResponseDTO updateDocument(Long id, DocumentDTO documentDTO) {
         Document existingDocument = documentRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException(DOCUMENT_NOT_FOUND + id));
         updateEntityFromDTO(existingDocument, documentDTO);
@@ -183,8 +184,8 @@ public class DocumentService {
         return document;
     }
 
-    private DocumentDTO toDTO(Document document) {
-        DocumentDTO dto = new DocumentDTO();
+    private DocumentResponseDTO toDTO(Document document) {
+        DocumentResponseDTO dto = new DocumentResponseDTO();
         dto.setId(document.getId());
 
         // Установка DocumentType

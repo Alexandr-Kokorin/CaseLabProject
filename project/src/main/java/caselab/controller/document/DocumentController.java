@@ -1,6 +1,7 @@
 package caselab.controller.document;
 
 import caselab.controller.document.payload.DocumentDTO;
+import caselab.controller.document.payload.DocumentResponseDTO;
 import caselab.service.document.DocumentService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -25,25 +26,25 @@ public class DocumentController {
 
     @Operation(summary = "Создать документ")
     @PostMapping
-    public DocumentDTO createDocument(@RequestBody DocumentDTO documentDTO) {
+    public DocumentResponseDTO createDocument(@RequestBody DocumentDTO documentDTO) {
         return documentService.createDocument(documentDTO);
     }
 
     @Operation(summary = "Получить документ по id")
     @GetMapping("/{id}")
-    public DocumentDTO getDocumentById(@PathVariable Long id) {
+    public DocumentResponseDTO getDocumentById(@PathVariable Long id) {
         return documentService.getDocumentById(id);
     }
 
     @Operation(summary = "Получить страницу документов")
     @GetMapping
-    public Page<DocumentDTO> getAllDocuments(Pageable pageable) {
+    public Page<DocumentResponseDTO> getAllDocuments(Pageable pageable) {
         return documentService.getAllDocuments(pageable);
     }
 
     @Operation(summary = "Обновить документ")
     @PutMapping("/{id}")
-    public DocumentDTO updateDocument(@PathVariable Long id, @RequestBody DocumentDTO documentDTO) {
+    public DocumentResponseDTO updateDocument(@PathVariable Long id, @RequestBody DocumentDTO documentDTO) {
         return documentService.updateDocument(id, documentDTO);
     }
 
