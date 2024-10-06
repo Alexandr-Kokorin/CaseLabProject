@@ -35,7 +35,7 @@ services:
       - --password=${POSTGRES_PASSWORD}
       - update
     volumes:
-      - ./migrations/db/changelog:/liquibase/changelog/
+      - ../migrations/db/changelog:/liquibase/changelog/
     networks:
       - backend
 

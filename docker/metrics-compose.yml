@@ -1,6 +1,6 @@
 #file: noinspection ComposeUnknownKeys
 include:
-  - ../compose.yml
+  - compose.yml
 
 services:
   grafana:
@@ -9,7 +9,7 @@ services:
     ports:
       - 3000:3000
     volumes:
-      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./spring-metrics/grafana/provisioning:/etc/grafana/provisioning:ro
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
@@ -26,8 +26,22 @@ services:
       - --enable-feature=exemplar-storage
       - --config.file=/etc/prometheus/prometheus.yml
     volumes:
-      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./spring-metrics/prometheus/config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    restart: unless-stopped
     networks:
       backend:
         aliases:
           - prometheus
+  postgresql-exporter:
+    image: prometheuscommunity/postgres-exporter
+    container_name: postgresql-exporter
+    env_file:
+      - .env
+    environment:
+      DATA_SOURCE_NAME: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_CONTAINER_NAME}:5432/${POSTGRES_DB}?sslmode=disable"
+    ports:
+      - "9187:9187"
+    networks:
+      backend:
+        aliases:
+          - exporter
