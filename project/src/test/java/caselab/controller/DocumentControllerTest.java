@@ -22,7 +22,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class DocumentControllerTest extends BaseControllerIT {
+public class DocumentControllerTest extends BaseControllerMockTest {
 
     private final String DOCUMENT_URI = "/api/v1/documents";
 

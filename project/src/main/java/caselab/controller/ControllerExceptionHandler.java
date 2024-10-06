@@ -1,8 +1,8 @@
 package caselab.controller;
 
-import java.util.NoSuchElementException;
 import caselab.domain.entity.exception.ApiError;
 import caselab.domain.entity.exception.ResourceNotFoundException;
+import java.util.NoSuchElementException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
