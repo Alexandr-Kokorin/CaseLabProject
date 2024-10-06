@@ -5,6 +5,7 @@ import caselab.controller.types.payload.DocumentTypeResponse;
 import caselab.service.types.DocumentTypesService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -26,7 +27,7 @@ public class DocumentTypesController {
     @Operation(summary = "Добавить тип документа")
     @SecurityRequirement(name = "JWT")
     @PostMapping
-    public DocumentTypeResponse createDocumentType(@RequestBody DocumentTypeRequest documentTypeRequest) {
+    public DocumentTypeResponse createDocumentType(@Valid @RequestBody DocumentTypeRequest documentTypeRequest) {
         return documentTypesService.createDocumentType(documentTypeRequest);
     }
 
@@ -41,7 +42,7 @@ public class DocumentTypesController {
     @SecurityRequirement(name = "JWT")
     @PatchMapping("/{id}")
     public DocumentTypeResponse updateDocumentType(@PathVariable Long id,
-        @RequestBody DocumentTypeRequest documentTypeRequest) {
+        @Valid @RequestBody DocumentTypeRequest documentTypeRequest) {
         return documentTypesService.updateDocumentType(id, documentTypeRequest);
     }
 

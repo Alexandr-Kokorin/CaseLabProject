@@ -20,7 +20,7 @@ public class ControllerExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<?> handleValidationErrors(MethodArgumentNotValidException ex) {
+    public ResponseEntity<?> validationException(MethodArgumentNotValidException ex) {
         var errors = new HashMap<>();
         ex.getBindingResult().getFieldErrors()
             .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));

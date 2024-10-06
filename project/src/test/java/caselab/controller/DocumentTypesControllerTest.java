@@ -8,11 +8,16 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.web.SecurityFilterChain;
 
 import java.util.NoSuchElementException;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -23,8 +28,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 public class DocumentTypesControllerTest extends BaseControllerMockTest {
 
-    private final String DOCUMENT_TYPES_URI = "/api/v1/document_types";
-    private final String NOT_FOUND = "Тип документа с id = %s не найден";
+    private static final String DOCUMENT_TYPES_URI = "/api/v1/document_types";
+    private static final String NOT_FOUND = "Тип документа с id = %s не найден";
+    private static final Supplier<Stream<Arguments>> invalidDocumentTypeRequest = () -> Stream.of(
+        Arguments.of(new DocumentTypeRequest(null)),
+        Arguments.of(new DocumentTypeRequest("te")),
+        Arguments.of(new DocumentTypeRequest("testtesttesttesttesttesttesttest"))
+    );
     @MockBean
     private DocumentTypesService documentTypesService;
     @MockBean
@@ -59,6 +69,21 @@ public class DocumentTypesControllerTest extends BaseControllerMockTest {
             assertAll("Grouped assertions for created document type",
                 () -> assertEquals(actualDocumentType.id(), response.id()),
                 () -> assertEquals(actualDocumentType.name(), payload.name()));
+        }
+
+        @SneakyThrows
+        @ParameterizedTest
+        @DisplayName("Should return 400 when request is invalid")
+        @MethodSource("provideInvalidDocumentTypeRequest")
+        public void createCategory_badRequest(DocumentTypeRequest documentTypeRequest) {
+            mockMvc.perform(post(DOCUMENT_TYPES_URI)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(documentTypeRequest)))
+                .andExpectAll(
+                    status().isBadRequest());
+        }
+        public static Stream<Arguments> provideInvalidDocumentTypeRequest() {
+            return invalidDocumentTypeRequest.get();
         }
     }
 
@@ -160,6 +185,21 @@ public class DocumentTypesControllerTest extends BaseControllerMockTest {
                 () -> assertEquals(errorMessage,mvcResponse.getContentAsString()),
                 () -> assertEquals(404, mvcResponse.getStatus())
             );
+        }
+
+        @SneakyThrows
+        @ParameterizedTest
+        @DisplayName("Should return 400 when request is invalid")
+        @MethodSource("provideInvalidDocumentTypeRequest")
+        public void createCategory_badRequest(DocumentTypeRequest documentTypeRequest) {
+            mockMvc.perform(patch(DOCUMENT_TYPES_URI+"/1")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(documentTypeRequest)))
+                .andExpectAll(
+                    status().isBadRequest());
+        }
+        public static Stream<Arguments> provideInvalidDocumentTypeRequest() {
+            return invalidDocumentTypeRequest.get();
         }
     }
 
