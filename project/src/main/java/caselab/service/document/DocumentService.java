@@ -45,9 +45,7 @@ public class DocumentService {
     }
 
     public DocumentResponse getDocumentById(Long id) {
-        return toDTO(documentRepository.findById(id).orElseThrow(
-            () -> new NoSuchElementException(DOCUMENT_NOT_FOUND + id)
-        ));
+        return toDTO(findDocumentById(id));
     }
 
     public Page<DocumentResponse> getAllDocuments(Pageable pageable) {
@@ -55,8 +53,7 @@ public class DocumentService {
     }
 
     public DocumentResponse updateDocument(Long id, DocumentRequest documentRequest) {
-        Document existingDocument = documentRepository.findById(id)
-            .orElseThrow(() -> new NoSuchElementException(DOCUMENT_NOT_FOUND + id));
+        Document existingDocument = findDocumentById(id);
         updateEntityFromDTO(existingDocument, documentRequest);
         existingDocument = documentRepository.save(existingDocument);
         return toDTO(existingDocument);
@@ -71,6 +68,12 @@ public class DocumentService {
     }
 
     // Методы для работы с сущностью Document
+
+    private Document findDocumentById(Long id) {
+        return documentRepository.findById(id)
+            .orElseThrow(() -> new NoSuchElementException(DOCUMENT_NOT_FOUND + id));
+    }
+
 
     private Document toEntity(DocumentRequest documentRequest) {
         Document document = new Document();

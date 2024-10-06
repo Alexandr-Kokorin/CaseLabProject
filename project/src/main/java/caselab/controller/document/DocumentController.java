@@ -4,6 +4,7 @@ import caselab.controller.document.payload.DocumentRequest;
 import caselab.controller.document.payload.DocumentResponse;
 import caselab.service.document.DocumentService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,24 +26,28 @@ public class DocumentController {
     private final DocumentService documentService;
 
     @Operation(summary = "Создать документ")
+    @SecurityRequirement(name = "JWT")
     @PostMapping
     public DocumentResponse createDocument(@RequestBody DocumentRequest documentRequest) {
         return documentService.createDocument(documentRequest);
     }
 
     @Operation(summary = "Получить документ по id")
+    @SecurityRequirement(name = "JWT")
     @GetMapping("/{id}")
     public DocumentResponse getDocumentById(@PathVariable Long id) {
         return documentService.getDocumentById(id);
     }
 
     @Operation(summary = "Получить страницу документов")
+    @SecurityRequirement(name = "JWT")
     @GetMapping
     public Page<DocumentResponse> getAllDocuments(Pageable pageable) {
         return documentService.getAllDocuments(pageable);
     }
 
     @Operation(summary = "Обновить документ")
+    @SecurityRequirement(name = "JWT")
     @PutMapping("/{id}")
     public DocumentResponse updateDocument(
         @PathVariable Long id,
@@ -52,6 +57,7 @@ public class DocumentController {
     }
 
     @Operation(summary = "Удалить документ")
+    @SecurityRequirement(name = "JWT")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteDocument(@PathVariable Long id) {
         documentService.deleteDocument(id);
