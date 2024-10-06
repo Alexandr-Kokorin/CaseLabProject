@@ -12,7 +12,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.web.SecurityFilterChain;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import java.util.NoSuchElementException;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -24,6 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class DocumentTypesControllerTest extends BaseControllerMockTest {
 
     private final String DOCUMENT_TYPES_URI = "/api/v1/document_types";
+    private final String NOT_FOUND = "Тип документа с id = %s не найден";
     @MockBean
     private DocumentTypesService documentTypesService;
     @MockBean
@@ -85,6 +86,23 @@ public class DocumentTypesControllerTest extends BaseControllerMockTest {
 
             assertEquals(actualDocumentType, createdDocumentType);
         }
+
+        @SneakyThrows
+        @Test
+        @DisplayName("Should return 404 and error message when document type doesn't exist")
+        public void getDocumentTypeById_notFound() {
+            Long id = 1L;
+            String errorMessage = NOT_FOUND.formatted(id);
+
+            when(documentTypesService.findDocumentTypeById(id)).thenThrow(new NoSuchElementException(errorMessage));
+
+            var result = mockMvc.perform(get(DOCUMENT_TYPES_URI + "/"+id))
+                .andExpect(
+                    status().isNotFound()
+                ).andReturn();
+
+            assertEquals(errorMessage,result.getResponse().getContentAsString());
+        }
     }
 
     @Nested
@@ -121,6 +139,28 @@ public class DocumentTypesControllerTest extends BaseControllerMockTest {
                 () -> assertEquals(updatedDocumentType.name(), payload.name())
             );
         }
+
+        @SneakyThrows
+        @Test
+        @DisplayName("Should return 404 and error message when updating non-existent document type")
+        public void updateDocumentType_notFound() {
+            Long id = 1L;
+            String errorMessage = NOT_FOUND.formatted(id);
+            var payload = new DocumentTypeRequest("New Name");
+
+            when(documentTypesService.updateDocumentType(id,payload)).thenThrow(new NoSuchElementException(errorMessage));
+
+            var mvcResponse = mockMvc.perform(patch(DOCUMENT_TYPES_URI + "/"+id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(payload)))
+                .andReturn().getResponse();
+
+            assertAll(
+                "Grouped assertions for non-existent document type",
+                () -> assertEquals(errorMessage,mvcResponse.getContentAsString()),
+                () -> assertEquals(404, mvcResponse.getStatus())
+            );
+        }
     }
 
     @Nested
@@ -136,7 +176,7 @@ public class DocumentTypesControllerTest extends BaseControllerMockTest {
 
             var result = mockMvc.perform(delete(DOCUMENT_TYPES_URI + "/" +createdDocumentType.id())).andReturn();
 
-            assertEquals(result.getResponse().getStatus(), 200);
+            assertEquals(200, result.getResponse().getStatus());
         }
     }
 
