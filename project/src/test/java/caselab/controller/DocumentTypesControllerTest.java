@@ -12,9 +12,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.web.SecurityFilterChain;
-
 import java.util.NoSuchElementException;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -64,11 +64,14 @@ public class DocumentTypesControllerTest extends BaseControllerMockTest {
                 .andReturn()
                 .getResponse();
 
-            var actualDocumentType = objectMapper.readValue(mvcResponse.getContentAsString(), DocumentTypeResponse.class);
+            var actualDocumentType =
+                objectMapper.readValue(mvcResponse.getContentAsString(), DocumentTypeResponse.class);
 
-            assertAll("Grouped assertions for created document type",
+            assertAll(
+                "Grouped assertions for created document type",
                 () -> assertEquals(actualDocumentType.id(), response.id()),
-                () -> assertEquals(actualDocumentType.name(), payload.name()));
+                () -> assertEquals(actualDocumentType.name(), payload.name())
+            );
         }
 
         @SneakyThrows
@@ -79,9 +82,10 @@ public class DocumentTypesControllerTest extends BaseControllerMockTest {
             mockMvc.perform(post(DOCUMENT_TYPES_URI)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(documentTypeRequest)))
-                .andExpectAll(
+                .andExpect(
                     status().isBadRequest());
         }
+
         public static Stream<Arguments> provideInvalidDocumentTypeRequest() {
             return invalidDocumentTypeRequest.get();
         }
@@ -103,11 +107,13 @@ public class DocumentTypesControllerTest extends BaseControllerMockTest {
             var mvcResponse = mockMvc.perform(get(DOCUMENT_TYPES_URI + "/" + createdDocumentType.id()))
                 .andExpectAll(
                     status().isOk(),
-                    content().contentType(MediaType.APPLICATION_JSON))
+                    content().contentType(MediaType.APPLICATION_JSON)
+                )
                 .andReturn()
                 .getResponse();
 
-            var actualDocumentType = objectMapper.readValue(mvcResponse.getContentAsString(), DocumentTypeResponse.class);
+            var actualDocumentType =
+                objectMapper.readValue(mvcResponse.getContentAsString(), DocumentTypeResponse.class);
 
             assertEquals(actualDocumentType, createdDocumentType);
         }
@@ -121,12 +127,10 @@ public class DocumentTypesControllerTest extends BaseControllerMockTest {
 
             when(documentTypesService.findDocumentTypeById(id)).thenThrow(new NoSuchElementException(errorMessage));
 
-            var result = mockMvc.perform(get(DOCUMENT_TYPES_URI + "/"+id))
-                .andExpect(
-                    status().isNotFound()
-                ).andReturn();
-
-            assertEquals(errorMessage,result.getResponse().getContentAsString());
+            mockMvc.perform(get(DOCUMENT_TYPES_URI + "/" + id))
+                .andExpectAll(
+                    status().isNotFound(),
+                    content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
         }
     }
 
@@ -173,18 +177,15 @@ public class DocumentTypesControllerTest extends BaseControllerMockTest {
             String errorMessage = NOT_FOUND.formatted(id);
             var payload = new DocumentTypeRequest("New Name");
 
-            when(documentTypesService.updateDocumentType(id,payload)).thenThrow(new NoSuchElementException(errorMessage));
+            when(documentTypesService.updateDocumentType(id,
+                payload)).thenThrow(new NoSuchElementException(errorMessage));
 
-            var mvcResponse = mockMvc.perform(patch(DOCUMENT_TYPES_URI + "/"+id)
+            mockMvc.perform(patch(DOCUMENT_TYPES_URI + "/" + id)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(payload)))
-                .andReturn().getResponse();
-
-            assertAll(
-                "Grouped assertions for non-existent document type",
-                () -> assertEquals(errorMessage,mvcResponse.getContentAsString()),
-                () -> assertEquals(404, mvcResponse.getStatus())
-            );
+                .andExpectAll(
+                    status().isNotFound(),
+                    content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
         }
 
         @SneakyThrows
@@ -192,12 +193,13 @@ public class DocumentTypesControllerTest extends BaseControllerMockTest {
         @DisplayName("Should return 400 when request is invalid")
         @MethodSource("provideInvalidDocumentTypeRequest")
         public void createCategory_badRequest(DocumentTypeRequest documentTypeRequest) {
-            mockMvc.perform(patch(DOCUMENT_TYPES_URI+"/1")
+            mockMvc.perform(patch(DOCUMENT_TYPES_URI + "/1")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(documentTypeRequest)))
                 .andExpectAll(
                     status().isBadRequest());
         }
+
         public static Stream<Arguments> provideInvalidDocumentTypeRequest() {
             return invalidDocumentTypeRequest.get();
         }
@@ -214,9 +216,9 @@ public class DocumentTypesControllerTest extends BaseControllerMockTest {
         public void deleteDocumentType_success() {
             var createdDocumentType = new DocumentTypeResponse(1L, "Test Document Type");
 
-            var result = mockMvc.perform(delete(DOCUMENT_TYPES_URI + "/" +createdDocumentType.id())).andReturn();
+            var result = mockMvc.perform(delete(DOCUMENT_TYPES_URI + "/" + createdDocumentType.id())).andReturn();
 
-            assertEquals(200, result.getResponse().getStatus());
+            assertEquals(HttpStatus.OK.value(), result.getResponse().getStatus());
         }
     }
 
