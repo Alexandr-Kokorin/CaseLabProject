@@ -16,3 +16,7 @@ scrape_configs:
       - targets: ['host.docker.internal:8080']
         labels:
           group: 'production'
+
+  - job_name: 'postgresql'
+    static_configs:
+      - targets: ['host.docker.internal:9187']
