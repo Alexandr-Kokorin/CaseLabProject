@@ -2,6 +2,7 @@ package caselab.service;
 
 import caselab.controller.document.payload.DocumentAttributeValueDTO;
 import caselab.controller.document.payload.DocumentDTO;
+import caselab.controller.document.payload.DocumentResponseDTO;
 import caselab.domain.IntegrationTest;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.Attribute;
@@ -98,7 +99,7 @@ public class DocumentServiceTest extends IntegrationTest {
         documentDTO.setAttributeValues(Collections.singletonList(attributeValueDTO));
 
         // Act
-        DocumentDTO result = documentService.createDocument(documentDTO);
+        DocumentResponseDTO result = documentService.createDocument(documentDTO);
 
         // Assert
         assertNotNull(result);
@@ -122,7 +123,7 @@ public class DocumentServiceTest extends IntegrationTest {
         documentDTO.setAttributeValues(Collections.singletonList(attributeValueDTO));
 
         // Act
-        DocumentDTO result = documentService.createDocument(documentDTO);
+        DocumentResponseDTO result = documentService.createDocument(documentDTO);
         Long id = result.getId();
 
         DocumentType newDocumentType = new DocumentType();
@@ -135,15 +136,15 @@ public class DocumentServiceTest extends IntegrationTest {
         updatingDocumentDTO.setApplicationUserIds(result.getApplicationUserIds());
         updatingDocumentDTO.setAttributeValues(result.getAttributeValues());
         updatingDocumentDTO.setId(result.getId());
-        updatingDocumentDTO = documentService.updateDocument(id, updatingDocumentDTO);
+        DocumentResponseDTO updatingDocumentResponseDTO = documentService.updateDocument(id, updatingDocumentDTO);
 
         // Assert
-        assertNotNull(updatingDocumentDTO);
-        assertEquals(id, updatingDocumentDTO.getId());
-        assertEquals(updatedDocumentTypeId, updatingDocumentDTO.getDocumentTypeId());
-        assertEquals(Arrays.asList(user1Id, user2Id), updatingDocumentDTO.getApplicationUserIds());
-        assertEquals(attributeId, updatingDocumentDTO.getAttributeValues().get(0).getId());
-        assertEquals("Test Value", updatingDocumentDTO.getAttributeValues().get(0).getValue());
+        assertNotNull(updatingDocumentResponseDTO);
+        assertEquals(id, updatingDocumentResponseDTO.getId());
+        assertEquals(updatedDocumentTypeId, updatingDocumentResponseDTO.getDocumentTypeId());
+        assertEquals(Arrays.asList(user1Id, user2Id), updatingDocumentResponseDTO.getApplicationUserIds());
+        assertEquals(attributeId, updatingDocumentResponseDTO.getAttributeValues().get(0).getId());
+        assertEquals("Test Value", updatingDocumentResponseDTO.getAttributeValues().get(0).getValue());
     }
 
     @DisplayName("Should delete document")
@@ -157,7 +158,7 @@ public class DocumentServiceTest extends IntegrationTest {
         attributeValueDTO.setId(attributeId);
         attributeValueDTO.setValue("Test Value");
         documentDTO.setAttributeValues(Collections.singletonList(attributeValueDTO));
-        DocumentDTO result = documentService.createDocument(documentDTO);
+        DocumentResponseDTO result = documentService.createDocument(documentDTO);
         Long id = result.getId();
         // Act
         documentService.deleteDocument(id);
@@ -184,10 +185,10 @@ public class DocumentServiceTest extends IntegrationTest {
         attributeValueDTO.setId(attributeId);
         attributeValueDTO.setValue("Test Value");
         documentDTO.setAttributeValues(Collections.singletonList(attributeValueDTO));
-        DocumentDTO result = documentService.createDocument(documentDTO);
+        DocumentResponseDTO result = documentService.createDocument(documentDTO);
 
         // Act
-        DocumentDTO findById = documentService.getDocumentById(result.getId());
+        DocumentResponseDTO findById = documentService.getDocumentById(result.getId());
 
         // Assert
         assertNotNull(result);

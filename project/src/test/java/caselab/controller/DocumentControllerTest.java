@@ -2,6 +2,7 @@ package caselab.controller;
 
 import caselab.controller.document.payload.DocumentAttributeValueDTO;
 import caselab.controller.document.payload.DocumentDTO;
+import caselab.controller.document.payload.DocumentResponseDTO;
 import caselab.domain.entity.exception.ResourceNotFoundException;
 import caselab.service.document.DocumentService;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,6 +34,7 @@ public class DocumentControllerTest extends BaseControllerMockTest {
     private SecurityFilterChain securityFilterChain;
 
     private DocumentDTO documentDTO;
+    private DocumentResponseDTO documentDTOResponse;
 
     @BeforeEach
     public void setup() {
@@ -44,6 +46,11 @@ public class DocumentControllerTest extends BaseControllerMockTest {
         attributeValueDTO.setId(1L);
         attributeValueDTO.setValue("Test Value");
         documentDTO.setAttributeValues(Collections.singletonList(attributeValueDTO));
+        documentDTOResponse = new DocumentResponseDTO();
+        documentDTOResponse.setId(1L);
+        documentDTOResponse.setDocumentTypeId(1L);
+        documentDTOResponse.setApplicationUserIds(Arrays.asList(1L, 2L));
+        documentDTOResponse.setAttributeValues(Collections.singletonList(attributeValueDTO));
     }
 
     @Tag("Create")
@@ -51,15 +58,15 @@ public class DocumentControllerTest extends BaseControllerMockTest {
     @Test
     public void testCreateDocument() throws Exception {
         // Arrange
-        when(documentService.createDocument(any(DocumentDTO.class))).thenReturn(documentDTO);
+        when(documentService.createDocument(any(DocumentDTO.class))).thenReturn(documentDTOResponse);
 
         // Act & Assert
         mockMvc.perform(post(DOCUMENT_URI)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(documentDTO)))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(documentDTO.getId()))
-            .andExpect(jsonPath("$.documentTypeId").value(documentDTO.getDocumentTypeId()))
+            .andExpect(jsonPath("$.id").value(documentDTOResponse.getId()))
+            .andExpect(jsonPath("$.documentTypeId").value(documentDTOResponse.getDocumentTypeId()))
             .andExpect(jsonPath("$.applicationUserIds[0]").value(1))
             .andExpect(jsonPath("$.attributeValues[0].id").value(1))
             .andExpect(jsonPath("$.attributeValues[0].value").value("Test Value"));
@@ -70,14 +77,14 @@ public class DocumentControllerTest extends BaseControllerMockTest {
     @Test
     public void testGetDocumentById() throws Exception {
         // Arrange
-        when(documentService.getDocumentById(1L)).thenReturn(documentDTO);
+        when(documentService.getDocumentById(1L)).thenReturn(documentDTOResponse);
 
         // Act & Assert
         mockMvc.perform(get(DOCUMENT_URI + "/1")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(documentDTO.getId()))
-            .andExpect(jsonPath("$.documentTypeId").value(documentDTO.getDocumentTypeId()));
+            .andExpect(jsonPath("$.id").value(documentDTOResponse.getId()))
+            .andExpect(jsonPath("$.documentTypeId").value(documentDTOResponse.getDocumentTypeId()));
     }
 
     @Tag("GetById")
@@ -98,15 +105,15 @@ public class DocumentControllerTest extends BaseControllerMockTest {
     @Test
     public void testUpdateDocument() throws Exception {
         // Arrange
-        when(documentService.updateDocument(eq(1L), any(DocumentDTO.class))).thenReturn(documentDTO);
+        when(documentService.updateDocument(eq(1L), any(DocumentDTO.class))).thenReturn(documentDTOResponse);
 
         // Act & Assert
         mockMvc.perform(put(DOCUMENT_URI + "/1")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(documentDTO)))
+                .content(objectMapper.writeValueAsString(documentDTOResponse)))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(documentDTO.getId()))
-            .andExpect(jsonPath("$.documentTypeId").value(documentDTO.getDocumentTypeId()));
+            .andExpect(jsonPath("$.id").value(documentDTOResponse.getId()))
+            .andExpect(jsonPath("$.documentTypeId").value(documentDTOResponse.getDocumentTypeId()));
     }
 
     @Tag("Delete")
