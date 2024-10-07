@@ -63,7 +63,7 @@ server:
   forward-headers-strategy: NATIVE
 
 logging:
-  config: classpath:log4j2-plain.xml
+  config: classpath:logback.xml
 
 spring-doc:
   swagger-ui:

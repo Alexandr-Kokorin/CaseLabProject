@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+    <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener" />
+    <appender name="STDOUT"
+              class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+    <appender name="logstash" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>logstash:5044</destination>
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <mdc/>
+                <context/>
+                <logLevel/>
+                <loggerName/>
+                <pattern>
+                    <pattern>
+                        {
+                        "app": "main_app"
+                        }
+                    </pattern>
+                </pattern>
+                <threadName/>
+                <message/>
+                <logstashMarkers/>
+                <stackTrace/>
+            </providers>
+        </encoder>
+    </appender>
+    <root level="info">
+        <appender-ref ref="logstash"/>
+    </root>
+</configuration>
