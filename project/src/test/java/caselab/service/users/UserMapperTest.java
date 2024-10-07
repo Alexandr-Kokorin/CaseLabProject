@@ -1,4 +1,4 @@
-package caselab.service.user;
+package caselab.service.users;
 
 import caselab.controller.document.payload.DocumentResponse;
 import caselab.controller.users.payload.UserResponse;
@@ -6,7 +6,6 @@ import caselab.controller.users.payload.UserUpdateRequest;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.Document;
 import caselab.service.document.DocumentMapper;
-import caselab.service.users.UserMapper;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

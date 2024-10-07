@@ -1,12 +1,10 @@
-package caselab.service.user;
+package caselab.service.users;
 
 import caselab.controller.users.payload.UserResponse;
 import caselab.controller.users.payload.UserUpdateRequest;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.repository.ApplicationUserRepository;
 import caselab.service.secutiry.AuthenticationService;
-import caselab.service.users.ApplicationUserService;
-import caselab.service.users.UserMapper;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;

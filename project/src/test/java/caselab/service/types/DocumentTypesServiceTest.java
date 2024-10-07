@@ -1,9 +1,8 @@
-package caselab.service;
+package caselab.service.types;
 
 import caselab.controller.types.payload.DocumentTypeRequest;
 import caselab.domain.IntegrationTest;
 import caselab.domain.repository.DocumentTypesRepository;
-import caselab.service.types.DocumentTypesService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

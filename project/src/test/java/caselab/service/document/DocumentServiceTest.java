@@ -1,4 +1,4 @@
-package caselab.service;
+package caselab.service.document;
 
 import caselab.controller.document.payload.DocumentAttributeValueDTO;
 import caselab.controller.document.payload.DocumentRequest;
@@ -12,7 +12,6 @@ import caselab.domain.repository.ApplicationUserRepository;
 import caselab.domain.repository.AttributeRepository;
 import caselab.domain.repository.DocumentRepository;
 import caselab.domain.repository.DocumentTypesRepository;
-import caselab.service.document.DocumentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
