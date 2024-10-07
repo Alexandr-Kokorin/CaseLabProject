@@ -1,5 +1,8 @@
 package caselab.controller.users.payload;
 
+import lombok.Builder;
+
+@Builder
 public record UserResponse(
     Long id,
     String login,
