@@ -26,7 +26,7 @@ public class AuthenticationService {
             .login(request.login())
             .displayName(request.displayName())
             .role(Role.USER)
-            .hashedPassword(passwordEncoder.encode(request.password()))
+            .hashedPassword(encodePassword(request.password()))
             .build();
         appUserRepository.save(user);
         var jwtToken = jwtService.generateToken(user);
@@ -48,5 +48,9 @@ public class AuthenticationService {
         return AuthenticationResponse.builder()
             .token(jwtToken)
             .build();
+    }
+
+    public String encodePassword(String password) {
+        return passwordEncoder.encode(password);
     }
 }
