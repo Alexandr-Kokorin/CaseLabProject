@@ -1,4 +1,4 @@
-package caselab.service;
+package caselab.service.user;
 
 import caselab.controller.users.payload.UserResponse;
 import caselab.domain.entity.ApplicationUser;
