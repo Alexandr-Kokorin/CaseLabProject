@@ -1,6 +1,5 @@
-package caselab.controller.user;
+package caselab.controller.users;
 
-import caselab.controller.users.ApplicationUserController;
 import caselab.controller.users.payload.UserResponse;
 import caselab.controller.users.payload.UserUpdateRequest;
 import caselab.service.secutiry.JwtService;
