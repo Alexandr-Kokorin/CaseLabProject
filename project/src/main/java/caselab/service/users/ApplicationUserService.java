@@ -6,8 +6,10 @@ import caselab.domain.entity.ApplicationUser;
 import caselab.domain.repository.ApplicationUserRepository;
 import caselab.service.secutiry.AuthenticationService;
 import java.util.List;
+import java.util.Locale;
 import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -16,6 +18,7 @@ public class ApplicationUserService {
     private final ApplicationUserRepository userRepository;
     private final UserMapper mapper;
     private final AuthenticationService authService;
+    private final MessageSource messageSource;
 
     public List<UserResponse> findAllUsers() {
         List<ApplicationUser> users = userRepository.findAll();
@@ -44,7 +47,9 @@ public class ApplicationUserService {
 
     private ApplicationUser getUserById(Long id) {
         return userRepository.findById(id)
-            .orElseThrow(() -> new NoSuchElementException(String.format("Пользователь с id=%d не найден", id)));
+            .orElseThrow(() -> new NoSuchElementException(
+                messageSource.getMessage("user.not.found", new Object[] {id}, Locale.getDefault())
+            ));
     }
 
     private void updatePassword(ApplicationUser userToUpdate, String password) {
