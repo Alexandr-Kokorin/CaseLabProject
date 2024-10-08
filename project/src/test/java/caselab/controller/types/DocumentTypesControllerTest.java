@@ -1,5 +1,6 @@
-package caselab.controller;
+package caselab.controller.types;
 
+import caselab.controller.BaseControllerTest;
 import caselab.controller.types.payload.DocumentTypeRequest;
 import caselab.controller.types.payload.DocumentTypeResponse;
 import caselab.service.types.DocumentTypesService;
@@ -26,7 +27,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class DocumentTypesControllerTest extends BaseControllerMockTest {
+public class DocumentTypesControllerTest extends BaseControllerTest {
 
     private static final String DOCUMENT_TYPES_URI = "/api/v1/document_types";
     private static final String NOT_FOUND = "Тип документа с id = %s не найден";

@@ -1,5 +1,6 @@
-package caselab.controller;
+package caselab.controller.document;
 
+import caselab.controller.BaseControllerTest;
 import caselab.controller.document.payload.DocumentAttributeValueDTO;
 import caselab.controller.document.payload.DocumentRequest;
 import caselab.controller.document.payload.DocumentResponse;
@@ -27,7 +28,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class DocumentControllerTest extends BaseControllerMockTest {
+public class DocumentControllerTest extends BaseControllerTest {
 
     private final String DOCUMENT_URI = "/api/v1/documents";
 

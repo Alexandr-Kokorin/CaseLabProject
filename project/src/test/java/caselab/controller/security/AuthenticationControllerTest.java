@@ -1,5 +1,6 @@
-package caselab.controller;
+package caselab.controller.security;
 
+import caselab.controller.BaseControllerTest;
 import caselab.controller.secutiry.payload.AuthenticationRequest;
 import caselab.controller.secutiry.payload.AuthenticationResponse;
 import caselab.controller.secutiry.payload.RegisterRequest;
@@ -18,7 +19,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class AuthenticationControllerTest extends BaseControllerMockTest {
+public class AuthenticationControllerTest extends BaseControllerTest {
 
     private final String AUTH_URI = "/api/v1/auth";
     @MockBean

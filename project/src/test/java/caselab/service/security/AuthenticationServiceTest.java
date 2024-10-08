@@ -1,4 +1,4 @@
-package caselab.service;
+package caselab.service.security;
 
 import caselab.controller.secutiry.payload.AuthenticationRequest;
 import caselab.controller.secutiry.payload.RegisterRequest;
