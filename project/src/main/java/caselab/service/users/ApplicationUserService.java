@@ -8,6 +8,7 @@ import caselab.service.secutiry.AuthenticationService;
 import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
@@ -53,7 +54,7 @@ public class ApplicationUserService {
     }
 
     private void updatePassword(ApplicationUser userToUpdate, String password) {
-        if (password != null && !password.isEmpty()) {
+        if (Objects.nonNull(password) && !password.isEmpty()) {
             String hashedPassword = authService.encodePassword(password);
             userToUpdate.setHashedPassword(hashedPassword);
         }
