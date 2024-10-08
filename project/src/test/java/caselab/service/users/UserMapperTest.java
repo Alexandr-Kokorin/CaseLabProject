@@ -26,15 +26,21 @@ public class UserMapperTest {
     @Mock
     private DocumentMapper documentMapper;
 
+    private ApplicationUser user;
+
     @BeforeEach
     void setUp() {
         openMocks(this);
+
+        user = ApplicationUser.builder()
+            .id(1L)
+            .login("testUser")
+            .displayName("Test User")
+            .build();
     }
 
     @Test
     void entityToResponse_shouldConvertUserToUserResponse() {
-        ApplicationUser user = ApplicationUser.builder().id(1L).login("testUser").displayName("Test User").build();
-
         Document document = Document.builder().id(100L).build();
         user.setDocuments(List.of(document));
 
@@ -63,7 +69,6 @@ public class UserMapperTest {
 
     @Test
     void entityToResponse_shouldReturnNullWhenUserIsNull() {
-        // Проверяем, что метод возвращает null, если передан null
         UserResponse response = userMapper.entityToResponse(null);
         assertNull(response);
     }
@@ -100,16 +105,8 @@ public class UserMapperTest {
 
     @Test
     void entityToResponse_shouldHandleNullDocuments() {
-        // Создаем пользователя с null в списке документов
-        ApplicationUser user = new ApplicationUser();
-        user.setId(1L);
-        user.setLogin("testUser");
-        user.setDisplayName("Test User");
-        user.setDocuments(null); // документы отсутствуют
-
         UserResponse response = userMapper.entityToResponse(user);
 
-        // Проверяем, что маппинг пользователя корректен
         assertEquals(1L, response.id());
         assertEquals("testUser", response.login());
         assertEquals("Test User", response.displayName());
