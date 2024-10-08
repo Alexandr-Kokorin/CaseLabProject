@@ -6,15 +6,16 @@ import caselab.domain.entity.ApplicationUser;
 import caselab.domain.repository.ApplicationUserRepository;
 import caselab.service.secutiry.AuthenticationService;
 import java.util.List;
+import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.function.Executable;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.MessageSource;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
@@ -35,6 +36,9 @@ public class ApplicationUserServiceTest {
 
     @Mock
     private AuthenticationService authService;
+
+    @Mock
+    private MessageSource messageSource;
 
     private final Long user1Id = 1L;
     private ApplicationUser user1;
@@ -100,7 +104,12 @@ public class ApplicationUserServiceTest {
     void findUser_shouldThrowExceptionWhenUserNotFound() {
         when(userRepository.findById(user1Id)).thenReturn(Optional.empty());
 
-        assertUserNotFoundException(user1Id, () -> userService.findUser(user1Id));
+        NoSuchElementException exception =
+            assertThrows(NoSuchElementException.class, () -> userService.findUser(user1Id));
+
+        String expectedMessage =
+            messageSource.getMessage("user.not.found", new Object[] {user1Id}, Locale.getDefault());
+        assertEquals(expectedMessage, exception.getMessage());
     }
 
     @Test
@@ -127,7 +136,12 @@ public class ApplicationUserServiceTest {
 
         when(userRepository.findById(user1Id)).thenReturn(Optional.empty());
 
-        assertUserNotFoundException(user1Id, () -> userService.updateUser(user1Id, updateRequest));
+        NoSuchElementException exception =
+            assertThrows(NoSuchElementException.class, () -> userService.updateUser(user1Id, updateRequest));
+
+        String expectedMessage =
+            messageSource.getMessage("user.not.found", new Object[] {user1Id}, Locale.getDefault());
+        assertEquals(expectedMessage, exception.getMessage());
     }
 
     @Test
@@ -144,7 +158,13 @@ public class ApplicationUserServiceTest {
     void deleteUser_shouldThrowExceptionWhenUserNotFound() {
         when(userRepository.findById(user1Id)).thenReturn(Optional.empty());
 
-        assertUserNotFoundException(user1Id, () -> userService.deleteUser(user1Id));
+        NoSuchElementException exception =
+            assertThrows(NoSuchElementException.class, () -> userService.deleteUser(user1Id));
+
+        String expectedMessage =
+            messageSource.getMessage("user.not.found", new Object[] {user1Id}, Locale.getDefault());
+        assertEquals(expectedMessage, exception.getMessage());
+
         verify(userRepository, times(0)).delete(any(ApplicationUser.class));
     }
 
@@ -186,10 +206,5 @@ public class ApplicationUserServiceTest {
         assertEquals(updatedUserResponse, resultEmptyPassword);
         verify(authService, times(0)).encodePassword(any());
         verify(userRepository, times(1)).save(user1);
-    }
-
-    private void assertUserNotFoundException(Long userId, Executable executable) {
-        NoSuchElementException exception = assertThrows(NoSuchElementException.class, executable);
-        assertEquals("Пользователь с id=" + userId + " не найден", exception.getMessage());
     }
 }
