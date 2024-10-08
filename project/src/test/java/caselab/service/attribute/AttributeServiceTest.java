@@ -1,10 +1,9 @@
-package caselab.service;
+package caselab.service.attribute;
 
 import caselab.controller.attribute.payload.AttributeRequest;
 import caselab.controller.attribute.payload.AttributeResponse;
 import caselab.domain.entity.Attribute;
 import caselab.domain.repository.AttributeRepository;
-import caselab.service.attribute.AttributeService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -14,7 +13,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
-import static caselab.service.attribute.AttributeService.ATTRIBUTE_NOT_FOUND;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -72,7 +70,7 @@ public class AttributeServiceTest {
         Mockito.when(attributeRepository.findById(2L)).thenReturn(Optional.empty());
 
         Exception exception = assertThrows(NoSuchElementException.class, () -> attributeService.findAttributeById(2L));
-        assertEquals(ATTRIBUTE_NOT_FOUND + 2L, exception.getMessage());
+        assertEquals("Атрибут с id=2 не найден", exception.getMessage());
     }
 
     @Test
@@ -149,7 +147,7 @@ public class AttributeServiceTest {
         assertThrows(
             NoSuchElementException.class,
             () -> attributeService.deleteAttribute(2L),
-            ATTRIBUTE_NOT_FOUND + 2L
+            "Атрибут с id=2 не найден"
         );
     }
 }

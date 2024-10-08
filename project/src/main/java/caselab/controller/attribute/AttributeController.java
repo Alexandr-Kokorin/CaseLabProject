@@ -5,6 +5,7 @@ import caselab.controller.attribute.payload.AttributeResponse;
 import caselab.service.attribute.AttributeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +28,7 @@ public class AttributeController {
     @Operation(summary = "Добавить атрибут")
     @SecurityRequirement(name = "JWT")
     @PostMapping
-    public AttributeResponse createAttribute(@RequestBody AttributeRequest attributeRequest) {
+    public AttributeResponse createAttribute(@Valid @RequestBody AttributeRequest attributeRequest) {
         return attributeService.createAttribute(attributeRequest);
     }
 
@@ -48,7 +49,10 @@ public class AttributeController {
     @Operation(summary = "Изменить атрибут")
     @SecurityRequirement(name = "JWT")
     @PutMapping("/{id}")
-    public AttributeResponse updateAttribute(@PathVariable Long id, @RequestBody AttributeRequest attributeRequest) {
+    public AttributeResponse updateAttribute(
+        @PathVariable Long id,
+        @Valid @RequestBody AttributeRequest attributeRequest
+    ) {
         return attributeService.updateAttribute(id, attributeRequest);
     }
 

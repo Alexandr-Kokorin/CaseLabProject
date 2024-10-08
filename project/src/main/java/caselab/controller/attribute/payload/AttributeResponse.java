@@ -1,7 +1,9 @@
 package caselab.controller.attribute.payload;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Builder;
 
+@Builder
 public record AttributeResponse(
 
     @Schema(description = "ID атрибута", example = "1")

@@ -1,9 +1,11 @@
 package caselab.controller.attribute.payload;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import org.apache.logging.log4j.core.config.plugins.validation.constraints.NotBlank;
+import lombok.Builder;
 
+@Builder
 public record AttributeRequest(
 
     @NotBlank(message = "${attribute.request.name.is_blank}")
