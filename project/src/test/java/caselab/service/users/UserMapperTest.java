@@ -12,8 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -56,21 +55,21 @@ public class UserMapperTest {
         UserResponse response = userMapper.entityToResponse(user);
 
         // Проверяем, что все поля пользователя маппятся корректно
-        assertEquals(1L, response.id());
-        assertEquals("testUser", response.login());
-        assertEquals("Test User", response.displayName());
+        assertThat(response.id()).isEqualTo(1L);
+        assertThat(response.login()).isEqualTo("testUser");
+        assertThat(response.displayName()).isEqualTo("Test User");
 
         // Проверяем, что документ также маппится корректно
-        assertEquals(1, response.documents().size());
-        assertEquals(100L, response.documents().getFirst().id());
-        assertEquals(1L, response.documents().getFirst().documentTypeId());
-        assertEquals(1, response.documents().getFirst().applicationUserIds().size());
+        assertThat(response.documents()).hasSize(1);
+        assertThat(response.documents().getFirst().id()).isEqualTo(100L);
+        assertThat(response.documents().getFirst().documentTypeId()).isEqualTo(1L);
+        assertThat(response.documents().getFirst().applicationUserIds()).hasSize(1);
     }
 
     @Test
     void entityToResponse_shouldReturnNullWhenUserIsNull() {
         UserResponse response = userMapper.entityToResponse(null);
-        assertNull(response);
+        assertThat(response).isNull();
     }
 
     @Test
@@ -91,7 +90,7 @@ public class UserMapperTest {
 
         userMapper.updateUserFromUpdateRequest(updateRequest, user);
 
-        assertEquals("New Name", user.getDisplayName());
+        assertThat(user.getDisplayName()).isEqualTo("New Name");
     }
 
     @Test
@@ -107,17 +106,17 @@ public class UserMapperTest {
     void entityToResponse_shouldHandleNullDocuments() {
         UserResponse response = userMapper.entityToResponse(user);
 
-        assertEquals(1L, response.id());
-        assertEquals("testUser", response.login());
-        assertEquals("Test User", response.displayName());
+        assertThat(response.id()).isEqualTo(1L);
+        assertThat(response.login()).isEqualTo("testUser");
+        assertThat(response.displayName()).isEqualTo("Test User");
 
         // Проверяем, что документы не были мапплены (так как их нет)
-        assertNull(response.documents());
+        assertThat(response.documents()).isNull();
     }
 
     @Test
     void emptyEntityToResponse_shouldReturnNull() {
         UserResponse userResponse = userMapper.entityToResponse(null);
-        assertNull(userResponse);
+        assertThat(userResponse).isNull();
     }
 }
