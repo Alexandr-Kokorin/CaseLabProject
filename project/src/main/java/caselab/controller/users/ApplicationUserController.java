@@ -5,6 +5,7 @@ import caselab.controller.users.payload.UserUpdateRequest;
 import caselab.service.users.ApplicationUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -45,7 +46,7 @@ public class ApplicationUserController {
     @Operation(summary = "Обновить данные пользователя",
                description = "Обновляет данные пользователя по его идентификатору, "
                    + "если авторизованный пользователь — владелец аккаунта.")
-    public ResponseEntity<UserResponse> updateUser(
+    public ResponseEntity<@Valid UserResponse> updateUser(
         @PathVariable Long id,
         @RequestBody UserUpdateRequest updateRequest
     ) {
