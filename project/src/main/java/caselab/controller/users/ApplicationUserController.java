@@ -46,9 +46,9 @@ public class ApplicationUserController {
     @Operation(summary = "Обновить данные пользователя",
                description = "Обновляет данные пользователя по его идентификатору, "
                    + "если авторизованный пользователь — владелец аккаунта.")
-    public ResponseEntity<@Valid UserResponse> updateUser(
+    public ResponseEntity<UserResponse> updateUser(
         @PathVariable Long id,
-        @RequestBody UserUpdateRequest updateRequest
+        @Valid @RequestBody UserUpdateRequest updateRequest
     ) {
         UserResponse updatedUser = userService.updateUser(id, updateRequest);
         return ResponseEntity.ok(updatedUser);
