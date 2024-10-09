@@ -36,6 +36,7 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
         Arguments.of(new DocumentTypeRequest("te")),
         Arguments.of(new DocumentTypeRequest("testtesttesttesttesttesttesttest"))
     );
+
     @MockBean
     private DocumentTypesService documentTypesService;
     @MockBean
@@ -131,7 +132,8 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
             mockMvc.perform(get(DOCUMENT_TYPES_URI + "/" + id))
                 .andExpectAll(
                     status().isNotFound(),
-                    content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
+                    content().contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                );
         }
     }
 
@@ -150,7 +152,7 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
             when(documentTypesService.updateDocumentType(createdDocumentType.id(), payload))
                 .thenReturn(new DocumentTypeResponse(createdDocumentType.id(), payload.name()));
 
-            var mvcResponse = mockMvc.perform(patch(DOCUMENT_TYPES_URI + "/" + createdDocumentType.id())
+            var mvcResponse = mockMvc.perform(put(DOCUMENT_TYPES_URI + "/" + createdDocumentType.id())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(payload)))
                 .andExpectAll(
@@ -178,15 +180,18 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
             String errorMessage = NOT_FOUND.formatted(id);
             var payload = new DocumentTypeRequest("New Name");
 
-            when(documentTypesService.updateDocumentType(id,
-                payload)).thenThrow(new NoSuchElementException(errorMessage));
+            when(documentTypesService.updateDocumentType(
+                id,
+                payload
+            )).thenThrow(new NoSuchElementException(errorMessage));
 
-            mockMvc.perform(patch(DOCUMENT_TYPES_URI + "/" + id)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(payload)))
+            mockMvc.perform(put(DOCUMENT_TYPES_URI + "/" + id)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(payload)))
                 .andExpectAll(
                     status().isNotFound(),
-                    content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
+                    content().contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                );
         }
 
         @SneakyThrows
@@ -194,7 +199,7 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
         @DisplayName("Should return 400 when request is invalid")
         @MethodSource("provideInvalidDocumentTypeRequest")
         public void createCategory_badRequest(DocumentTypeRequest documentTypeRequest) {
-            mockMvc.perform(patch(DOCUMENT_TYPES_URI + "/1")
+            mockMvc.perform(put(DOCUMENT_TYPES_URI + "/1")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(documentTypeRequest)))
                 .andExpectAll(
@@ -219,7 +224,7 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
 
             var result = mockMvc.perform(delete(DOCUMENT_TYPES_URI + "/" + createdDocumentType.id())).andReturn();
 
-            assertEquals(HttpStatus.OK.value(), result.getResponse().getStatus());
+            assertEquals(HttpStatus.NO_CONTENT.value(), result.getResponse().getStatus());
         }
     }
 

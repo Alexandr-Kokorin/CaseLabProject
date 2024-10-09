@@ -22,6 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class AuthenticationControllerTest extends BaseControllerTest {
 
     private final String AUTH_URI = "/api/v1/auth";
+
     @MockBean
     private AuthenticationService authenticationService;
     @MockBean

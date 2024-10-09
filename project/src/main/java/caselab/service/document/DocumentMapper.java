@@ -16,6 +16,7 @@ import org.mapstruct.ReportingPolicy;
         componentModel = "spring",
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface DocumentMapper {
+
     @Mapping(target = "documentTypeId", source = "documentType.id")
     @Mapping(target = "applicationUserIds", expression = "java(mapApplicationUserIds(document.getApplicationUsers()))")
     @Mapping(target = "attributeValues", expression = "java(mapAttributeValues(document.getAttributeValues()))")

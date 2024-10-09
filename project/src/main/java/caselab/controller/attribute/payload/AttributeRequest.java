@@ -7,7 +7,6 @@ import lombok.Builder;
 
 @Builder
 public record AttributeRequest(
-
     @NotBlank(message = "${attribute.request.name.is_blank}")
     @Size(min = 3, max = 25, message = "${attribute.request.name.invalid_size}")
     @Schema(description = "Имя атрибута", example = "Дата создания")

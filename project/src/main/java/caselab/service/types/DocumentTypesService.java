@@ -4,15 +4,18 @@ import caselab.controller.types.payload.DocumentTypeRequest;
 import caselab.controller.types.payload.DocumentTypeResponse;
 import caselab.domain.entity.DocumentType;
 import caselab.domain.repository.DocumentTypesRepository;
+import java.util.Locale;
 import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 
-@SuppressWarnings({"MagicNumber", "LineLength"})
 @Service
 @RequiredArgsConstructor
 public class DocumentTypesService {
+
     private final DocumentTypesRepository documentTypesRepository;
+    private final MessageSource messageSource;
 
     public DocumentTypeResponse findDocumentTypeById(Long id) {
         var optionalDocumentType = documentTypesRepository.findById(id).orElseThrow(() ->
@@ -54,7 +57,8 @@ public class DocumentTypesService {
     }
 
     private NoSuchElementException getDocumentTypeNoSuchElementException(Long id) {
-        return new NoSuchElementException("Тип документа с id = %d не найден".formatted(id));
+        return new NoSuchElementException(
+            messageSource.getMessage("document.type.not.found", new Object[] {id}, Locale.getDefault())
+        );
     }
-
 }
