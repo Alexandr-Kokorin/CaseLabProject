@@ -26,6 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class AttributeControllerTest extends BaseControllerTest {
+
     private static final Supplier<Stream<Arguments>> invalidAttributeRequests = () -> Stream.of(
         Arguments.of(new AttributeRequest(null, null)),
         Arguments.of(new AttributeRequest("", "")),

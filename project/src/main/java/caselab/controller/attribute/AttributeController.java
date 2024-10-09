@@ -20,34 +20,31 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/attributes")
+@SecurityRequirement(name = "JWT")
 @RequiredArgsConstructor
 public class AttributeController {
 
     private final AttributeService attributeService;
 
     @Operation(summary = "Добавить атрибут")
-    @SecurityRequirement(name = "JWT")
     @PostMapping
     public AttributeResponse createAttribute(@Valid @RequestBody AttributeRequest attributeRequest) {
         return attributeService.createAttribute(attributeRequest);
     }
 
     @Operation(summary = "Получить атрибут по id")
-    @SecurityRequirement(name = "JWT")
     @GetMapping("/{id}")
     public AttributeResponse findAttributeById(@PathVariable Long id) {
         return attributeService.findAttributeById(id);
     }
 
     @Operation(summary = "Получить список всех атрибутов")
-    @SecurityRequirement(name = "JWT")
     @GetMapping
     public List<AttributeResponse> findAllAttributes() {
         return attributeService.findAllAttributes();
     }
 
     @Operation(summary = "Изменить атрибут")
-    @SecurityRequirement(name = "JWT")
     @PutMapping("/{id}")
     public AttributeResponse updateAttribute(
         @PathVariable Long id,
@@ -57,7 +54,6 @@ public class AttributeController {
     }
 
     @Operation(summary = "Удалить атрибут")
-    @SecurityRequirement(name = "JWT")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAttribute(@PathVariable Long id) {
         attributeService.deleteAttribute(id);

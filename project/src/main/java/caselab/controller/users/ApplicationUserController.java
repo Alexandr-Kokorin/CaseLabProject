@@ -19,10 +19,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequiredArgsConstructor
-@SecurityRequirement(name = "JWT")
 @RequestMapping("/api/v1/users")
+@SecurityRequirement(name = "JWT")
+@RequiredArgsConstructor
 public class ApplicationUserController {
+
     private final ApplicationUserService userService;
 
     @GetMapping

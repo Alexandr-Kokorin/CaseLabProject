@@ -20,6 +20,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 public class UserMapperTest {
+
     @InjectMocks
     private UserMapper userMapper = Mappers.getMapper(UserMapper.class);
 

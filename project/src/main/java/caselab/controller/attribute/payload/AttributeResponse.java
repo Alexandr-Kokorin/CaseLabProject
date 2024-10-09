@@ -5,7 +5,6 @@ import lombok.Builder;
 
 @Builder
 public record AttributeResponse(
-
     @Schema(description = "ID атрибута", example = "1")
     Long id,
 

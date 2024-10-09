@@ -13,6 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @SpringBootTest(classes = Application.class)
 @ActiveProfiles("test")
 public abstract class BaseControllerTest extends IntegrationTest {
+
     @Autowired
     protected MockMvc mockMvc;
     @Autowired

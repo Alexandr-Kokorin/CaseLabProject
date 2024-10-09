@@ -29,7 +29,6 @@ public class AttributeServiceTest {
 
     @Mock
     private AttributeRepository attributeRepository;
-
     @Mock
     private MessageSource messageSource;
 
@@ -75,8 +74,10 @@ public class AttributeServiceTest {
     void testFindAttributeById_whenAttributeNotFound_shouldThrowNoSuchElementException() {
         Mockito.when(attributeRepository.findById(2L)).thenReturn(Optional.empty());
 
-        NoSuchElementException exception = assertThrows(NoSuchElementException.class, () -> attributeService.findAttributeById(2L));
-        String expectedMessage = messageSource.getMessage("attribute.not.found", new Object[] {2L}, Locale.getDefault());
+        NoSuchElementException exception =
+            assertThrows(NoSuchElementException.class, () -> attributeService.findAttributeById(2L));
+        String expectedMessage =
+            messageSource.getMessage("attribute.not.found", new Object[] {2L}, Locale.getDefault());
 
         assertEquals(expectedMessage, exception.getMessage());
     }

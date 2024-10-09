@@ -25,18 +25,16 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class ApplicationUserServiceTest {
+
     @InjectMocks
     private ApplicationUserService userService;
 
     @Mock
     private ApplicationUserRepository userRepository;
-
     @Mock
     private UserMapper userMapper;
-
     @Mock
     private AuthenticationService authService;
-
     @Mock
     private MessageSource messageSource;
 

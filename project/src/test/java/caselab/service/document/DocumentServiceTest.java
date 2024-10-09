@@ -35,16 +35,12 @@ public class DocumentServiceTest extends IntegrationTest {
 
     @Autowired
     private DocumentService documentService;
-
     @Autowired
     private DocumentRepository documentRepository;
-
     @Autowired
     private DocumentTypesRepository documentTypeRepository;
-
     @Autowired
     private ApplicationUserRepository applicationUserRepository;
-
     @Autowired
     private AttributeRepository attributeRepository;
 

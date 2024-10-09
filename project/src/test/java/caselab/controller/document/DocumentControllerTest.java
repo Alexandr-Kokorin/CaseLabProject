@@ -34,7 +34,6 @@ public class DocumentControllerTest extends BaseControllerTest {
 
     @MockBean
     private DocumentService documentService;
-
     @MockBean
     private SecurityFilterChain securityFilterChain;
 
@@ -73,12 +72,14 @@ public class DocumentControllerTest extends BaseControllerTest {
         mockMvc.perform(post(DOCUMENT_URI)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(documentRequest)))
-            .andExpectAll(status().isOk(),
-            jsonPath("$.id").value(documentResponse.id()),
-            jsonPath("$.documentTypeId").value(documentResponse.documentTypeId()),
-            jsonPath("$.applicationUserIds[0]").value(1),
-            jsonPath("$.attributeValues[0].id").value(1),
-            jsonPath("$.attributeValues[0].value").value("Test Value"));
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$.id").value(documentResponse.id()),
+                jsonPath("$.documentTypeId").value(documentResponse.documentTypeId()),
+                jsonPath("$.applicationUserIds[0]").value(1),
+                jsonPath("$.attributeValues[0].id").value(1),
+                jsonPath("$.attributeValues[0].value").value("Test Value")
+            );
     }
 
     @Tag("GetById")
@@ -91,9 +92,11 @@ public class DocumentControllerTest extends BaseControllerTest {
         // Act & Assert
         mockMvc.perform(get(DOCUMENT_URI + "/1")
                 .accept(MediaType.APPLICATION_JSON))
-            .andExpectAll(status().isOk(),
-            jsonPath("$.id").value(documentResponse.id()),
-            jsonPath("$.documentTypeId").value(documentResponse.documentTypeId()));
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$.id").value(documentResponse.id()),
+                jsonPath("$.documentTypeId").value(documentResponse.documentTypeId())
+            );
     }
 
     @Tag("GetById")
@@ -120,9 +123,11 @@ public class DocumentControllerTest extends BaseControllerTest {
         mockMvc.perform(put(DOCUMENT_URI + "/1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(documentResponse)))
-            .andExpectAll(status().isOk(),
-            jsonPath("$.id").value(documentResponse.id()),
-            jsonPath("$.documentTypeId").value(documentResponse.documentTypeId()));
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$.id").value(documentResponse.id()),
+                jsonPath("$.documentTypeId").value(documentResponse.documentTypeId())
+            );
     }
 
     @Tag("Delete")
@@ -150,9 +155,11 @@ public class DocumentControllerTest extends BaseControllerTest {
                 .param("page", "0")
                 .param("size", "10")
                 .accept(MediaType.APPLICATION_JSON))
-            .andExpectAll(status().isOk(),
-            jsonPath("$.content[0].id").value(documentResponse.id()),
-            jsonPath("$.content[0].documentTypeId").value(documentResponse.documentTypeId()));
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$.content[0].id").value(documentResponse.id()),
+                jsonPath("$.content[0].documentTypeId").value(documentResponse.documentTypeId())
+            );
     }
 
 }

@@ -4,9 +4,9 @@ import caselab.controller.users.payload.UserResponse;
 import caselab.controller.users.payload.UserUpdateRequest;
 import caselab.service.secutiry.JwtService;
 import caselab.service.users.ApplicationUserService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Collections;
 import java.util.List;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,21 +26,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(ApplicationUserController.class)
 class ApplicationUserControllerTest {
+
+    private final String USERS_URI = "/api/v1/users";
     private MockMvc mockMvc;
 
     @MockBean
     private ApplicationUserService userService;
-
     @MockBean
     private JwtService jwtService;
 
     @Autowired
+    private WebApplicationContext webApplicationContext;
+    @Autowired
     private ObjectMapper objectMapper;
 
     private UserResponse userResponse;
-
-    @Autowired
-    private WebApplicationContext webApplicationContext;
 
     @BeforeEach
     void setUp() {
@@ -60,7 +60,7 @@ class ApplicationUserControllerTest {
         List<UserResponse> users = Collections.singletonList(userResponse);
         when(userService.findAllUsers()).thenReturn(users);
 
-        mockMvc.perform(get("/api/v1/users"))
+        mockMvc.perform(get(USERS_URI))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[0].id").value(userResponse.id()))
             .andExpect(jsonPath("$[0].login").value(userResponse.login()))
@@ -73,7 +73,7 @@ class ApplicationUserControllerTest {
     void findUserById_shouldReturnUser() throws Exception {
         when(userService.findUser(1L)).thenReturn(userResponse);
 
-        mockMvc.perform(get("/api/v1/users/{id}", 1L))
+        mockMvc.perform(get(USERS_URI + "/" + 1L))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(userResponse.id()))
             .andExpect(jsonPath("$.login").value(userResponse.login()))
@@ -90,7 +90,7 @@ class ApplicationUserControllerTest {
 
         when(userService.updateUser(1L, updateRequest)).thenReturn(userResponse);
 
-        mockMvc.perform(put("/api/v1/users/{id}", 1L)
+        mockMvc.perform(put(USERS_URI + "/" + 1L)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateRequest)))
             .andExpect(status().isOk());
@@ -99,7 +99,7 @@ class ApplicationUserControllerTest {
     @Test
     @WithMockUser(username = "john_doe", authorities = "USER")
     void deleteUser_shouldDeleteUser_WhenUserIsOwner() throws Exception {
-        mockMvc.perform(delete("/api/v1/users/{id}", 1L))
+        mockMvc.perform(delete(USERS_URI + "/" + 1L))
             .andExpect(status().isNoContent());
     }
 }

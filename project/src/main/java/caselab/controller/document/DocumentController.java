@@ -20,34 +20,31 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/documents")
+@SecurityRequirement(name = "JWT")
 @RequiredArgsConstructor
 public class DocumentController {
 
     private final DocumentService documentService;
 
     @Operation(summary = "Создать документ")
-    @SecurityRequirement(name = "JWT")
     @PostMapping
     public DocumentResponse createDocument(@RequestBody DocumentRequest documentRequest) {
         return documentService.createDocument(documentRequest);
     }
 
     @Operation(summary = "Получить документ по id")
-    @SecurityRequirement(name = "JWT")
     @GetMapping("/{id}")
     public DocumentResponse getDocumentById(@PathVariable Long id) {
         return documentService.getDocumentById(id);
     }
 
     @Operation(summary = "Получить страницу документов")
-    @SecurityRequirement(name = "JWT")
     @GetMapping
     public Page<DocumentResponse> getAllDocuments(Pageable pageable) {
         return documentService.getAllDocuments(pageable);
     }
 
     @Operation(summary = "Обновить документ")
-    @SecurityRequirement(name = "JWT")
     @PutMapping("/{id}")
     public DocumentResponse updateDocument(
         @PathVariable Long id,
@@ -57,7 +54,6 @@ public class DocumentController {
     }
 
     @Operation(summary = "Удалить документ")
-    @SecurityRequirement(name = "JWT")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteDocument(@PathVariable Long id) {
         documentService.deleteDocument(id);

@@ -15,30 +15,29 @@ import caselab.domain.repository.DocumentTypesRepository;
 import jakarta.transaction.Transactional;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+@SuppressWarnings("MultipleStringLiterals")
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class DocumentService {
 
-    private static final String DOCUMENT_NOT_FOUND = "Документ не найден с id = ";
-    private static final String DOCUMENT_TYPE_NOT_FOUND = "Тип документа не найден с id = ";
-    private static final String USERS_NOT_FOUND = "Некоторые пользователи не найдены";
-    private static final String ATTRIBUTE_NOT_FOUND = "Атрибут не найден с id = ";
-
     private final DocumentRepository documentRepository;
     private final DocumentTypesRepository documentTypeRepository;
     private final ApplicationUserRepository applicationUserRepository;
     private final AttributeRepository attributeRepository;
+    private final MessageSource messageSource;
 
     public DocumentResponse createDocument(DocumentRequest documentRequest) {
         Document document = toEntity(documentRequest);
@@ -65,7 +64,9 @@ public class DocumentService {
         if (documentRepository.existsById(id)) {
             documentRepository.deleteById(id);
         } else {
-            throw new NoSuchElementException(DOCUMENT_NOT_FOUND + id);
+            throw new NoSuchElementException(
+                messageSource.getMessage("document.not.found", new Object[] {id}, Locale.getDefault())
+            );
         }
     }
 
@@ -73,7 +74,9 @@ public class DocumentService {
 
     private Document findDocumentById(Long id) {
         return documentRepository.findById(id)
-            .orElseThrow(() -> new NoSuchElementException(DOCUMENT_NOT_FOUND + id));
+            .orElseThrow(() -> new NoSuchElementException(
+                messageSource.getMessage("document.not.found", new Object[] {id}, Locale.getDefault())
+            ));
     }
 
     private Document toEntity(DocumentRequest documentRequest) {
@@ -94,7 +97,9 @@ public class DocumentService {
 
     private void setDocumentType(Document document, Long documentTypeId) {
         DocumentType documentType = documentTypeRepository.findById(documentTypeId)
-            .orElseThrow(() -> new NoSuchElementException(DOCUMENT_TYPE_NOT_FOUND + documentTypeId));
+            .orElseThrow(() -> new NoSuchElementException(
+                messageSource.getMessage("document.type.not.found", new Object[] {documentTypeId}, Locale.getDefault())
+            ));
         document.setDocumentType(documentType);
     }
 
@@ -110,7 +115,9 @@ public class DocumentService {
         if (userIds != null) {
             List<ApplicationUser> users = applicationUserRepository.findAllById(userIds);
             if (users.size() != userIds.size()) {
-                throw new NoSuchElementException(USERS_NOT_FOUND);
+                throw new NoSuchElementException(
+                    messageSource.getMessage("users.not.found", null, Locale.getDefault())
+                );
             }
             document.setApplicationUsers(users);
         }
@@ -140,7 +147,7 @@ public class DocumentService {
 
             List<AttributeValue> updatedValues = attributeValuesDTO.stream()
                 .map(dto -> updateOrCreateAttributeValue(document, existingAttributeValues.get(dto.id()), dto))
-                .collect(Collectors.toList());
+                .toList();
 
             document.getAttributeValues().clear();
             document.getAttributeValues().addAll(updatedValues);
@@ -149,7 +156,9 @@ public class DocumentService {
 
     private AttributeValue createOrUpdateAttributeValue(Document document, DocumentAttributeValueDTO dto) {
         Attribute attribute = attributeRepository.findById(dto.id())
-            .orElseThrow(() -> new NoSuchElementException(ATTRIBUTE_NOT_FOUND + dto.id()));
+            .orElseThrow(() -> new NoSuchElementException(
+                messageSource.getMessage("attribute.not.found", new Object[] {dto.id()}, Locale.getDefault())
+            ));
         AttributeValue attributeValue = new AttributeValue();
         attributeValue.setDocument(document);
         attributeValue.setAttribute(attribute);

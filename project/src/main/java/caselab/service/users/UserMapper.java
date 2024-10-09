@@ -15,6 +15,7 @@ import org.mapstruct.ReportingPolicy;
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
         uses = {DocumentMapper.class})
 public interface UserMapper {
+
     UserResponse entityToResponse(ApplicationUser user);
 
     @Mapping(target = "password", ignore = true)
