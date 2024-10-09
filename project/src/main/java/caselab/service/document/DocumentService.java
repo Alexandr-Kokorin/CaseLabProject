@@ -27,6 +27,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+@SuppressWarnings("MultipleStringLiterals")
 @Service
 @RequiredArgsConstructor
 @Transactional

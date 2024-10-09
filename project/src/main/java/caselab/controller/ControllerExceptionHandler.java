@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
+@SuppressWarnings("MultipleStringLiterals")
 @RestControllerAdvice
 @RequiredArgsConstructor
 public class ControllerExceptionHandler {
