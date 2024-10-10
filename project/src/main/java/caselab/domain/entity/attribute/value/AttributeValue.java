@@ -1,5 +1,7 @@
-package caselab.domain.entity;
+package caselab.domain.entity.attribute.value;
 
+import caselab.domain.entity.Attribute;
+import caselab.domain.entity.DocumentVersion;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
@@ -27,8 +29,8 @@ public class AttributeValue {
 
     @ManyToOne
     @MapsId("documentId")
-    @JoinColumn(name = "document_id", nullable = false)
-    private Document document;
+    @JoinColumn(name = "document_version_id", nullable = false)
+    private DocumentVersion documentVersion;
 
     @ManyToOne
     @MapsId("attributeId")

@@ -1,4 +1,4 @@
-package caselab.domain.entity;
+package caselab.domain.entity.attribute.value;
 
 import jakarta.persistence.Embeddable;
 import java.io.Serializable;
@@ -9,7 +9,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-
 @Embeddable
 @AllArgsConstructor
 @NoArgsConstructor
@@ -18,6 +17,6 @@ import lombok.Setter;
 @Builder
 @EqualsAndHashCode
 public class AttributeValueId implements Serializable {
-    private Long documentId;
+    private Long documentVersionId;
     private Long attributeId;
 }

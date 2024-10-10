@@ -4,7 +4,7 @@ import caselab.controller.document.payload.DocumentResponse;
 import caselab.controller.users.payload.UserResponse;
 import caselab.controller.users.payload.UserUpdateRequest;
 import caselab.domain.entity.ApplicationUser;
-import caselab.domain.entity.Document;
+import caselab.domain.entity.DocumentVersion;
 import caselab.service.document.DocumentMapper;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,7 +42,7 @@ public class UserMapperTest {
 
     @Test
     void entityToResponse_shouldConvertUserToUserResponse() {
-        Document document = Document.builder().id(100L).build();
+        DocumentVersion document = DocumentVersion.builder().id(100L).build();
         user.setDocuments(List.of(document));
 
         DocumentResponse documentResponse = DocumentResponse.builder()

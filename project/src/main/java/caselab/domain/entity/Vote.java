@@ -1,15 +1,16 @@
 package caselab.domain.entity;
 
-import caselab.domain.entity.attribute.value.AttributeValue;
-import caselab.domain.entity.document.type.to.attribute.DocumentTypeToAttribute;
+import caselab.domain.entity.enums.VoteStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,23 +23,22 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "attribute")
-public class Attribute {
-
+@Table(name = "vote")
+public class Vote {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
     private Long id;
 
     @Column(nullable = false)
-    private String name;
+    @Enumerated(EnumType.STRING)
+    private VoteStatus status;
 
-    @Column(nullable = false)
-    private String type;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "application_user_id", nullable = false)
+    private ApplicationUser applicationUser;
 
-    @OneToMany(mappedBy = "attribute")
-    private List<AttributeValue> attributeValues;
-
-    @OneToMany(mappedBy = "attribute")
-    private List<DocumentTypeToAttribute> documentTypesToAttributes;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "voting_process_id", nullable = false)
+    private VotingProcess votingProcess;
 }

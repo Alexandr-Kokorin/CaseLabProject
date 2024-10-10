@@ -4,7 +4,7 @@ import caselab.controller.secutiry.payload.AuthenticationRequest;
 import caselab.controller.secutiry.payload.AuthenticationResponse;
 import caselab.controller.secutiry.payload.RegisterRequest;
 import caselab.domain.entity.ApplicationUser;
-import caselab.domain.entity.enums.Role;
+import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.ApplicationUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -25,7 +25,7 @@ public class AuthenticationService {
         var user = ApplicationUser.builder()
             .login(request.login())
             .displayName(request.displayName())
-            .role(Role.USER)
+            .role(GlobalPermissionName.USER)
             .hashedPassword(encodePassword(request.password()))
             .build();
         appUserRepository.save(user);

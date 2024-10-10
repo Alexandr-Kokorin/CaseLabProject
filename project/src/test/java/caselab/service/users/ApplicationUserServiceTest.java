@@ -170,7 +170,7 @@ public class ApplicationUserServiceTest {
     void updateUser_shouldUpdatePasswordWhenNotEmpty() {
         ApplicationUser existingUser = new ApplicationUser();
         existingUser.setId(user1Id);
-        existingUser.setLogin("john_doe");
+        existingUser.setEmail("john_doe");
 
         String newPassword = "NewPassword";
         UserUpdateRequest updateRequest = new UserUpdateRequest("john_updated", newPassword);

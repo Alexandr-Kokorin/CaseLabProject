@@ -3,8 +3,8 @@ package caselab.service.document;
 import caselab.controller.document.payload.DocumentAttributeValueDTO;
 import caselab.controller.document.payload.DocumentResponse;
 import caselab.domain.entity.ApplicationUser;
-import caselab.domain.entity.AttributeValue;
-import caselab.domain.entity.Document;
+import caselab.domain.entity.attribute.value.AttributeValue;
+import caselab.domain.entity.DocumentVersion;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.mapstruct.Mapper;
@@ -20,7 +20,7 @@ public interface DocumentMapper {
     @Mapping(target = "documentTypeId", source = "documentType.id")
     @Mapping(target = "applicationUserIds", expression = "java(mapApplicationUserIds(document.getApplicationUsers()))")
     @Mapping(target = "attributeValues", expression = "java(mapAttributeValues(document.getAttributeValues()))")
-    DocumentResponse entityToResponse(Document document);
+    DocumentResponse entityToResponse(DocumentVersion document);
 
     default List<Long> mapApplicationUserIds(List<ApplicationUser> applicationUsers) {
         return applicationUsers.stream()

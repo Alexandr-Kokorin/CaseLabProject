@@ -1,6 +1,6 @@
 package caselab.domain.entity.enums;
 
-public enum Role {
+public enum GlobalPermissionName {
     USER,
     ADMIN
 }

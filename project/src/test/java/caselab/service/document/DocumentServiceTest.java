@@ -7,7 +7,7 @@ import caselab.domain.IntegrationTest;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.Attribute;
 import caselab.domain.entity.DocumentType;
-import caselab.domain.entity.enums.Role;
+import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.ApplicationUserRepository;
 import caselab.domain.repository.AttributeRepository;
 import caselab.domain.repository.DocumentRepository;
@@ -59,13 +59,13 @@ public class DocumentServiceTest extends IntegrationTest {
         ApplicationUser user1 = ApplicationUser.builder()
             .login("Test login 1 ")
             .displayName("Test display name 1")
-            .role(Role.USER)
+            .role(GlobalPermissionName.USER)
             .hashedPassword("abc")
             .build();
         ApplicationUser user2 = ApplicationUser.builder()
             .login("Test login 2 ")
             .displayName("Test display name 2")
-            .role(Role.USER)
+            .role(GlobalPermissionName.USER)
             .hashedPassword("abc")
             .build();
         user1 = applicationUserRepository.save(user1);

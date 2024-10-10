@@ -3,9 +3,9 @@ package caselab.service.document;
 import caselab.controller.document.payload.DocumentResponse;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.Attribute;
-import caselab.domain.entity.AttributeValue;
-import caselab.domain.entity.AttributeValueId;
-import caselab.domain.entity.Document;
+import caselab.domain.entity.attribute.value.AttributeValue;
+import caselab.domain.entity.attribute.value.AttributeValueId;
+import caselab.domain.entity.DocumentVersion;
 import caselab.domain.entity.DocumentType;
 import java.util.Arrays;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,7 +19,7 @@ public class DocumentMapperTest {
 
     private final DocumentMapper documentMapper = Mappers.getMapper(DocumentMapper.class);
 
-    private Document document;
+    private DocumentVersion document;
     private final DocumentType documentType = createDocumentType();
     private final ApplicationUser user1 = createApplicationUser(1L, "user1");
     private final ApplicationUser user2 = createApplicationUser(2L, "user2");
@@ -28,7 +28,7 @@ public class DocumentMapperTest {
 
     @BeforeEach
     void setUp() {
-        document = Document.builder()
+        document = DocumentVersion.builder()
             .id(1L)
             .documentType(documentType)
             .applicationUsers(Arrays.asList(user1, user2))
