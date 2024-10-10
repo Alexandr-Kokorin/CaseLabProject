@@ -14,6 +14,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Getter
 @Setter
@@ -30,11 +32,13 @@ public class DocumentTypeToAttribute {
     private boolean isOptional;
 
     @ManyToOne(optional = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @MapsId("documentTypeId")
     @JoinColumn(name = "document_type_id", nullable = false)
     private DocumentType documentType;
 
     @ManyToOne(optional = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @MapsId("attributeId")
     @JoinColumn(name = "attribute_id", nullable = false)
     private Attribute attribute;

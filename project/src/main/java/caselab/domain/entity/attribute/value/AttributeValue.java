@@ -14,6 +14,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Getter
 @Setter
@@ -28,11 +30,13 @@ public class AttributeValue {
     private AttributeValueId id = new AttributeValueId();
 
     @ManyToOne
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @MapsId("documentId")
     @JoinColumn(name = "document_version_id", nullable = false)
     private DocumentVersion documentVersion;
 
     @ManyToOne
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @MapsId("attributeId")
     @JoinColumn(name = "attribute_id", nullable = false)
     private Attribute attribute;

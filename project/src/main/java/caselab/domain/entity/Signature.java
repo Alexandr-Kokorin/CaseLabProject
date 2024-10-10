@@ -9,12 +9,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Getter
 @Setter
@@ -36,19 +38,21 @@ public class Signature {
     private SignatureStatus status;
 
     @Column(nullable = false)
-    private LocalDateTime sentAt;
+    private OffsetDateTime sentAt;
 
     @Column
-    private LocalDateTime signedAt;
+    private OffsetDateTime signedAt;
 
     @Column
     private String signatureData;
 
     @ManyToOne(optional = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "document_version_id", nullable = false)
     private DocumentVersion documentVersion;
 
     @ManyToOne(optional = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "application_user_id", nullable = false)
     private ApplicationUser applicationUser;
 }
