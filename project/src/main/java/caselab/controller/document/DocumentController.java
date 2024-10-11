@@ -1,7 +1,7 @@
 package caselab.controller.document;
 
-import caselab.controller.document.payload.DocumentRequest;
-import caselab.controller.document.payload.DocumentResponse;
+import caselab.controller.document.payload.document.dto.DocumentRequest;
+import caselab.controller.document.payload.document.dto.DocumentResponse;
 import caselab.service.document.DocumentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -18,43 +18,35 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController
-@RequestMapping("/api/v1/documents")
-@SecurityRequirement(name = "JWT")
-@RequiredArgsConstructor
+@RestController @RequestMapping("/api/v1/documents") @SecurityRequirement(name = "JWT") @RequiredArgsConstructor
 public class DocumentController {
 
     private final DocumentService documentService;
 
-    @Operation(summary = "Создать документ")
-    @PostMapping
-    public DocumentResponse createDocument(@RequestBody DocumentRequest documentRequest) {
+    // TODO создателю документа присваивался уровень доступа "CREATOR"
+    @Operation(summary = "Создать документ") @PostMapping public DocumentResponse createDocument(
+        @RequestBody DocumentRequest documentRequest
+    ) {
         return documentService.createDocument(documentRequest);
     }
 
-    @Operation(summary = "Получить документ по id")
-    @GetMapping("/{id}")
+    @Operation(summary = "Получить документ по id") @GetMapping("/{id}")
     public DocumentResponse getDocumentById(@PathVariable Long id) {
         return documentService.getDocumentById(id);
     }
 
-    @Operation(summary = "Получить страницу документов")
-    @GetMapping
+    @Operation(summary = "Получить страницу документов") @GetMapping
     public Page<DocumentResponse> getAllDocuments(Pageable pageable) {
         return documentService.getAllDocuments(pageable);
     }
 
-    @Operation(summary = "Обновить документ")
-    @PutMapping("/{id}")
-    public DocumentResponse updateDocument(
-        @PathVariable Long id,
-        @RequestBody DocumentRequest documentRequest
+    @Operation(summary = "Обновить документ") @PutMapping("/{id}") public DocumentResponse updateDocument(
+        @PathVariable Long id, @RequestBody DocumentRequest documentRequest
     ) {
         return documentService.updateDocument(id, documentRequest);
     }
 
-    @Operation(summary = "Удалить документ")
-    @DeleteMapping("/{id}")
+    @Operation(summary = "Удалить документ") @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteDocument(@PathVariable Long id) {
         documentService.deleteDocument(id);
         return ResponseEntity.noContent().build();

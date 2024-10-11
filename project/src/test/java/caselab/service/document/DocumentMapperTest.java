@@ -1,16 +1,22 @@
 package caselab.service.document;
 
-import caselab.controller.document.payload.DocumentResponse;
+import caselab.controller.document.payload.document.dto.DocumentRequest;
+import caselab.controller.document.payload.document.dto.DocumentResponse;
+import caselab.controller.document.payload.user.to.document.dto.UserToDocumentRequest;
+import caselab.controller.document.payload.user.to.document.dto.UserToDocumentResponse;
 import caselab.domain.entity.ApplicationUser;
-import caselab.domain.entity.Attribute;
-import caselab.domain.entity.attribute.value.AttributeValue;
-import caselab.domain.entity.attribute.value.AttributeValueId;
-import caselab.domain.entity.DocumentVersion;
+import caselab.domain.entity.Document;
 import caselab.domain.entity.DocumentType;
-import java.util.Arrays;
-import org.junit.jupiter.api.BeforeEach;
+import caselab.domain.entity.UserToDocument;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -19,78 +25,74 @@ public class DocumentMapperTest {
 
     private final DocumentMapper documentMapper = Mappers.getMapper(DocumentMapper.class);
 
-    private DocumentVersion document;
-    private final DocumentType documentType = createDocumentType();
-    private final ApplicationUser user1 = createApplicationUser(1L, "user1");
-    private final ApplicationUser user2 = createApplicationUser(2L, "user2");
-    private final Attribute attribute1 = createAttribute(1L, "Color", "String");
-    private final Attribute attribute2 = createAttribute(2L, "Size", "Integer");
+    @Test @DisplayName("Should map DocumentRequest to Document") public void testMapDocumentRequestToDocument() {
+        // Arrange
+        UserToDocumentRequest UTD1 =
+            UserToDocumentRequest.builder().documentPermissionId(List.of(1L)).userId(1001L).build();
+        UserToDocumentRequest UTD2 =
+            UserToDocumentRequest.builder().documentPermissionId(List.of(2L)).userId(1002L).build();
 
-    @BeforeEach
-    void setUp() {
-        document = DocumentVersion.builder()
-            .id(1L)
-            .documentType(documentType)
-            .applicationUsers(Arrays.asList(user1, user2))
-            .attributeValues(Arrays.asList(
-                createAttributeValue(1L, attribute1, "Red"),
-                createAttributeValue(2L, attribute2, "42")
-            ))
-            .build();
+        DocumentRequest documentRequest =
+            DocumentRequest.builder().documentTypeId(2001L).usersPermissions(Arrays.asList(UTD1, UTD2))
+                .name("Test Document").build();
+
+        // Act
+        Document document = documentMapper.documentRequestToDocument(documentRequest);
+
+        // Assert
+        assertAll(
+            "Grouped assertions for map DocumentRequest to Document",
+            () -> assertNotNull(document),
+            () -> assertEquals("Test Document", document.getName()),
+            () -> assertEquals(2001L, document.getDocumentType().getId()),
+            () -> assertEquals(
+                Arrays.asList(1001L, 1002L),
+                document.getUsersToDocuments().stream()
+                    .map(userToDocument -> userToDocument.getApplicationUser().getId()).collect(Collectors.toList())
+            )
+        );
     }
 
-    @Test
-    void entityToResponse_shouldMapDocumentToResponse() {
-        DocumentResponse response = documentMapper.entityToResponse(document);
+    @Test @DisplayName("Should map Document to DocumentResponse") public void testMapDocumentToDocumentResponse() {
+        // Arrange
+        DocumentType documentType = new DocumentType();
+        documentType.setId(2001L);
+        documentType.setName("Document Type");
 
-        assertNotNull(response);
-        assertEquals(1L, response.id());
+        UserToDocument user1 =
+            UserToDocument.builder().id(1L).applicationUser(ApplicationUser.builder().id(1001L).build()).build();
+
+        UserToDocument user2 =
+            UserToDocument.builder().id(2L).applicationUser(ApplicationUser.builder().id(1002L).build()).build();
+
+        Document document = Document.builder().id(1L).name("Test Document").documentType(documentType)
+            .usersToDocuments(Arrays.asList(user1, user2)).build();
+
+        // Act
+        DocumentResponse documentResponse = documentMapper.documentToDocumentResponse(document);
+
+        // Assert
+        assertAll(
+            "Grouped assertions for map Document to DocumentResponse",
+            () -> assertNotNull(documentResponse),
+            () -> assertEquals(1L, documentResponse.id()),
+            () -> assertEquals("Test Document", documentResponse.name()),
+            () -> assertEquals(2001L, documentResponse.documentTypeId()),
+            () -> assertEquals(
+                Arrays.asList(1001L, 1002L),
+                documentResponse.usersPermissions().stream().map(UserToDocumentResponse::id)
+                    .collect(Collectors.toList())
+            )
+        );
     }
 
-    @Test
-    void entityToResponse_shouldReturnNullWhenDocumentIsNull() {
-        DocumentResponse response = documentMapper.entityToResponse(null);
+    @Test @DisplayName("Should handle null values correctly") public void testMapWithNullValues() {
+        // Act
+        Document document = documentMapper.documentRequestToDocument(null);
+        DocumentResponse documentResponse = documentMapper.documentToDocumentResponse(null);
 
-        assertNull(response);
-    }
-
-    @Test
-    void entityToResponse_shouldReturnNullDocumentTypeWhenDocumentTypeIsNull() {
-        document.setDocumentType(null);
-        DocumentResponse response = documentMapper.entityToResponse(document);
-
-        assertNotNull(response);
-        assertEquals(1L, response.id());
-        assertNull(response.documentTypeId());
-    }
-
-    private static DocumentType createDocumentType() {
-        return DocumentType.builder()
-            .id(1L)
-            .name("Contract")
-            .build();
-    }
-
-    private static ApplicationUser createApplicationUser(Long id, String login) {
-        return ApplicationUser.builder()
-            .id(id)
-            .login(login)
-            .build();
-    }
-
-    private static Attribute createAttribute(Long id, String name, String type) {
-        return Attribute.builder()
-            .id(id)
-            .name(name)
-            .type(type)
-            .build();
-    }
-
-    private static AttributeValue createAttributeValue(Long attributeId, Attribute attribute, String value) {
-        return AttributeValue.builder()
-            .id(new AttributeValueId(1L, attributeId))
-            .attribute(attribute)
-            .appValue(value)
-            .build();
+        // Assert
+        assertNull(document);
+        assertNull(documentResponse);
     }
 }

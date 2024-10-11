@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS user_to_document
 --changeset hottabych04:6
 CREATE TABLE IF NOT EXISTS document_attribute_value
 (
-    document_version_id         BIGINT          NOT NULL REFERENCES document(id) ON DELETE CASCADE,
+    document_version_id         BIGINT          NOT NULL REFERENCES document_version(id) ON DELETE CASCADE,
     attribute_id        BIGINT          NOT NULL REFERENCES attribute(id) ON DELETE CASCADE,
     app_value           TEXT            ,
     PRIMARY KEY (document_version_id, attribute_id)
@@ -156,4 +156,25 @@ CREATE TABLE IF NOT EXISTS global_permission_to_user
 
     PRIMARY KEY (application_user_id, global_permission_id)
 )
+
+-- changeset PAZderev:16
+INSERT INTO document_permission (name)
+SELECT 'READ'
+WHERE NOT EXISTS (SELECT 1 FROM document_permission WHERE name = 'READ');
+
+INSERT INTO document_permission (name)
+SELECT 'EDIT'
+WHERE NOT EXISTS (SELECT 1 FROM document_permission WHERE name = 'EDIT');
+
+INSERT INTO document_permission (name)
+SELECT 'SEND_FOR_SIGNING'
+WHERE NOT EXISTS (SELECT 1 FROM document_permission WHERE name = 'SEND_FOR_SIGNING');
+
+INSERT INTO document_permission (name)
+SELECT 'SEND_FOR_VOTING'
+WHERE NOT EXISTS (SELECT 1 FROM document_permission WHERE name = 'SEND_FOR_VOTING');
+
+INSERT INTO document_permission (name)
+SELECT 'CREATOR'
+WHERE NOT EXISTS (SELECT 1 FROM document_permission WHERE name = 'CREATOR');
 

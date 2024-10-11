@@ -1,39 +1,35 @@
 package caselab.service.document;
 
-import caselab.controller.document.payload.DocumentAttributeValueDTO;
-import caselab.controller.document.payload.DocumentResponse;
-import caselab.domain.entity.ApplicationUser;
-import caselab.domain.entity.attribute.value.AttributeValue;
-import caselab.domain.entity.DocumentVersion;
-import java.util.List;
-import java.util.stream.Collectors;
+import caselab.controller.document.payload.document.dto.DocumentRequest;
+import caselab.controller.document.payload.document.dto.DocumentResponse;
+import caselab.domain.entity.Document;
+import caselab.domain.entity.DocumentType;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE,
         componentModel = "spring",
-        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-public interface DocumentMapper {
+        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE) public interface DocumentMapper {
 
     @Mapping(target = "documentTypeId", source = "documentType.id")
-    @Mapping(target = "applicationUserIds", expression = "java(mapApplicationUserIds(document.getApplicationUsers()))")
-    @Mapping(target = "attributeValues", expression = "java(mapAttributeValues(document.getAttributeValues()))")
-    DocumentResponse entityToResponse(DocumentVersion document);
+    @Mapping(target = "usersPermissions", source = "usersToDocuments") DocumentResponse documentToDocumentResponse(
+        Document document
+    );
 
-    default List<Long> mapApplicationUserIds(List<ApplicationUser> applicationUsers) {
-        return applicationUsers.stream()
-            .map(ApplicationUser::getId)
-            .collect(Collectors.toList());
-    }
+    @Mapping(source = "documentTypeId", target = "documentType", qualifiedByName = "mapDocumentTypeIdToDocumentType")
+    @Mapping(source = "usersPermissions", target = "usersToDocuments") Document documentRequestToDocument(
+        DocumentRequest documentRequest
+    );
 
-    default List<DocumentAttributeValueDTO> mapAttributeValues(List<AttributeValue> attributeValues) {
-        return attributeValues.stream()
-            .map(attributeValue -> new DocumentAttributeValueDTO(
-                attributeValue.getAttribute().getId(),
-                attributeValue.getAppValue()
-            ))
-            .collect(Collectors.toList());
+    @Named("mapDocumentTypeIdToDocumentType") static DocumentType mapDocumentTypeIdToDocumentType(Long documentTypeId) {
+        if (documentTypeId == null) {
+            return null;
+        }
+        DocumentType documentType = new DocumentType();
+        documentType.setId(documentTypeId);
+        return documentType;
     }
 }

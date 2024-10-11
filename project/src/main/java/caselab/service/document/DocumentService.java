@@ -1,210 +1,58 @@
 package caselab.service.document;
 
-import caselab.controller.document.payload.DocumentAttributeValueDTO;
-import caselab.controller.document.payload.DocumentRequest;
-import caselab.controller.document.payload.DocumentResponse;
-import caselab.domain.entity.ApplicationUser;
-import caselab.domain.entity.Attribute;
-import caselab.domain.entity.attribute.value.AttributeValue;
-import caselab.domain.entity.DocumentVersion;
-import caselab.domain.entity.DocumentType;
-import caselab.domain.repository.ApplicationUserRepository;
-import caselab.domain.repository.AttributeRepository;
+import caselab.controller.document.payload.document.dto.DocumentRequest;
+import caselab.controller.document.payload.document.dto.DocumentResponse;
+import caselab.domain.entity.Document;
 import caselab.domain.repository.DocumentRepository;
-import caselab.domain.repository.DocumentTypesRepository;
 import jakarta.transaction.Transactional;
-import java.util.Collections;
-import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-@SuppressWarnings("MultipleStringLiterals")
-@Service
-@RequiredArgsConstructor
-@Transactional
+@SuppressWarnings("MultipleStringLiterals") @Service @RequiredArgsConstructor @Transactional
 public class DocumentService {
 
     private final DocumentRepository documentRepository;
-    private final DocumentTypesRepository documentTypeRepository;
-    private final ApplicationUserRepository applicationUserRepository;
-    private final AttributeRepository attributeRepository;
     private final MessageSource messageSource;
+    private final DocumentMapper documentMapper;
 
     public DocumentResponse createDocument(DocumentRequest documentRequest) {
-        DocumentVersion document = toEntity(documentRequest);
-        DocumentVersion savedDocument = documentRepository.save(document);
-        return toDTO(savedDocument);
+        Document document = documentMapper.documentRequestToDocument(documentRequest);
+        Document savedDocument = documentRepository.save(document);
+        return documentMapper.documentToDocumentResponse(savedDocument);
     }
 
     public DocumentResponse getDocumentById(Long id) {
-        return toDTO(findDocumentById(id));
+        return documentMapper.documentToDocumentResponse(documentRepository.findById(id)
+            .orElseThrow(() -> new NoSuchElementException("Документ с id = " + id + " не найден")));
     }
 
     public Page<DocumentResponse> getAllDocuments(Pageable pageable) {
-        return documentRepository.findAll(pageable).map(this::toDTO);
+        return documentRepository.findAll(pageable).map(documentMapper::documentToDocumentResponse);
     }
 
     public DocumentResponse updateDocument(Long id, DocumentRequest documentRequest) {
-        DocumentVersion existingDocument = findDocumentById(id);
-        updateEntityFromDTO(existingDocument, documentRequest);
-        existingDocument = documentRepository.save(existingDocument);
-        return toDTO(existingDocument);
+        Document existingDocument = documentRepository.findById(id)
+            .orElseThrow(() -> new NoSuchElementException("Документ с id = " + id + " не найден"));
+        Document updatedDocument = documentMapper.documentRequestToDocument(documentRequest);
+        updatedDocument.setId(existingDocument.getId());
+        updatedDocument.setDocumentVersions(existingDocument.getDocumentVersions());
+        Document returningDocument = documentRepository.save(existingDocument);
+        return documentMapper.documentToDocumentResponse(returningDocument);
     }
 
     public void deleteDocument(Long id) {
         if (documentRepository.existsById(id)) {
             documentRepository.deleteById(id);
         } else {
-            throw new NoSuchElementException(
-                messageSource.getMessage("document.not.found", new Object[] {id}, Locale.getDefault())
-            );
-        }
-    }
-
-    // Методы для работы с сущностью Document
-
-    private DocumentVersion findDocumentById(Long id) {
-        return documentRepository.findById(id)
-            .orElseThrow(() -> new NoSuchElementException(
-                messageSource.getMessage("document.not.found", new Object[] {id}, Locale.getDefault())
+            throw new NoSuchElementException(messageSource.getMessage("document.not.found",
+                new Object[] {id},
+                Locale.getDefault()
             ));
-    }
-
-    private DocumentVersion toEntity(DocumentRequest documentRequest) {
-        DocumentVersion document = new DocumentVersion();
-        setDocumentType(document, documentRequest.documentTypeId());
-        setApplicationUsers(document, documentRequest.applicationUserIds());
-        setAttributeValues(document, documentRequest.attributeValues());
-        return document;
-    }
-
-    private void updateEntityFromDTO(DocumentVersion document, DocumentRequest dto) {
-        updateDocumentType(document, dto.documentTypeId());
-        updateApplicationUsers(document, dto.applicationUserIds());
-        updateAttributeValues(document, dto.attributeValues());
-    }
-
-    // Методы для работы с DocumentType
-
-    private void setDocumentType(DocumentVersion document, Long documentTypeId) {
-        DocumentType documentType = documentTypeRepository.findById(documentTypeId)
-            .orElseThrow(() -> new NoSuchElementException(
-                messageSource.getMessage("document.type.not.found", new Object[] {documentTypeId}, Locale.getDefault())
-            ));
-        document.setDocumentType(documentType);
-    }
-
-    private void updateDocumentType(DocumentVersion document, Long documentTypeId) {
-        if (documentTypeId != null) {
-            setDocumentType(document, documentTypeId);
         }
-    }
-
-    // Методы для работы с ApplicationUser
-
-    private void setApplicationUsers(DocumentVersion document, List<Long> userIds) {
-        if (userIds != null) {
-            List<ApplicationUser> users = applicationUserRepository.findAllById(userIds);
-            if (users.size() != userIds.size()) {
-                throw new NoSuchElementException(
-                    messageSource.getMessage("users.not.found", null, Locale.getDefault())
-                );
-            }
-            document.setApplicationUsers(users);
-        }
-    }
-
-    private void updateApplicationUsers(DocumentVersion document, List<Long> userIds) {
-        if (userIds != null) {
-            setApplicationUsers(document, userIds);
-        }
-    }
-
-    // Методы для работы с Attribute и AttributeValue
-
-    private void setAttributeValues(DocumentVersion document, List<DocumentAttributeValueDTO> attributeValuesDTO) {
-        if (attributeValuesDTO != null) {
-            List<AttributeValue> attributeValues = attributeValuesDTO.stream()
-                .map(dto -> createOrUpdateAttributeValue(document, dto))
-                .collect(Collectors.toList());
-            document.setAttributeValues(attributeValues);
-        }
-    }
-
-    private void updateAttributeValues(DocumentVersion document, List<DocumentAttributeValueDTO> attributeValuesDTO) {
-        if (attributeValuesDTO != null) {
-            Map<Long, AttributeValue> existingAttributeValues = document.getAttributeValues().stream()
-                .collect(Collectors.toMap(av -> av.getAttribute().getId(), Function.identity()));
-
-            List<AttributeValue> updatedValues = attributeValuesDTO.stream()
-                .map(dto -> updateOrCreateAttributeValue(document, existingAttributeValues.get(dto.id()), dto))
-                .toList();
-
-            document.getAttributeValues().clear();
-            document.getAttributeValues().addAll(updatedValues);
-        }
-    }
-
-    private AttributeValue createOrUpdateAttributeValue(DocumentVersion document, DocumentAttributeValueDTO dto) {
-        Attribute attribute = attributeRepository.findById(dto.id())
-            .orElseThrow(() -> new NoSuchElementException(
-                messageSource.getMessage("attribute.not.found", new Object[] {dto.id()}, Locale.getDefault())
-            ));
-        AttributeValue attributeValue = new AttributeValue();
-        attributeValue.setDocumentVersion(document);
-        attributeValue.setAttribute(attribute);
-        attributeValue.setAppValue(dto.value());
-        return attributeValue;
-    }
-
-    private AttributeValue updateOrCreateAttributeValue(
-        DocumentVersion document,
-        AttributeValue existingValue,
-        DocumentAttributeValueDTO dto
-    ) {
-        if (existingValue != null) {
-            existingValue.setAppValue(dto.value());
-            return existingValue;
-        } else {
-            return createOrUpdateAttributeValue(document, dto);
-        }
-    }
-
-    // Преобразование сущности Document в DTO
-
-    private DocumentResponse toDTO(DocumentVersion document) {
-        return new DocumentResponse(
-            document.getId(),
-            getDocumentTypeId(document),
-            getApplicationUserIds(document).orElse(Collections.emptyList()),
-            getAttributeValuesDTO(document).orElse(Collections.emptyList())
-        );
-    }
-
-    private Long getDocumentTypeId(DocumentVersion document) {
-        return document.getDocumentType() != null ? document.getDocumentType().getId() : null;
-    }
-
-    private Optional<List<Long>> getApplicationUserIds(DocumentVersion document) {
-        return Optional.ofNullable(document.getApplicationUsers())
-            .map(users -> users.stream()
-                .map(ApplicationUser::getId)
-                .collect(Collectors.toList()));
-    }
-
-    private Optional<List<DocumentAttributeValueDTO>> getAttributeValuesDTO(DocumentVersion document) {
-        return Optional.ofNullable(document.getAttributeValues())
-            .map(attributeValues -> attributeValues.stream()
-                .map(av -> new DocumentAttributeValueDTO(av.getAttribute().getId(), av.getAppValue()))
-                .collect(Collectors.toList()));
     }
 }

@@ -1,6 +1,6 @@
 package caselab.service.users;
 
-import caselab.controller.document.payload.DocumentResponse;
+import caselab.controller.document.payload.document.dto.DocumentResponse;
 import caselab.controller.users.payload.UserResponse;
 import caselab.controller.users.payload.UserUpdateRequest;
 import caselab.domain.entity.ApplicationUser;
@@ -70,7 +70,7 @@ public class UserMapperTest {
                 () -> assertThat(response.documents()).hasSize(1),
                 () -> assertThat(response.documents().getFirst().id()).isEqualTo(100L),
                 () -> assertThat(response.documents().getFirst().documentTypeId()).isEqualTo(1L),
-                () -> assertThat(response.documents().getFirst().applicationUserIds()).hasSize(1)
+                () -> assertThat(response.documents().getFirst().usersPermissions()).hasSize(1)
             )
         );
     }
