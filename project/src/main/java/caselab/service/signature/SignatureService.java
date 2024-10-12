@@ -31,7 +31,7 @@ public class SignatureService {
 
     public SignatureResponse signatureUpdate(Long id){
             var signature = signatureRepository.findById(id)
-                .orElseThrow(() -> signatureNotFound(id));
+                .orElseThrow(() -> getEntityNotFoundException("signature.not.found",id));
 
             makeSign(signature);
             return signatureMapper.entityToSignatureResponse(signature);
@@ -53,12 +53,10 @@ public class SignatureService {
         var signature = signatureMapper.requestToEntity(signRequest);
         var documentVersionForSign = documentVersionRepository
             .findById(signRequest.documentVersionId())
-            .orElseThrow(() -> new EntityNotFoundException(
-                "Версия документа с id=%s не найдена".formatted(signRequest.documentVersionId())));
+            .orElseThrow(() -> getEntityNotFoundException("document.version.not.found",signRequest.documentVersionId()));
         var userForSign = userRepository
             .findById(signRequest.userId())
-            .orElseThrow(() -> new EntityNotFoundException(
-                "Пользователь с id=%s не найден".formatted(signRequest.userId())));
+            .orElseThrow(() -> getEntityNotFoundException("user.not.found",signRequest.userId()));
         signature.setApplicationUser(userForSign);
         signature.setDocumentVersion(documentVersionForSign);
         signature.setStatus(SignatureStatus.NOT_SIGNED);
@@ -74,9 +72,9 @@ public class SignatureService {
             .signatureData(savedSignature.getSignatureData())
             .build();
     }
-    private EntityNotFoundException signatureNotFound(Long id){
+    private EntityNotFoundException getEntityNotFoundException(String messageError, Long id){
         return new EntityNotFoundException(
-            messageSource.getMessage("signature.not.found", new Object[] {id}, Locale.getDefault())
+            messageSource.getMessage(messageError, new Object[] {id}, Locale.getDefault())
         );
-        }
+    }
 }
