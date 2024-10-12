@@ -31,7 +31,7 @@ public class AttributeValue {
 
     @ManyToOne
     @OnDelete(action = OnDeleteAction.CASCADE)
-    @MapsId("documentId")
+    @MapsId("documentVersionId")
     @JoinColumn(name = "document_version_id", nullable = false)
     private DocumentVersion documentVersion;
 

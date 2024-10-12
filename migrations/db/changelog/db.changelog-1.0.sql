@@ -30,6 +30,16 @@ CREATE TABLE IF NOT EXISTS document_type
     PRIMARY KEY (id)
 )
 
+--changeset TimurTimergalin:8
+CREATE TABLE IF NOT EXISTS document
+(
+    id                       BIGSERIAL        NOT NULL,
+    document_type_id         BIGINT           NOT NULL REFERENCES document_type(id),
+    name                     TEXT             NOT NULL,
+
+    PRIMARY KEY (id)
+)
+
 --changeset hottabych04:4
 CREATE TABLE IF NOT EXISTS document_version
 (
@@ -69,16 +79,6 @@ CREATE TABLE IF NOT EXISTS document_type_to_attribute
     is_optional             BOOLEAN         NOT NULL,
 
     PRIMARY KEY (document_type_id, attribute_id)
-)
-
---changeset TimurTimergalin:8
-CREATE TABLE IF NOT EXISTS document
-(
-    id                       BIGSERIAL        NOT NULL,
-    document_type_id         BIGINT           NOT NULL REFERENCES document_type(id),
-    name                     TEXT             NOT NULL,
-
-    PRIMARY KEY (id)
 )
 
 --changeset TimurTimergalin:9

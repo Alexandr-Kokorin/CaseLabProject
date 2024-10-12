@@ -33,7 +33,7 @@ public class DocumentType {
     private String name;
 
     @OneToMany(mappedBy = "documentType")
-    private List<DocumentVersion> documents;
+    private List<Document> documents;
 
     @OneToMany(mappedBy = "documentType")
     private List<DocumentTypeToAttribute> documentTypesToAttributes;
