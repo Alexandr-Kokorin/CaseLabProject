@@ -3,6 +3,7 @@ package caselab.controller.types;
 import caselab.controller.BaseControllerTest;
 import caselab.controller.types.payload.DocumentTypeRequest;
 import caselab.controller.types.payload.DocumentTypeResponse;
+import caselab.exception.EntityNotFoundException;
 import caselab.service.types.DocumentTypesService;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.DisplayName;
@@ -136,7 +137,7 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
             Long id = 1L;
             String errorMessage = NOT_FOUND.formatted(id);
 
-            when(documentTypesService.findDocumentTypeById(id)).thenThrow(new NoSuchElementException(errorMessage));
+            when(documentTypesService.findDocumentTypeById(id)).thenThrow(new EntityNotFoundException(errorMessage));
 
             mockMvc.perform(get(DOCUMENT_TYPES_URI + "/" + id))
                 .andExpectAll(
@@ -200,7 +201,7 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
             when(documentTypesService.updateDocumentType(
                 id,
                 payload
-            )).thenThrow(new NoSuchElementException(errorMessage));
+            )).thenThrow(new EntityNotFoundException(errorMessage));
 
             mockMvc.perform(put(DOCUMENT_TYPES_URI + "/" + id)
                     .contentType(MediaType.APPLICATION_JSON)

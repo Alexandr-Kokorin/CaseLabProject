@@ -4,6 +4,7 @@ import caselab.controller.users.payload.UserResponse;
 import caselab.controller.users.payload.UserUpdateRequest;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.repository.ApplicationUserRepository;
+import caselab.exception.EntityNotFoundException;
 import caselab.service.secutiry.AuthenticationService;
 import java.util.List;
 import java.util.Locale;
@@ -102,8 +103,8 @@ public class ApplicationUserServiceTest {
     void findUser_shouldThrowExceptionWhenUserNotFound() {
         when(userRepository.findById(user1Id)).thenReturn(Optional.empty());
 
-        NoSuchElementException exception =
-            assertThrows(NoSuchElementException.class, () -> userService.findUser(user1Id));
+        EntityNotFoundException exception =
+            assertThrows(EntityNotFoundException.class, () -> userService.findUser(user1Id));
 
         String expectedMessage =
             messageSource.getMessage("user.not.found", new Object[] {user1Id}, Locale.getDefault());
@@ -134,8 +135,8 @@ public class ApplicationUserServiceTest {
 
         when(userRepository.findById(user1Id)).thenReturn(Optional.empty());
 
-        NoSuchElementException exception =
-            assertThrows(NoSuchElementException.class, () -> userService.updateUser(user1Id, updateRequest));
+        EntityNotFoundException exception =
+            assertThrows(EntityNotFoundException.class, () -> userService.updateUser(user1Id, updateRequest));
 
         String expectedMessage =
             messageSource.getMessage("user.not.found", new Object[] {user1Id}, Locale.getDefault());
@@ -156,8 +157,8 @@ public class ApplicationUserServiceTest {
     void deleteUser_shouldThrowExceptionWhenUserNotFound() {
         when(userRepository.findById(user1Id)).thenReturn(Optional.empty());
 
-        NoSuchElementException exception =
-            assertThrows(NoSuchElementException.class, () -> userService.deleteUser(user1Id));
+        EntityNotFoundException exception =
+            assertThrows(EntityNotFoundException.class, () -> userService.deleteUser(user1Id));
 
         String expectedMessage =
             messageSource.getMessage("user.not.found", new Object[] {user1Id}, Locale.getDefault());

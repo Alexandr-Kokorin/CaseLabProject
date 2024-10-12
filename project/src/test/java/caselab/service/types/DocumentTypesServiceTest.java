@@ -3,6 +3,7 @@ package caselab.service.types;
 import caselab.controller.types.payload.DocumentTypeRequest;
 import caselab.domain.IntegrationTest;
 import caselab.domain.repository.DocumentTypesRepository;
+import caselab.exception.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -58,7 +59,7 @@ public class DocumentTypesServiceTest extends IntegrationTest {
     @Transactional
     @Rollback
     public void findNotExistedDocumentTypeById() {
-        assertThrows(NoSuchElementException.class, () -> documentTypesService.findDocumentTypeById(1L));
+        assertThrows(EntityNotFoundException.class, () -> documentTypesService.findDocumentTypeById(1L));
     }
 
     @Test
@@ -81,7 +82,7 @@ public class DocumentTypesServiceTest extends IntegrationTest {
     @Transactional
     @Rollback
     public void deleteNotExistedDocumentTypeById() {
-        assertThrows(NoSuchElementException.class, () -> documentTypesService.deleteDocumentTypeById(1L));
+        assertThrows(EntityNotFoundException.class, () -> documentTypesService.deleteDocumentTypeById(1L));
     }
 
     @Test
@@ -107,7 +108,7 @@ public class DocumentTypesServiceTest extends IntegrationTest {
     @Rollback
     public void updateNotExistedDocumentType() {
         assertThrows(
-            NoSuchElementException.class,
+            EntityNotFoundException.class,
             () -> documentTypesService.updateDocumentType(1L, new DocumentTypeRequest("test2"))
         );
     }

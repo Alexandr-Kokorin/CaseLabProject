@@ -4,9 +4,9 @@ import caselab.controller.attribute.payload.AttributeRequest;
 import caselab.controller.attribute.payload.AttributeResponse;
 import caselab.domain.entity.Attribute;
 import caselab.domain.repository.AttributeRepository;
+import caselab.exception.EntityNotFoundException;
 import java.util.List;
 import java.util.Locale;
-import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
@@ -28,9 +28,7 @@ public class AttributeService {
 
     public AttributeResponse findAttributeById(Long id) {
         Attribute attribute = attributeRepository.findById(id)
-            .orElseThrow(() -> new NoSuchElementException(
-                getAttributeNotFoundMessage(id)
-            ));
+            .orElseThrow(() -> attributeNotFound(id));
         return new AttributeResponse(attribute.getId(), attribute.getName(), attribute.getType());
     }
 
@@ -43,9 +41,7 @@ public class AttributeService {
 
     public AttributeResponse updateAttribute(Long id, AttributeRequest attributeRequest) {
         Attribute attribute = attributeRepository.findById(id)
-            .orElseThrow(() -> new NoSuchElementException(
-                getAttributeNotFoundMessage(id)
-            ));
+            .orElseThrow(() -> attributeNotFound(id));
         attribute.setName(attributeRequest.name());
         attribute.setType(attributeRequest.type());
         attribute = attributeRepository.save(attribute);
@@ -56,13 +52,13 @@ public class AttributeService {
         if (attributeRepository.existsById(id)) {
             attributeRepository.deleteById(id);
         } else {
-            throw new NoSuchElementException(
-                getAttributeNotFoundMessage(id)
-            );
+            throw attributeNotFound(id);
         }
     }
 
-    public String getAttributeNotFoundMessage(Long id) {
-        return messageSource.getMessage("attribute.not.found", new Object[] {id}, Locale.getDefault());
+    private EntityNotFoundException attributeNotFound(Long id) {
+        return new EntityNotFoundException(
+            messageSource.getMessage("attribute.not.found", new Object[] {id}, Locale.getDefault())
+        );
     }
 }

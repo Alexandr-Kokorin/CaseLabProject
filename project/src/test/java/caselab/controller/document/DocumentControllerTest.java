@@ -3,6 +3,7 @@ package caselab.controller.document;
 import caselab.controller.BaseControllerTest;
 import caselab.controller.document.payload.document.dto.DocumentRequest;
 import caselab.controller.document.payload.document.dto.DocumentResponse;
+import caselab.exception.EntityNotFoundException;
 import caselab.service.document.DocumentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -89,7 +90,7 @@ public class DocumentControllerTest extends BaseControllerTest {
     @Test
     public void testGetDocumentById_NotFound() throws Exception {
         // Arrange
-        when(documentService.getDocumentById(1L)).thenThrow(new NoSuchElementException("Документ не найден"));
+        when(documentService.getDocumentById(1L)).thenThrow(new EntityNotFoundException("Документ не найден"));
 
         // Act & Assert
         mockMvc.perform(get(DOCUMENT_URI + "/1")

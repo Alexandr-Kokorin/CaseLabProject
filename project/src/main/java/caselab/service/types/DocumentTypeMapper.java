@@ -12,6 +12,7 @@ import org.mapstruct.ReportingPolicy;
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
         uses = {DocumentTypeMapper.class})
 public interface DocumentTypeMapper {
+
     DocumentTypeResponse entityToResponse(DocumentType documentType);
 
     DocumentType requestToEntity(DocumentTypeRequest documentTypeRequest);

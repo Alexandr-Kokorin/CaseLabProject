@@ -4,8 +4,8 @@ import caselab.controller.types.payload.DocumentTypeRequest;
 import caselab.controller.types.payload.DocumentTypeResponse;
 import caselab.domain.entity.DocumentType;
 import caselab.domain.repository.DocumentTypesRepository;
+import caselab.exception.EntityNotFoundException;
 import java.util.Locale;
-import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
@@ -13,14 +13,14 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class DocumentTypesService {
-    private final DocumentTypeMapper documentTypeMapper;
 
+    private final DocumentTypeMapper documentTypeMapper;
     private final DocumentTypesRepository documentTypesRepository;
     private final MessageSource messageSource;
 
     public DocumentTypeResponse findDocumentTypeById(Long id) {
-        var documentType = documentTypesRepository.findById(id).orElseThrow(() ->
-            getDocumentTypeNoSuchElementException(id));
+        var documentType = documentTypesRepository.findById(id)
+            .orElseThrow(() -> documentTypeNotFound(id));
         return documentTypeMapper.entityToResponse(documentType);
     }
 
@@ -32,7 +32,7 @@ public class DocumentTypesService {
     public DocumentTypeResponse updateDocumentType(Long id, DocumentTypeRequest documentTypeRequest) {
         var documentTypeExist = documentTypesRepository.existsById(id);
         if (!documentTypeExist) {
-            throw getDocumentTypeNoSuchElementException(id);
+            throw documentTypeNotFound(id);
         }
         var documentTypeForUpdating = documentTypeMapper.requestToEntity(documentTypeRequest);
         documentTypeForUpdating.setId(id);
@@ -42,13 +42,13 @@ public class DocumentTypesService {
     public void deleteDocumentTypeById(Long id) {
         var documentTypeExist = documentTypesRepository.existsById(id);
         if (!documentTypeExist) {
-            throw getDocumentTypeNoSuchElementException(id);
+            throw documentTypeNotFound(id);
         }
         documentTypesRepository.deleteById(id);
     }
 
-    private NoSuchElementException getDocumentTypeNoSuchElementException(Long id) {
-        return new NoSuchElementException(
+    private EntityNotFoundException documentTypeNotFound(Long id) {
+        return new EntityNotFoundException(
             messageSource.getMessage("document.type.not.found", new Object[] {id}, Locale.getDefault())
         );
     }
