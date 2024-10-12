@@ -85,7 +85,6 @@ public class DocumentServiceTest extends IntegrationTest {
     public void testCreateDocument() {
         // Act
         DocumentResponse result = documentService.createDocument(documentRequest);
-
         // Assert
         assertAll(
             "Grouped assertions for created document",

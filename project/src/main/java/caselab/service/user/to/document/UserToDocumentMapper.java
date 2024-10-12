@@ -25,7 +25,7 @@ public interface UserToDocumentMapper {
     @Mapping(target = "applicationUser", source = "userId", qualifiedByName = "mapUserIdToApplicationUser")
     @Mapping(target = "documentPermissions", source = "documentPermissionId",
              qualifiedByName = "mapIdsToDocumentPermissions")
-    @Mapping(target = "document", ignore = true) // Документ будет маппироваться в DocumentMapper
+    @Mapping(target = "document", ignore = true)
     UserToDocument userToDocumentRequestToUserToDocument(UserToDocumentRequest userToDocumentRequest);
 
     @Named("mapUserIdToApplicationUser")

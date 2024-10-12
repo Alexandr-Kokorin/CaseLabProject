@@ -4,16 +4,15 @@ import caselab.controller.secutiry.payload.AuthenticationRequest;
 import caselab.controller.secutiry.payload.AuthenticationResponse;
 import caselab.controller.secutiry.payload.RegisterRequest;
 import caselab.domain.entity.ApplicationUser;
-import caselab.domain.entity.GlobalPermission;
 import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.ApplicationUserRepository;
 import caselab.domain.repository.GlobalPermissionRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor

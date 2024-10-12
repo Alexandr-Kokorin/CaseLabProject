@@ -30,7 +30,6 @@ public class UserToDocumentMapperTest {
 
         // Act
         UserToDocumentResponse response = userToDocumentMapper.userToDocumentToResponse(userToDocument);
-
         // Assert
         assertNotNull(response);
         assertEquals(1001L, response.id());

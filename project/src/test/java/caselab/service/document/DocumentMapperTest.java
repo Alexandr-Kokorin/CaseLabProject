@@ -8,9 +8,13 @@ import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.Document;
 import caselab.domain.entity.DocumentType;
 import caselab.domain.entity.UserToDocument;
+import caselab.service.user.to.document.UserToDocumentMapper;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Arrays;
 import java.util.List;
@@ -21,9 +25,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+@SpringBootTest
 public class DocumentMapperTest {
 
-    private final DocumentMapper documentMapper = Mappers.getMapper(DocumentMapper.class);
+    @Autowired
+    private DocumentMapper documentMapper;
+
+    @Autowired
+    private UserToDocumentMapper userToDocumentMapper;
+
 
     @Test
     @DisplayName("Should map DocumentRequest to Document")

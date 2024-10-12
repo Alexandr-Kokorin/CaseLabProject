@@ -142,7 +142,7 @@ public class DocumentControllerTest extends BaseControllerTest {
                    status().isOk(),
                    jsonPath("$.content[0].id").value(documentResponse.id()),
                    jsonPath("$.content[0].documentTypeId").value(documentResponse.documentTypeId()),
-                   jsonPath("$.name").value(documentResponse.name())
+                   jsonPath("$.content[0].name").value(documentResponse.name())
                );
     }
 
