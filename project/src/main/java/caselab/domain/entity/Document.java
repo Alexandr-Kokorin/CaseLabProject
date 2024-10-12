@@ -26,6 +26,7 @@ import lombok.ToString;
 @ToString
 @Table(name = "document")
 public class Document {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)

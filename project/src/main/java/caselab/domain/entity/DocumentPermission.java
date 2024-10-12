@@ -23,6 +23,7 @@ import lombok.Setter;
 @Entity
 @Table(name = "document_permission")
 public class DocumentPermission {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)

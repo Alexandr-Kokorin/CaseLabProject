@@ -27,6 +27,7 @@ import lombok.Setter;
 @Entity
 @Table(name = "global_permission")
 public class GlobalPermission {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)

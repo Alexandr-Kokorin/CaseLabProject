@@ -21,6 +21,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 @RestControllerAdvice
 @RequiredArgsConstructor
 public class ControllerExceptionHandler {
+
     private final MessageSource messageSource;
 
     @ExceptionHandler(EntityNotFoundException.class)

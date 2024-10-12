@@ -25,6 +25,7 @@ import org.hibernate.annotations.OnDeleteAction;
 @Entity
 @Table(name = "document_type_to_attribute")
 public class DocumentTypeToAttribute {
+
     @EmbeddedId
     private DocumentTypeToAttributeId id = new DocumentTypeToAttributeId();
 

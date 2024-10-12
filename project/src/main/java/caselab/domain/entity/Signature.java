@@ -26,6 +26,7 @@ import org.hibernate.annotations.OnDeleteAction;
 @Entity
 @Table(name = "signature")
 public class Signature {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)

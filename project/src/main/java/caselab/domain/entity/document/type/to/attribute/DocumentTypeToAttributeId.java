@@ -16,6 +16,7 @@ import lombok.Setter;
 @Builder
 @EqualsAndHashCode
 public class DocumentTypeToAttributeId {
+
     private Long documentTypeId;
     private Long attributeId;
 }

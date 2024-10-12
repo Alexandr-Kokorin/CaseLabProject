@@ -1,5 +1,6 @@
 package caselab.service.document;
 
+import caselab.Application;
 import caselab.controller.document.payload.document.dto.DocumentRequest;
 import caselab.controller.document.payload.document.dto.DocumentResponse;
 import caselab.controller.document.payload.user.to.document.dto.UserToDocumentRequest;
@@ -23,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-@SpringBootTest
+@SpringBootTest(classes = Application.class)
 public class DocumentMapperTest {
 
     @Autowired
@@ -35,23 +36,20 @@ public class DocumentMapperTest {
     @DisplayName("Should map DocumentRequest to Document")
     public void testMapDocumentRequestToDocument() {
         // Arrange
-        UserToDocumentRequest UTD1 =
-            UserToDocumentRequest.builder()
-                .documentPermissionId(List.of(1L))
-                .userId(1001L)
-                .build();
-        UserToDocumentRequest UTD2 =
-            UserToDocumentRequest.builder()
-                .documentPermissionId(List.of(2L))
-                .userId(1002L)
-                .build();
+        UserToDocumentRequest UTD1 = UserToDocumentRequest.builder()
+            .documentPermissionId(List.of(1L))
+            .userId(1001L)
+            .build();
+        UserToDocumentRequest UTD2 = UserToDocumentRequest.builder()
+            .documentPermissionId(List.of(2L))
+            .userId(1002L)
+            .build();
 
-        DocumentRequest documentRequest =
-            DocumentRequest.builder()
-                .documentTypeId(2001L)
-                .usersPermissions(Arrays.asList(UTD1, UTD2))
-                .name("Test Document")
-                .build();
+        DocumentRequest documentRequest = DocumentRequest.builder()
+            .documentTypeId(2001L)
+            .usersPermissions(Arrays.asList(UTD1, UTD2))
+            .name("Test Document")
+            .build();
 
         // Act
         Document document = documentMapper.documentRequestToDocument(documentRequest);

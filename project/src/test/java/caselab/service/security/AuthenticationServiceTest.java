@@ -45,7 +45,10 @@ public class AuthenticationServiceTest extends IntegrationTest {
     @Rollback
     public void authenticateExistedUser() {
         var registerRequest = new RegisterRequest("test@mail.ru", "displayName", "password");
-        var authenticationRequest = AuthenticationRequest.builder().email("test@mail.ru").password("password").build();
+        var authenticationRequest = AuthenticationRequest.builder()
+            .email("test@mail.ru")
+            .password("password")
+            .build();
 
         authenticationService.register(registerRequest);
         var authenticationResponse = authenticationService.authenticate(authenticationRequest);
@@ -57,7 +60,10 @@ public class AuthenticationServiceTest extends IntegrationTest {
     @Transactional
     @Rollback
     public void authenticateNotExistedUser() {
-        var authenticationRequest = AuthenticationRequest.builder().email("test@mail.ru").password("password").build();
+        var authenticationRequest = AuthenticationRequest.builder()
+            .email("test@mail.ru")
+            .password("password")
+            .build();
 
         assertThrows(BadCredentialsException.class, () -> authenticationService.authenticate(authenticationRequest));
     }

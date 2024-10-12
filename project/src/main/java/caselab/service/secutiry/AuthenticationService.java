@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
+
     private final GlobalPermissionRepository globalPermissionRepository;
     private final ApplicationUserRepository appUserRepository;
     private final AuthenticationManager authenticationManager;

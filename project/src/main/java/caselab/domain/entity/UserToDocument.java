@@ -29,6 +29,7 @@ import org.hibernate.annotations.OnDeleteAction;
 @ToString
 @Table(name = "user_to_document")
 public class UserToDocument {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)

@@ -17,6 +17,7 @@ import lombok.Setter;
 @Builder
 @EqualsAndHashCode
 public class AttributeValueId implements Serializable {
+
     private Long documentVersionId;
     private Long attributeId;
 }

@@ -27,6 +27,7 @@ import org.hibernate.annotations.OnDeleteAction;
 @Entity
 @Table(name = "vote")
 public class Vote {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)

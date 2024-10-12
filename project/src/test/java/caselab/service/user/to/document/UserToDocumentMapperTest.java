@@ -25,9 +25,14 @@ public class UserToDocumentMapperTest {
     @DisplayName("Should map UserToDocument to UserToDocumentResponse")
     public void testMapUserToDocumentToResponse() {
         // Arrange
-        ApplicationUser applicationUser = ApplicationUser.builder().id(1001L).build();
+        ApplicationUser applicationUser = ApplicationUser.builder()
+            .id(1001L)
+            .build();
 
-        UserToDocument userToDocument = UserToDocument.builder().id(1L).applicationUser(applicationUser).build();
+        UserToDocument userToDocument = UserToDocument.builder()
+            .id(1L)
+            .applicationUser(applicationUser)
+            .build();
 
         // Act
         UserToDocumentResponse response = userToDocumentMapper.userToDocumentToResponse(userToDocument);
@@ -41,8 +46,10 @@ public class UserToDocumentMapperTest {
     public void testMapUserToDocumentRequestToUserToDocument() {
         // Arrange
         List<Long> permissionIds = Arrays.asList(1L, 2L);
-        UserToDocumentRequest request =
-            UserToDocumentRequest.builder().userId(1001L).documentPermissionId(permissionIds).build();
+        UserToDocumentRequest request = UserToDocumentRequest.builder()
+            .userId(1001L)
+            .documentPermissionId(permissionIds)
+            .build();
 
         // Act
         UserToDocument userToDocument = userToDocumentMapper.userToDocumentRequestToUserToDocument(request);
@@ -52,7 +59,8 @@ public class UserToDocumentMapperTest {
         assertEquals(1001L, userToDocument.getApplicationUser().getId());
 
         // Проверяем маппинг списка documentPermissionId в список DocumentPermission
-        List<Long> mappedPermissionIds = userToDocument.getDocumentPermissions().stream().map(DocumentPermission::getId)
+        List<Long> mappedPermissionIds = userToDocument.getDocumentPermissions().stream()
+            .map(DocumentPermission::getId)
             .collect(Collectors.toList());
         assertEquals(permissionIds, mappedPermissionIds);
     }
@@ -61,7 +69,10 @@ public class UserToDocumentMapperTest {
     @DisplayName("Should map UserToDocumentRequest with null values correctly")
     public void testMapWithNullValues() {
         // Arrange
-        UserToDocumentRequest request = UserToDocumentRequest.builder().userId(null).documentPermissionId(null).build();
+        UserToDocumentRequest request = UserToDocumentRequest.builder()
+            .userId(null)
+            .documentPermissionId(null)
+            .build();
 
         // Act
         UserToDocument userToDocument = userToDocumentMapper.userToDocumentRequestToUserToDocument(request);
@@ -75,8 +86,10 @@ public class UserToDocumentMapperTest {
     @DisplayName("Should map empty documentPermissionId list")
     public void testMapEmptyDocumentPermissions() {
         // Arrange
-        UserToDocumentRequest request =
-            UserToDocumentRequest.builder().userId(1001L).documentPermissionId(List.of()).build();
+        UserToDocumentRequest request = UserToDocumentRequest.builder()
+            .userId(1001L)
+            .documentPermissionId(List.of())
+            .build();
 
         // Act
         UserToDocument userToDocument = userToDocumentMapper.userToDocumentRequestToUserToDocument(request);
