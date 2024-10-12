@@ -14,7 +14,7 @@ public record VotingProcessResponse(
     Long id,
     @Schema(description = "Название", example = "???")
     String name,
-    @Schema(description = "Порог принятия (в процентах)", example = "60")
+    @Schema(description = "Порог принятия", example = "0.6")
     Double threshold,
     @Schema(description = "Результат голосования", example = "ACCEPTED")
     VotingProcessStatus status,

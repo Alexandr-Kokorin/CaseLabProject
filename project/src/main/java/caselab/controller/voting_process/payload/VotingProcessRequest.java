@@ -14,7 +14,7 @@ public record VotingProcessRequest(
     @Schema(description = "Название", example = "1")
     String name,
     @Positive
-    @Schema(description = "Порог принятия (в процентах)", example = "60")
+    @Schema(description = "Порог принятия", example = "0.6")
     Double threshold,
     @Positive
     @Schema(description = "Время до дедлайна (в днях)", example = "7")
