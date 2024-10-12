@@ -1,7 +1,7 @@
 package caselab.controller.document;
 
-import caselab.controller.document.payload.DocumentRequest;
-import caselab.controller.document.payload.DocumentResponse;
+import caselab.controller.document.payload.document.dto.DocumentRequest;
+import caselab.controller.document.payload.document.dto.DocumentResponse;
 import caselab.service.document.DocumentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -25,6 +25,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class DocumentController {
 
     private final DocumentService documentService;
+
+    // TODO создателю документа присваивался уровень доступа "CREATOR"
 
     @Operation(summary = "Создать документ")
     @PostMapping
@@ -59,5 +61,4 @@ public class DocumentController {
         documentService.deleteDocument(id);
         return ResponseEntity.noContent().build();
     }
-
 }

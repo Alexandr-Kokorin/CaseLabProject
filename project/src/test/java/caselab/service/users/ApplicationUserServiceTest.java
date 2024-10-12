@@ -4,6 +4,7 @@ import caselab.controller.users.payload.UserResponse;
 import caselab.controller.users.payload.UserUpdateRequest;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.repository.ApplicationUserRepository;
+import caselab.exception.EntityNotFoundException;
 import caselab.service.secutiry.AuthenticationService;
 import java.util.List;
 import java.util.Locale;
@@ -58,19 +59,19 @@ public class ApplicationUserServiceTest {
         userResponses = List.of(userResponse1, userResponse2);
     }
 
-    private ApplicationUser createUser(Long id, String login) {
+    private ApplicationUser createUser(Long id, String email) {
         return ApplicationUser.builder()
             .id(id)
-            .login(login)
+            .email(email)
             .displayName("John Doe")
             .hashedPassword("hashedpassword")
             .build();
     }
 
-    private UserResponse createUserResponse(Long id, String login) {
+    private UserResponse createUserResponse(Long id, String email) {
         return UserResponse.builder()
             .id(id)
-            .login(login)
+            .email(email)
             .displayName("John Doe")
             .build();
     }
@@ -102,8 +103,8 @@ public class ApplicationUserServiceTest {
     void findUser_shouldThrowExceptionWhenUserNotFound() {
         when(userRepository.findById(user1Id)).thenReturn(Optional.empty());
 
-        NoSuchElementException exception =
-            assertThrows(NoSuchElementException.class, () -> userService.findUser(user1Id));
+        EntityNotFoundException exception =
+            assertThrows(EntityNotFoundException.class, () -> userService.findUser(user1Id));
 
         String expectedMessage =
             messageSource.getMessage("user.not.found", new Object[] {user1Id}, Locale.getDefault());
@@ -114,7 +115,7 @@ public class ApplicationUserServiceTest {
     void updateUser_shouldUpdateAndReturnUserResponse() {
         Long user1Id = 1L;
         UserUpdateRequest updateRequest = new UserUpdateRequest("john_updated", "NewPassword");
-        UserResponse updatedUserResponse = UserResponse.builder().id(user1Id).login("john_updated").build();
+        UserResponse updatedUserResponse = UserResponse.builder().id(user1Id).email("john_updated").build();
 
         when(userRepository.findById(user1Id)).thenReturn(Optional.of(user1));
         when(authService.encodePassword(updateRequest.password())).thenReturn("hashedPassword");
@@ -134,8 +135,8 @@ public class ApplicationUserServiceTest {
 
         when(userRepository.findById(user1Id)).thenReturn(Optional.empty());
 
-        NoSuchElementException exception =
-            assertThrows(NoSuchElementException.class, () -> userService.updateUser(user1Id, updateRequest));
+        EntityNotFoundException exception =
+            assertThrows(EntityNotFoundException.class, () -> userService.updateUser(user1Id, updateRequest));
 
         String expectedMessage =
             messageSource.getMessage("user.not.found", new Object[] {user1Id}, Locale.getDefault());
@@ -156,8 +157,8 @@ public class ApplicationUserServiceTest {
     void deleteUser_shouldThrowExceptionWhenUserNotFound() {
         when(userRepository.findById(user1Id)).thenReturn(Optional.empty());
 
-        NoSuchElementException exception =
-            assertThrows(NoSuchElementException.class, () -> userService.deleteUser(user1Id));
+        EntityNotFoundException exception =
+            assertThrows(EntityNotFoundException.class, () -> userService.deleteUser(user1Id));
 
         String expectedMessage =
             messageSource.getMessage("user.not.found", new Object[] {user1Id}, Locale.getDefault());
@@ -170,12 +171,12 @@ public class ApplicationUserServiceTest {
     void updateUser_shouldUpdatePasswordWhenNotEmpty() {
         ApplicationUser existingUser = new ApplicationUser();
         existingUser.setId(user1Id);
-        existingUser.setLogin("john_doe");
+        existingUser.setEmail("john_doe");
 
         String newPassword = "NewPassword";
         UserUpdateRequest updateRequest = new UserUpdateRequest("john_updated", newPassword);
 
-        UserResponse updatedUserResponse = UserResponse.builder().id(user1Id).login("john_updated").build();
+        UserResponse updatedUserResponse = UserResponse.builder().id(user1Id).email("john_updated").build();
 
         when(userRepository.findById(user1Id)).thenReturn(Optional.of(existingUser));
         when(authService.encodePassword(newPassword)).thenReturn("hashedPassword");
@@ -193,7 +194,7 @@ public class ApplicationUserServiceTest {
     void updateUser_shouldNotUpdatePasswordWhenEmpty() {
         UserUpdateRequest updateRequestEmptyPassword = new UserUpdateRequest("john_updated", "");
 
-        UserResponse updatedUserResponse = UserResponse.builder().id(user1Id).login("john_updated").build();
+        UserResponse updatedUserResponse = UserResponse.builder().id(user1Id).email("john_updated").build();
 
         when(userRepository.findById(user1Id)).thenReturn(Optional.of(user1));
         when(userRepository.save(user1)).thenReturn(user1);

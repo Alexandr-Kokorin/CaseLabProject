@@ -4,8 +4,8 @@ import caselab.controller.types.payload.DocumentTypeRequest;
 import caselab.controller.types.payload.DocumentTypeResponse;
 import caselab.domain.entity.DocumentType;
 import caselab.domain.repository.DocumentTypesRepository;
+import caselab.exception.EntityNotFoundException;
 import java.util.Locale;
-import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
@@ -14,50 +14,41 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class DocumentTypesService {
 
+    private final DocumentTypeMapper documentTypeMapper;
     private final DocumentTypesRepository documentTypesRepository;
     private final MessageSource messageSource;
 
     public DocumentTypeResponse findDocumentTypeById(Long id) {
-        var optionalDocumentType = documentTypesRepository.findById(id).orElseThrow(() ->
-            getDocumentTypeNoSuchElementException(id));
-        return convertDocumentTypeToDocumentTypeResponse(optionalDocumentType);
+        var documentType = documentTypesRepository.findById(id)
+            .orElseThrow(() -> documentTypeNotFound(id));
+        return documentTypeMapper.entityToResponse(documentType);
     }
 
     public DocumentTypeResponse createDocumentType(DocumentTypeRequest documentTypeRequest) {
-        DocumentType documentTypeForCreating = convertDocumentTypeRequestToDocumentType(documentTypeRequest);
-        return convertDocumentTypeToDocumentTypeResponse(documentTypesRepository.save(documentTypeForCreating));
+        DocumentType documentTypeForCreating = documentTypeMapper.requestToEntity(documentTypeRequest);
+        return documentTypeMapper.entityToResponse(documentTypesRepository.save(documentTypeForCreating));
     }
 
     public DocumentTypeResponse updateDocumentType(Long id, DocumentTypeRequest documentTypeRequest) {
         var documentTypeExist = documentTypesRepository.existsById(id);
         if (!documentTypeExist) {
-            throw getDocumentTypeNoSuchElementException(id);
+            throw documentTypeNotFound(id);
         }
-        var documentTypeForUpdating = convertDocumentTypeRequestToDocumentType(documentTypeRequest);
+        var documentTypeForUpdating = documentTypeMapper.requestToEntity(documentTypeRequest);
         documentTypeForUpdating.setId(id);
-        return convertDocumentTypeToDocumentTypeResponse(documentTypesRepository.save(documentTypeForUpdating));
+        return documentTypeMapper.entityToResponse(documentTypesRepository.save(documentTypeForUpdating));
     }
 
     public void deleteDocumentTypeById(Long id) {
         var documentTypeExist = documentTypesRepository.existsById(id);
         if (!documentTypeExist) {
-            throw getDocumentTypeNoSuchElementException(id);
+            throw documentTypeNotFound(id);
         }
         documentTypesRepository.deleteById(id);
     }
 
-    private DocumentTypeResponse convertDocumentTypeToDocumentTypeResponse(DocumentType documentType) {
-        return new DocumentTypeResponse(documentType.getId(), documentType.getName());
-    }
-
-    private DocumentType convertDocumentTypeRequestToDocumentType(DocumentTypeRequest documentTypeDTO) {
-        DocumentType documentType = new DocumentType();
-        documentType.setName(documentTypeDTO.name());
-        return documentType;
-    }
-
-    private NoSuchElementException getDocumentTypeNoSuchElementException(Long id) {
-        return new NoSuchElementException(
+    private EntityNotFoundException documentTypeNotFound(Long id) {
+        return new EntityNotFoundException(
             messageSource.getMessage("document.type.not.found", new Object[] {id}, Locale.getDefault())
         );
     }

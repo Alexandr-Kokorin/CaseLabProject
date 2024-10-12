@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import caselab.exception.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -74,8 +75,8 @@ public class AttributeServiceTest {
     void testFindAttributeById_whenAttributeNotFound_shouldThrowNoSuchElementException() {
         Mockito.when(attributeRepository.findById(2L)).thenReturn(Optional.empty());
 
-        NoSuchElementException exception =
-            assertThrows(NoSuchElementException.class, () -> attributeService.findAttributeById(2L));
+        EntityNotFoundException exception =
+            assertThrows(EntityNotFoundException.class, () -> attributeService.findAttributeById(2L));
         String expectedMessage =
             messageSource.getMessage("attribute.not.found", new Object[] {2L}, Locale.getDefault());
 
@@ -138,7 +139,7 @@ public class AttributeServiceTest {
 
         Mockito.when(attributeRepository.findById(2L)).thenReturn(Optional.empty());
 
-        assertThrows(NoSuchElementException.class, () -> attributeService.updateAttribute(2L, attributeRequest));
+        assertThrows(EntityNotFoundException.class, () -> attributeService.updateAttribute(2L, attributeRequest));
     }
 
     @Test
@@ -154,7 +155,7 @@ public class AttributeServiceTest {
         Mockito.when(attributeRepository.existsById(2L)).thenReturn(false);
 
         assertThrows(
-            NoSuchElementException.class,
+            EntityNotFoundException.class,
             () -> attributeService.deleteAttribute(2L),
             "Атрибут с id=2 не найден"
         );

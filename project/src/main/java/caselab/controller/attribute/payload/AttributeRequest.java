@@ -11,7 +11,6 @@ public record AttributeRequest(
     @Size(min = 3, max = 25, message = "${attribute.request.name.invalid_size}")
     @Schema(description = "Имя атрибута", example = "Дата создания")
     String name,
-
     @NotBlank(message = "${attribute.request.type.is_blank}")
     @Schema(description = "Тип атрибута", example = "Дата")
     String type

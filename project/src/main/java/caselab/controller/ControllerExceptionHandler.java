@@ -1,8 +1,8 @@
 package caselab.controller;
 
+import caselab.exception.EntityNotFoundException;
 import java.util.List;
 import java.util.Locale;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
@@ -21,10 +21,11 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 @RestControllerAdvice
 @RequiredArgsConstructor
 public class ControllerExceptionHandler {
+
     private final MessageSource messageSource;
 
-    @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<ProblemDetail> notFoundException(NoSuchElementException exception, Locale locale) {
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ProblemDetail> notFoundException(EntityNotFoundException exception, Locale locale) {
         return createProblemDetailResponseEntity(NOT_FOUND, messageSource.getMessage(
                 "errors.404.title", new Object[0], "errors.404.title", locale
             ), exception.getMessage(), locale

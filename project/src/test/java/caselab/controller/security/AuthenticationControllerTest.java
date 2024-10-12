@@ -37,8 +37,10 @@ public class AuthenticationControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Should register user with valid payload")
         public void register_success() {
-            var payload = new RegisterRequest("login", "displayName", "password");
-            var response = AuthenticationResponse.builder().token("token").build();
+            var payload = new RegisterRequest("test@mail.ru", "displayName", "password");
+            var response = AuthenticationResponse.builder()
+                .token("token")
+                .build();
 
             when(authenticationService.register(payload)).thenReturn(response);
 
@@ -67,8 +69,13 @@ public class AuthenticationControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Should authenticate user with valid payload")
         public void authenticate_success() {
-            var payload = AuthenticationRequest.builder().login("login").password("password").build();
-            var response = AuthenticationResponse.builder().token("token").build();
+            var payload = AuthenticationRequest.builder()
+                .email("test@mail.ru")
+                .password("password")
+                .build();
+            var response = AuthenticationResponse.builder()
+                .token("token")
+                .build();
 
             when(authenticationService.authenticate(payload)).thenReturn(response);
 

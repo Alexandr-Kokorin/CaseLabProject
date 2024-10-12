@@ -1,4 +1,4 @@
-package caselab.controller.document.payload;
+package caselab.controller.document.payload.document.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;

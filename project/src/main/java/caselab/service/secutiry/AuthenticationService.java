@@ -4,8 +4,10 @@ import caselab.controller.secutiry.payload.AuthenticationRequest;
 import caselab.controller.secutiry.payload.AuthenticationResponse;
 import caselab.controller.secutiry.payload.RegisterRequest;
 import caselab.domain.entity.ApplicationUser;
-import caselab.domain.entity.enums.Role;
+import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.ApplicationUserRepository;
+import caselab.domain.repository.GlobalPermissionRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,16 +18,18 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthenticationService {
 
+    private final GlobalPermissionRepository globalPermissionRepository;
     private final ApplicationUserRepository appUserRepository;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
     public AuthenticationResponse register(RegisterRequest request) {
+        var globalPermission = globalPermissionRepository.findByName(GlobalPermissionName.USER);
         var user = ApplicationUser.builder()
-            .login(request.login())
+            .email(request.email())
             .displayName(request.displayName())
-            .role(Role.USER)
+            .globalPermissions(List.of(globalPermission))
             .hashedPassword(encodePassword(request.password()))
             .build();
         appUserRepository.save(user);
@@ -38,11 +42,11 @@ public class AuthenticationService {
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(
-                request.login(),
+                request.email(),
                 request.password()
             ));
 
-        var user = appUserRepository.findByLogin(request.login())
+        var user = appUserRepository.findByEmail(request.email())
             .orElseThrow();
         var jwtToken = jwtService.generateToken(user);
         return AuthenticationResponse.builder()

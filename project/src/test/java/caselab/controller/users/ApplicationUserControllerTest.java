@@ -48,7 +48,7 @@ class ApplicationUserControllerTest {
 
         userResponse = UserResponse.builder()
             .id(1L)
-            .login("john_doe")
+            .email("john_doe")
             .displayName("John Doe")
             .documents(List.of())
             .build();
@@ -63,7 +63,7 @@ class ApplicationUserControllerTest {
         mockMvc.perform(get(USERS_URI))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[0].id").value(userResponse.id()))
-            .andExpect(jsonPath("$[0].login").value(userResponse.login()))
+            .andExpect(jsonPath("$[0].email").value(userResponse.email()))
             .andExpect(jsonPath("$[0].displayName").value(userResponse.displayName()))
             .andExpect(jsonPath("$[0].documents").isArray());
     }
@@ -76,7 +76,7 @@ class ApplicationUserControllerTest {
         mockMvc.perform(get(USERS_URI + "/" + 1L))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(userResponse.id()))
-            .andExpect(jsonPath("$.login").value(userResponse.login()))
+            .andExpect(jsonPath("$.email").value(userResponse.email()))
             .andExpect(jsonPath("$.documents").isArray());
     }
 
