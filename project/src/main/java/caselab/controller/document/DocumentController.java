@@ -18,7 +18,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController @RequestMapping("/api/v1/documents") @SecurityRequirement(name = "JWT") @RequiredArgsConstructor
+@RestController
+@RequestMapping("/api/v1/documents")
+@SecurityRequirement(name = "JWT")
+@RequiredArgsConstructor
 public class DocumentController {
 
     private final DocumentService documentService;

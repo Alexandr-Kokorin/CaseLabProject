@@ -13,7 +13,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-@SuppressWarnings("MultipleStringLiterals") @Service @RequiredArgsConstructor @Transactional
+@SuppressWarnings("MultipleStringLiterals")
+@Service
+@RequiredArgsConstructor
+@Transactional
 public class DocumentService {
 
     private final DocumentRepository documentRepository;
@@ -39,8 +42,10 @@ public class DocumentService {
         Document existingDocument = documentRepository.findById(id)
             .orElseThrow(() -> new NoSuchElementException("Документ с id = " + id + " не найден"));
         Document updatedDocument = documentMapper.documentRequestToDocument(documentRequest);
+
         updatedDocument.setId(existingDocument.getId());
         updatedDocument.setDocumentVersions(existingDocument.getDocumentVersions());
+
         Document returningDocument = documentRepository.save(existingDocument);
         return documentMapper.documentToDocumentResponse(returningDocument);
     }

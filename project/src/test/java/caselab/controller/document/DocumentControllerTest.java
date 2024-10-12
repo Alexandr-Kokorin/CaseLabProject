@@ -35,19 +35,30 @@ public class DocumentControllerTest extends BaseControllerTest {
     private DocumentRequest documentRequest;
     private DocumentResponse documentResponse;
 
-    @BeforeEach public void setup() {
-        documentRequest = DocumentRequest.builder().id(1L).name("Test name").documentTypeId(1L).build();
+    @BeforeEach
+    public void setup() {
+        documentRequest = DocumentRequest.builder()
+                                         .id(1L)
+                                         .name("Test name")
+                                         .documentTypeId(1L)
+                                         .build();
 
-        documentResponse = DocumentResponse.builder().id(1L).name("Test name").documentTypeId(1L).build();
+        documentResponse = DocumentResponse.builder()
+                                           .id(1L)
+                                           .name("Test name")
+                                           .documentTypeId(1L).build();
     }
 
-    @Tag("Create") @DisplayName("Should create document") @Test public void testCreateDocument() throws Exception {
+    @Tag("Create")
+    @DisplayName("Should create document")
+    @Test
+    public void testCreateDocument() throws Exception {
         // Arrange
         when(documentService.createDocument(any(DocumentRequest.class))).thenReturn(documentResponse);
 
         // Act & Assert
         mockMvc.perform(post(DOCUMENT_URI).contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(documentRequest))).andExpectAll(
+                                          .content(objectMapper.writeValueAsString(documentRequest))).andExpectAll(
             status().isOk(),
             jsonPath("$.id").value(documentResponse.id()),
             jsonPath("$.documentTypeId").value(documentResponse.documentTypeId()),
@@ -55,7 +66,9 @@ public class DocumentControllerTest extends BaseControllerTest {
         );
     }
 
-    @Tag("GetById") @DisplayName("Should return document for searching existing document") @Test
+    @Tag("GetById")
+    @DisplayName("Should return document for searching existing document")
+    @Test
     public void testGetDocumentById() throws Exception {
         // Arrange
         when(documentService.getDocumentById(1L)).thenReturn(documentResponse);
@@ -69,31 +82,42 @@ public class DocumentControllerTest extends BaseControllerTest {
         );
     }
 
-    @Tag("GetById") @DisplayName("Should return NOT FOUND for searching not existing document") @Test
+    @Tag("GetById")
+    @DisplayName("Should return NOT FOUND for searching not existing document")
+    @Test
     public void testGetDocumentById_NotFound() throws Exception {
         // Arrange
         when(documentService.getDocumentById(1L)).thenThrow(new NoSuchElementException("Документ не найден"));
 
         // Act & Assert
-        mockMvc.perform(get(DOCUMENT_URI + "/1").accept(MediaType.APPLICATION_JSON)).andExpect(status().isNotFound());
+        mockMvc.perform(get(DOCUMENT_URI + "/1")
+                   .accept(MediaType.APPLICATION_JSON))
+               .andExpect(status().isNotFound());
     }
 
-    @Tag("Update") @DisplayName("Should update existing document by id") @Test public void testUpdateDocument()
+    @Tag("Update")
+    @DisplayName("Should update existing document by id")
+    @Test
+    public void testUpdateDocument()
         throws Exception {
         // Arrange
         when(documentService.updateDocument(eq(1L), any(DocumentRequest.class))).thenReturn(documentResponse);
 
         // Act & Assert
         mockMvc.perform(put(DOCUMENT_URI + "/1").contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(documentResponse))).andExpectAll(
-            status().isOk(),
-            jsonPath("$.id").value(documentResponse.id()),
-            jsonPath("$.documentTypeId").value(documentResponse.documentTypeId()),
-            jsonPath("$.name").value(documentResponse.name())
-        );
+                                                .content(objectMapper.writeValueAsString(documentResponse)))
+               .andExpectAll(
+                   status().isOk(),
+                   jsonPath("$.id").value(documentResponse.id()),
+                   jsonPath("$.documentTypeId").value(documentResponse.documentTypeId()),
+                   jsonPath("$.name").value(documentResponse.name())
+               );
     }
 
-    @Tag("Delete") @DisplayName("Should delete existing document by id") @Test public void testDeleteDocument()
+    @Tag("Delete")
+    @DisplayName("Should delete existing document by id")
+    @Test
+    public void testDeleteDocument()
         throws Exception {
         // Arrange
         doNothing().when(documentService).deleteDocument(1L);
@@ -102,20 +126,24 @@ public class DocumentControllerTest extends BaseControllerTest {
         mockMvc.perform(delete(DOCUMENT_URI + "/1")).andExpect(status().isNoContent());
     }
 
-    @Tag("Get All") @DisplayName("Should return All Documents") @Test public void testGetAllDocuments()
+    @Tag("Get All")
+    @DisplayName("Should return All Documents")
+    @Test
+    public void testGetAllDocuments()
         throws Exception {
         // Arrange
         Page<DocumentResponse> documentPage = new PageImpl<>(List.of(documentResponse));
         when(documentService.getAllDocuments(any(Pageable.class))).thenReturn(documentPage);
 
         // Act & Assert
-        mockMvc.perform(get(DOCUMENT_URI).param("page", "0").param("size", "10").accept(MediaType.APPLICATION_JSON))
-            .andExpectAll(
-                status().isOk(),
-                jsonPath("$.content[0].id").value(documentResponse.id()),
-                jsonPath("$.content[0].documentTypeId").value(documentResponse.documentTypeId()),
-                jsonPath("$.name").value(documentResponse.name())
-            );
+        mockMvc.perform(get(DOCUMENT_URI).param("page", "0").param("size", "10")
+                                         .accept(MediaType.APPLICATION_JSON))
+               .andExpectAll(
+                   status().isOk(),
+                   jsonPath("$.content[0].id").value(documentResponse.id()),
+                   jsonPath("$.content[0].documentTypeId").value(documentResponse.documentTypeId()),
+                   jsonPath("$.name").value(documentResponse.name())
+               );
     }
 
 }

@@ -12,19 +12,19 @@ import org.mapstruct.ReportingPolicy;
 
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE,
         componentModel = "spring",
-        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE) public interface DocumentMapper {
+        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+public interface DocumentMapper {
 
     @Mapping(target = "documentTypeId", source = "documentType.id")
-    @Mapping(target = "usersPermissions", source = "usersToDocuments") DocumentResponse documentToDocumentResponse(
-        Document document
-    );
+    @Mapping(target = "usersPermissions", source = "usersToDocuments")
+    DocumentResponse documentToDocumentResponse(Document document);
 
     @Mapping(source = "documentTypeId", target = "documentType", qualifiedByName = "mapDocumentTypeIdToDocumentType")
-    @Mapping(source = "usersPermissions", target = "usersToDocuments") Document documentRequestToDocument(
-        DocumentRequest documentRequest
-    );
+    @Mapping(source = "usersPermissions", target = "usersToDocuments")
+    Document documentRequestToDocument(DocumentRequest documentRequest);
 
-    @Named("mapDocumentTypeIdToDocumentType") static DocumentType mapDocumentTypeIdToDocumentType(Long documentTypeId) {
+    @Named("mapDocumentTypeIdToDocumentType")
+    static DocumentType mapDocumentTypeIdToDocumentType(Long documentTypeId) {
         if (documentTypeId == null) {
             return null;
         }

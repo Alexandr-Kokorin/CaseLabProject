@@ -25,16 +25,27 @@ public class DocumentMapperTest {
 
     private final DocumentMapper documentMapper = Mappers.getMapper(DocumentMapper.class);
 
-    @Test @DisplayName("Should map DocumentRequest to Document") public void testMapDocumentRequestToDocument() {
+    @Test
+    @DisplayName("Should map DocumentRequest to Document")
+    public void testMapDocumentRequestToDocument() {
         // Arrange
         UserToDocumentRequest UTD1 =
-            UserToDocumentRequest.builder().documentPermissionId(List.of(1L)).userId(1001L).build();
+            UserToDocumentRequest.builder()
+                .documentPermissionId(List.of(1L))
+                .userId(1001L)
+                .build();
         UserToDocumentRequest UTD2 =
-            UserToDocumentRequest.builder().documentPermissionId(List.of(2L)).userId(1002L).build();
+            UserToDocumentRequest.builder()
+                .documentPermissionId(List.of(2L))
+                .userId(1002L)
+                .build();
 
         DocumentRequest documentRequest =
-            DocumentRequest.builder().documentTypeId(2001L).usersPermissions(Arrays.asList(UTD1, UTD2))
-                .name("Test Document").build();
+            DocumentRequest.builder()
+                .documentTypeId(2001L)
+                .usersPermissions(Arrays.asList(UTD1, UTD2))
+                .name("Test Document")
+                .build();
 
         // Act
         Document document = documentMapper.documentRequestToDocument(documentRequest);
@@ -53,20 +64,35 @@ public class DocumentMapperTest {
         );
     }
 
-    @Test @DisplayName("Should map Document to DocumentResponse") public void testMapDocumentToDocumentResponse() {
+    @Test
+    @DisplayName("Should map Document to DocumentResponse")
+    public void testMapDocumentToDocumentResponse() {
         // Arrange
         DocumentType documentType = new DocumentType();
         documentType.setId(2001L);
         documentType.setName("Document Type");
 
-        UserToDocument user1 =
-            UserToDocument.builder().id(1L).applicationUser(ApplicationUser.builder().id(1001L).build()).build();
+        UserToDocument user1 = UserToDocument.builder()
+            .id(1L)
+            .applicationUser(ApplicationUser.builder()
+                .id(1001L)
+                .build())
+            .build();
 
-        UserToDocument user2 =
-            UserToDocument.builder().id(2L).applicationUser(ApplicationUser.builder().id(1002L).build()).build();
+        UserToDocument user2 = UserToDocument.builder()
+            .id(2L)
+            .applicationUser(ApplicationUser
+                .builder()
+                .id(1002L)
+                .build())
+            .build();
 
-        Document document = Document.builder().id(1L).name("Test Document").documentType(documentType)
-            .usersToDocuments(Arrays.asList(user1, user2)).build();
+        Document document = Document.builder()
+            .id(1L)
+            .name("Test Document")
+            .documentType(documentType)
+            .usersToDocuments(Arrays.asList(user1, user2))
+            .build();
 
         // Act
         DocumentResponse documentResponse = documentMapper.documentToDocumentResponse(document);
@@ -80,13 +106,16 @@ public class DocumentMapperTest {
             () -> assertEquals(2001L, documentResponse.documentTypeId()),
             () -> assertEquals(
                 Arrays.asList(1001L, 1002L),
-                documentResponse.usersPermissions().stream().map(UserToDocumentResponse::id)
+                documentResponse.usersPermissions().stream()
+                    .map(UserToDocumentResponse::id)
                     .collect(Collectors.toList())
             )
         );
     }
 
-    @Test @DisplayName("Should handle null values correctly") public void testMapWithNullValues() {
+    @Test
+    @DisplayName("Should handle null values correctly")
+    public void testMapWithNullValues() {
         // Act
         Document document = documentMapper.documentRequestToDocument(null);
         DocumentResponse documentResponse = documentMapper.documentToDocumentResponse(null);

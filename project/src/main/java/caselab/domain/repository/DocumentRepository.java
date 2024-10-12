@@ -1,7 +1,6 @@
 package caselab.domain.repository;
 
 import caselab.domain.entity.Document;
-import caselab.domain.entity.DocumentVersion;
 import java.util.Optional;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;

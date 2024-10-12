@@ -9,6 +9,9 @@ import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.DocumentType;
 import caselab.domain.repository.ApplicationUserRepository;
 import caselab.domain.repository.DocumentTypesRepository;
+import java.util.Arrays;
+import java.util.List;
+import java.util.NoSuchElementException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,15 +19,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.Arrays;
-import java.util.List;
-import java.util.NoSuchElementException;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@SpringBootTest @Transactional @Rollback public class DocumentServiceTest extends IntegrationTest {
+@SpringBootTest
+@Transactional
+@Rollback
+public class DocumentServiceTest extends IntegrationTest {
 
     @Autowired private DocumentService documentService;
     @Autowired private DocumentTypesRepository documentTypeRepository;
@@ -37,31 +40,49 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
     private UserToDocumentRequest UTD1;
     private UserToDocumentRequest UTD2;
 
-    @BeforeEach public void setUp() {
+    @BeforeEach
+    public void setUp() {
         DocumentType documentType = new DocumentType();
         documentType.setName("Test Document Type");
         documentType = documentTypeRepository.save(documentType);
         documentTypeId = documentType.getId();
 
         ApplicationUser user1 =
-            ApplicationUser.builder().email("Test email 1 ").displayName("Test display name 1").hashedPassword("abc")
+            ApplicationUser.builder()
+                .email("Test email 1 ")
+                .displayName("Test display name 1")
+                .hashedPassword("abc")
                 .build();
         ApplicationUser user2 =
-            ApplicationUser.builder().email("Test email 2 ").displayName("Test display name 2").hashedPassword("abc")
+            ApplicationUser.builder()
+                .email("Test email 2 ")
+                .displayName("Test display name 2")
+                .hashedPassword("abc")
                 .build();
         user1 = applicationUserRepository.save(user1);
         user1Id = user1.getId();
         user2 = applicationUserRepository.save(user2);
         user2Id = user2.getId();
-        UTD1 = UserToDocumentRequest.builder().documentPermissionId(List.of(1L)).userId(user1Id).build();
-        UTD2 = UserToDocumentRequest.builder().documentPermissionId(List.of(1L)).userId(user2Id).build();
+        UTD1 = UserToDocumentRequest.builder()
+            .documentPermissionId(List.of(1L))
+            .userId(user1Id)
+            .build();
+        UTD2 = UserToDocumentRequest.builder()
+            .documentPermissionId(List.of(1L))
+            .userId(user2Id)
+            .build();
         documentRequest =
-            DocumentRequest.builder().documentTypeId(documentTypeId).usersPermissions(Arrays.asList(UTD1, UTD2))
-                .name("Test name").build();
+            DocumentRequest.builder()
+                .documentTypeId(documentTypeId)
+                .usersPermissions(Arrays.asList(UTD1, UTD2))
+                .name("Test name")
+                .build();
 
     }
 
-    @DisplayName("Should create document") @Test public void testCreateDocument() {
+    @DisplayName("Should create document")
+    @Test
+    public void testCreateDocument() {
         // Act
         DocumentResponse result = documentService.createDocument(documentRequest);
 
@@ -73,13 +94,16 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
             () -> assertEquals(documentTypeId, result.documentTypeId()),
             () -> assertEquals(
                 Arrays.asList(user1Id, user2Id),
-                result.usersPermissions().stream().map(UserToDocumentResponse::id).toList()
+                result.usersPermissions().stream()
+                    .map(UserToDocumentResponse::id).toList()
             ),
             () -> assertEquals("Test name", result.name())
         );
     }
 
-    @DisplayName("Should update document type for document") @Test public void testUpdateDocument() {
+    @DisplayName("Should update document type for document")
+    @Test
+    public void testUpdateDocument() {
         // Act
         DocumentResponse result = documentService.createDocument(documentRequest);
         Long id = result.id();
@@ -90,8 +114,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
         Long updatedDocumentTypeId = newDocumentType.getId();
 
         DocumentRequest updatingDocumentRequest =
-            DocumentRequest.builder().documentTypeId(updatedDocumentTypeId).usersPermissions(Arrays.asList(UTD1, UTD2))
-                .name(result.name()).build();
+            DocumentRequest.builder()
+                .documentTypeId(updatedDocumentTypeId)
+                .usersPermissions(Arrays.asList(UTD1, UTD2))
+                .name(result.name())
+                .build();
         DocumentResponse updatingDocumentResponseDTO = documentService.updateDocument(id, updatingDocumentRequest);
 
         // Assert
@@ -102,13 +129,17 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
             () -> assertEquals(updatedDocumentTypeId, updatingDocumentResponseDTO.documentTypeId()),
             () -> assertEquals(
                 Arrays.asList(user1Id, user2Id),
-                updatingDocumentResponseDTO.usersPermissions().stream().map(UserToDocumentResponse::id).toList()
+                updatingDocumentResponseDTO.usersPermissions().stream()
+                    .map(UserToDocumentResponse::id)
+                    .toList()
             ),
             () -> assertEquals("Test name", result.name())
         );
     }
 
-    @DisplayName("Should delete document") @Test public void testDeleteDocument() {
+    @DisplayName("Should delete document")
+    @Test
+    public void testDeleteDocument() {
         // Act
         DocumentResponse result = documentService.createDocument(documentRequest);
         Long id = result.id();
@@ -119,12 +150,16 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
         assertThrows(NoSuchElementException.class, () -> documentService.getDocumentById(id));
     }
 
-    @DisplayName("Should not found document") @Test public void testDeleteDocumentNotFound() {
+    @DisplayName("Should not found document")
+    @Test
+    public void testDeleteDocumentNotFound() {
         // Act & Assert
         assertThrows(NoSuchElementException.class, () -> documentService.deleteDocument(Long.MAX_VALUE));
     }
 
-    @DisplayName("Should return document") @Test public void testGetDocumentById() {
+    @DisplayName("Should return document")
+    @Test
+    public void testGetDocumentById() {
         // Arrange
         DocumentResponse result = documentService.createDocument(documentRequest);
 
@@ -139,7 +174,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
             () -> assertEquals(documentTypeId, findById.documentTypeId()),
             () -> assertEquals(
                 Arrays.asList(user1Id, user2Id),
-                result.usersPermissions().stream().map(UserToDocumentResponse::id).toList()
+                result.usersPermissions().stream()
+                    .map(UserToDocumentResponse::id)
+                    .toList()
             ),
             () -> assertEquals("Test name", result.name())
         );
