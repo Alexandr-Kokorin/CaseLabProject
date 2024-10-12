@@ -21,8 +21,8 @@ public interface VotingProcessMapper {
     VotingProcessResponse entityToResponse(VotingProcess votingProcess);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "status", qualifiedByName = "setStatus")
-    @Mapping(target = "createdAt", qualifiedByName = "setCreatedAt")
+    @Mapping(target = "status", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "deadline", source = "deadline", qualifiedByName = "setDeadline")
     @Mapping(target = "documentVersion", ignore = true)
     @Mapping(target = "votes", ignore = true)

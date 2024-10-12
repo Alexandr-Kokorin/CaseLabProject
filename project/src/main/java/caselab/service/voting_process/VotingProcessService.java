@@ -46,6 +46,7 @@ public class VotingProcessService {
         var updateVotingProcess = votingProcessMapper.requestToEntity(votingProcessRequest);
 
         updateVotingProcess.setId(votingProcess.getId());
+        updateVotingProcess.setStatus(votingProcess.getStatus());
         updateVotingProcess.setCreatedAt(votingProcess.getCreatedAt());
         updateVotingProcess.setDocumentVersion(votingProcess.getDocumentVersion());
         List<Vote> votes = new ArrayList<>();
