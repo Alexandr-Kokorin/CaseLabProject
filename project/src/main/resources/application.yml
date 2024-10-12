@@ -22,7 +22,6 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        enable_lazy_load_no_trans: true
   cache:
     cache-names:
       - rate-limit-buckets-project

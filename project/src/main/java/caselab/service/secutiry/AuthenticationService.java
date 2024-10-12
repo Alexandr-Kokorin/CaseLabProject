@@ -7,6 +7,7 @@ import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.GlobalPermission;
 import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.ApplicationUserRepository;
+import caselab.domain.repository.GlobalPermissionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,17 +18,18 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
-
+    private final GlobalPermissionRepository globalPermissionRepository;
     private final ApplicationUserRepository appUserRepository;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
     public AuthenticationResponse register(RegisterRequest request) {
+        var globalPermission = globalPermissionRepository.findByName(GlobalPermissionName.USER);
         var user = ApplicationUser.builder()
             .email(request.email())
             .displayName(request.displayName())
-            .globalPermissions(List.of(GlobalPermission.builder().name(GlobalPermissionName.USER).build()))
+            .globalPermissions(List.of(globalPermission))
             .hashedPassword(encodePassword(request.password()))
             .build();
         appUserRepository.save(user);
