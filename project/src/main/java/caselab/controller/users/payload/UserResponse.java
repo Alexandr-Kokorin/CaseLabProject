@@ -7,7 +7,7 @@ import lombok.Builder;
 @Builder
 public record UserResponse(
     Long id,
-    String login,
+    String email,
     String displayName,
     List<DocumentResponse> documents
 ) {

@@ -22,13 +22,13 @@ public class JwtService {
     private final String jwtSecretKey;
     private final Duration tokenTTL;
 
-    public String extractLogin(String token) {
+    public String extractEmail(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
-        var login = extractLogin(token);
-        return (login.equals(userDetails.getUsername())) && !isTokenExpired(token);
+        var email = extractEmail(token);
+        return (email.equals(userDetails.getUsername())) && !isTokenExpired(token);
     }
 
     public String generateToken(UserDetails userDetails) {

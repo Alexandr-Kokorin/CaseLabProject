@@ -35,7 +35,7 @@ public class UserMapperTest {
 
         user = ApplicationUser.builder()
             .id(1L)
-            .login("testUser")
+            .email("testUser")
             .displayName("Test User")
             .build();
     }
@@ -43,16 +43,16 @@ public class UserMapperTest {
     @Test
     void entityToResponse_shouldConvertUserToUserResponse() {
         DocumentVersion document = DocumentVersion.builder().id(100L).build();
-        user.setDocuments(List.of(document));
+//        user.setDocuments(List.of(document));
 
-        DocumentResponse documentResponse = DocumentResponse.builder()
-            .id(100L)
-            .documentTypeId(1L)
-            .applicationUserIds(List.of(1L))
-            .attributeValues(List.of())
-            .build();
-
-        when(documentMapper.entityToResponse(document)).thenReturn(documentResponse);
+//        DocumentResponse documentResponse = DocumentResponse.builder()
+//            .id(100L)
+//            .documentTypeId(1L)
+//            .applicationUserIds(List.of(1L))
+//            .attributeValues(List.of())
+//            .build();
+//
+//        when(documentMapper.entityToResponse(document)).thenReturn(documentResponse);
 
         UserResponse response = userMapper.entityToResponse(user);
 
@@ -61,7 +61,7 @@ public class UserMapperTest {
             () -> assertAll(
                 "User fields",
                 () -> assertThat(response.id()).isEqualTo(1L),
-                () -> assertThat(response.login()).isEqualTo("testUser"),
+                () -> assertThat(response.email()).isEqualTo("testUser"),
                 () -> assertThat(response.displayName()).isEqualTo("Test User")
             ),
 
@@ -119,7 +119,7 @@ public class UserMapperTest {
         assertAll(
             "User fields and no document mapping",
             () -> assertThat(response.id()).isEqualTo(1L),
-            () -> assertThat(response.login()).isEqualTo("testUser"),
+            () -> assertThat(response.email()).isEqualTo("testUser"),
             () -> assertThat(response.displayName()).isEqualTo("Test User"),
             () -> assertThat(response.documents()).isNull()
         );

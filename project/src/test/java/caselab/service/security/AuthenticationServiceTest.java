@@ -28,10 +28,10 @@ public class AuthenticationServiceTest extends IntegrationTest {
     @Transactional
     @Rollback
     public void registerUser() {
-        var request = new RegisterRequest("login", "displayName", "password");
+        var request = new RegisterRequest("test@mail.ru", "displayName", "password");
 
         var response = authenticationService.register(request);
-        var user = applicationUserRepository.findByLogin(request.login()).orElseThrow();
+        var user = applicationUserRepository.findByEmail(request.email()).orElseThrow();
 
         assertAll(
             "Grouped assertions for register user",
@@ -44,8 +44,8 @@ public class AuthenticationServiceTest extends IntegrationTest {
     @Transactional
     @Rollback
     public void authenticateExistedUser() {
-        var registerRequest = new RegisterRequest("login", "displayName", "password");
-        var authenticationRequest = AuthenticationRequest.builder().login("login").password("password").build();
+        var registerRequest = new RegisterRequest("test@mail.ru", "displayName", "password");
+        var authenticationRequest = AuthenticationRequest.builder().email("test@mail.ru").password("password").build();
 
         authenticationService.register(registerRequest);
         var authenticationResponse = authenticationService.authenticate(authenticationRequest);
@@ -57,7 +57,7 @@ public class AuthenticationServiceTest extends IntegrationTest {
     @Transactional
     @Rollback
     public void authenticateNotExistedUser() {
-        var authenticationRequest = AuthenticationRequest.builder().login("login").password("password").build();
+        var authenticationRequest = AuthenticationRequest.builder().email("test@mail.ru").password("password").build();
 
         assertThrows(BadCredentialsException.class, () -> authenticationService.authenticate(authenticationRequest));
     }

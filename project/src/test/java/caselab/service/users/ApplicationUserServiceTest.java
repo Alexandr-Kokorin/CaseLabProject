@@ -58,19 +58,19 @@ public class ApplicationUserServiceTest {
         userResponses = List.of(userResponse1, userResponse2);
     }
 
-    private ApplicationUser createUser(Long id, String login) {
+    private ApplicationUser createUser(Long id, String email) {
         return ApplicationUser.builder()
             .id(id)
-            .login(login)
+            .email(email)
             .displayName("John Doe")
             .hashedPassword("hashedpassword")
             .build();
     }
 
-    private UserResponse createUserResponse(Long id, String login) {
+    private UserResponse createUserResponse(Long id, String email) {
         return UserResponse.builder()
             .id(id)
-            .login(login)
+            .email(email)
             .displayName("John Doe")
             .build();
     }
@@ -114,7 +114,7 @@ public class ApplicationUserServiceTest {
     void updateUser_shouldUpdateAndReturnUserResponse() {
         Long user1Id = 1L;
         UserUpdateRequest updateRequest = new UserUpdateRequest("john_updated", "NewPassword");
-        UserResponse updatedUserResponse = UserResponse.builder().id(user1Id).login("john_updated").build();
+        UserResponse updatedUserResponse = UserResponse.builder().id(user1Id).email("john_updated").build();
 
         when(userRepository.findById(user1Id)).thenReturn(Optional.of(user1));
         when(authService.encodePassword(updateRequest.password())).thenReturn("hashedPassword");
@@ -175,7 +175,7 @@ public class ApplicationUserServiceTest {
         String newPassword = "NewPassword";
         UserUpdateRequest updateRequest = new UserUpdateRequest("john_updated", newPassword);
 
-        UserResponse updatedUserResponse = UserResponse.builder().id(user1Id).login("john_updated").build();
+        UserResponse updatedUserResponse = UserResponse.builder().id(user1Id).email("john_updated").build();
 
         when(userRepository.findById(user1Id)).thenReturn(Optional.of(existingUser));
         when(authService.encodePassword(newPassword)).thenReturn("hashedPassword");
@@ -193,7 +193,7 @@ public class ApplicationUserServiceTest {
     void updateUser_shouldNotUpdatePasswordWhenEmpty() {
         UserUpdateRequest updateRequestEmptyPassword = new UserUpdateRequest("john_updated", "");
 
-        UserResponse updatedUserResponse = UserResponse.builder().id(user1Id).login("john_updated").build();
+        UserResponse updatedUserResponse = UserResponse.builder().id(user1Id).email("john_updated").build();
 
         when(userRepository.findById(user1Id)).thenReturn(Optional.of(user1));
         when(userRepository.save(user1)).thenReturn(user1);
