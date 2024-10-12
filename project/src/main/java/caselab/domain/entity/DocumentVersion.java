@@ -17,6 +17,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -49,6 +50,7 @@ public class DocumentVersion {
     @ManyToOne(optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "document_id", nullable = false)
+    @ToString.Exclude
     private Document document;
 
     @OneToMany(mappedBy = "documentVersion")
