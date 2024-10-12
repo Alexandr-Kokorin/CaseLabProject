@@ -85,7 +85,8 @@ public class DocumentService {
         if (documentRepository.existsById(id)) {
             documentRepository.deleteById(id);
         } else {
-            throw new NoSuchElementException(messageSource.getMessage("document.not.found",
+            throw new NoSuchElementException(messageSource.getMessage(
+                "document.not.found",
                 new Object[] {id},
                 Locale.getDefault()
             ));

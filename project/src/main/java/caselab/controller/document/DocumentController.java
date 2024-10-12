@@ -27,32 +27,38 @@ public class DocumentController {
     private final DocumentService documentService;
 
     // TODO создателю документа присваивался уровень доступа "CREATOR"
-    @Operation(summary = "Создать документ") @PostMapping public DocumentResponse createDocument(
-        @RequestBody DocumentRequest documentRequest
-    ) {
+
+    @Operation(summary = "Создать документ")
+    @PostMapping
+    public DocumentResponse createDocument(@RequestBody DocumentRequest documentRequest) {
         return documentService.createDocument(documentRequest);
     }
 
-    @Operation(summary = "Получить документ по id") @GetMapping("/{id}")
+    @Operation(summary = "Получить документ по id")
+    @GetMapping("/{id}")
     public DocumentResponse getDocumentById(@PathVariable Long id) {
         return documentService.getDocumentById(id);
     }
 
-    @Operation(summary = "Получить страницу документов") @GetMapping
+    @Operation(summary = "Получить страницу документов")
+    @GetMapping
     public Page<DocumentResponse> getAllDocuments(Pageable pageable) {
         return documentService.getAllDocuments(pageable);
     }
 
-    @Operation(summary = "Обновить документ") @PutMapping("/{id}") public DocumentResponse updateDocument(
-        @PathVariable Long id, @RequestBody DocumentRequest documentRequest
+    @Operation(summary = "Обновить документ")
+    @PutMapping("/{id}")
+    public DocumentResponse updateDocument(
+        @PathVariable Long id,
+        @RequestBody DocumentRequest documentRequest
     ) {
         return documentService.updateDocument(id, documentRequest);
     }
 
-    @Operation(summary = "Удалить документ") @DeleteMapping("/{id}")
+    @Operation(summary = "Удалить документ")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteDocument(@PathVariable Long id) {
         documentService.deleteDocument(id);
         return ResponseEntity.noContent().build();
     }
-
 }

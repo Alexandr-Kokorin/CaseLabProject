@@ -29,8 +29,10 @@ public class DocumentControllerTest extends BaseControllerTest {
 
     private final String DOCUMENT_URI = "/api/v1/documents";
 
-    @MockBean private DocumentService documentService;
-    @MockBean private SecurityFilterChain securityFilterChain;
+    @MockBean
+    private DocumentService documentService;
+    @MockBean
+    private SecurityFilterChain securityFilterChain;
 
     private DocumentRequest documentRequest;
     private DocumentResponse documentResponse;
@@ -38,15 +40,15 @@ public class DocumentControllerTest extends BaseControllerTest {
     @BeforeEach
     public void setup() {
         documentRequest = DocumentRequest.builder()
-                                         .id(1L)
-                                         .name("Test name")
-                                         .documentTypeId(1L)
-                                         .build();
+            .id(1L)
+            .name("Test name")
+            .documentTypeId(1L)
+            .build();
 
         documentResponse = DocumentResponse.builder()
-                                           .id(1L)
-                                           .name("Test name")
-                                           .documentTypeId(1L).build();
+            .id(1L)
+            .name("Test name")
+            .documentTypeId(1L).build();
     }
 
     @Tag("Create")
@@ -58,7 +60,7 @@ public class DocumentControllerTest extends BaseControllerTest {
 
         // Act & Assert
         mockMvc.perform(post(DOCUMENT_URI).contentType(MediaType.APPLICATION_JSON)
-                                          .content(objectMapper.writeValueAsString(documentRequest))).andExpectAll(
+            .content(objectMapper.writeValueAsString(documentRequest))).andExpectAll(
             status().isOk(),
             jsonPath("$.id").value(documentResponse.id()),
             jsonPath("$.documentTypeId").value(documentResponse.documentTypeId()),
@@ -91,8 +93,8 @@ public class DocumentControllerTest extends BaseControllerTest {
 
         // Act & Assert
         mockMvc.perform(get(DOCUMENT_URI + "/1")
-                   .accept(MediaType.APPLICATION_JSON))
-               .andExpect(status().isNotFound());
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNotFound());
     }
 
     @Tag("Update")
@@ -105,13 +107,13 @@ public class DocumentControllerTest extends BaseControllerTest {
 
         // Act & Assert
         mockMvc.perform(put(DOCUMENT_URI + "/1").contentType(MediaType.APPLICATION_JSON)
-                                                .content(objectMapper.writeValueAsString(documentResponse)))
-               .andExpectAll(
-                   status().isOk(),
-                   jsonPath("$.id").value(documentResponse.id()),
-                   jsonPath("$.documentTypeId").value(documentResponse.documentTypeId()),
-                   jsonPath("$.name").value(documentResponse.name())
-               );
+                .content(objectMapper.writeValueAsString(documentResponse)))
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$.id").value(documentResponse.id()),
+                jsonPath("$.documentTypeId").value(documentResponse.documentTypeId()),
+                jsonPath("$.name").value(documentResponse.name())
+            );
     }
 
     @Tag("Delete")
@@ -126,7 +128,7 @@ public class DocumentControllerTest extends BaseControllerTest {
         mockMvc.perform(delete(DOCUMENT_URI + "/1")).andExpect(status().isNoContent());
     }
 
-    @Tag("Get All")
+    @Tag("GetAll")
     @DisplayName("Should return All Documents")
     @Test
     public void testGetAllDocuments()
@@ -137,13 +139,13 @@ public class DocumentControllerTest extends BaseControllerTest {
 
         // Act & Assert
         mockMvc.perform(get(DOCUMENT_URI).param("page", "0").param("size", "10")
-                                         .accept(MediaType.APPLICATION_JSON))
-               .andExpectAll(
-                   status().isOk(),
-                   jsonPath("$.content[0].id").value(documentResponse.id()),
-                   jsonPath("$.content[0].documentTypeId").value(documentResponse.documentTypeId()),
-                   jsonPath("$.content[0].name").value(documentResponse.name())
-               );
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$.content[0].id").value(documentResponse.id()),
+                jsonPath("$.content[0].documentTypeId").value(documentResponse.documentTypeId()),
+                jsonPath("$.content[0].name").value(documentResponse.name())
+            );
     }
 
 }

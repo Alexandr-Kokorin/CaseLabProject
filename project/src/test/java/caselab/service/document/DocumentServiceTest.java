@@ -29,9 +29,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @Rollback
 public class DocumentServiceTest extends IntegrationTest {
 
-    @Autowired private DocumentService documentService;
-    @Autowired private DocumentTypesRepository documentTypeRepository;
-    @Autowired private ApplicationUserRepository applicationUserRepository;
+    @Autowired
+    private DocumentService documentService;
+    @Autowired
+    private DocumentTypesRepository documentTypeRepository;
+    @Autowired
+    private ApplicationUserRepository applicationUserRepository;
 
     private Long documentTypeId;
     private Long user1Id;
@@ -47,18 +50,16 @@ public class DocumentServiceTest extends IntegrationTest {
         documentType = documentTypeRepository.save(documentType);
         documentTypeId = documentType.getId();
 
-        ApplicationUser user1 =
-            ApplicationUser.builder()
-                .email("Test email 1 ")
-                .displayName("Test display name 1")
-                .hashedPassword("abc")
-                .build();
-        ApplicationUser user2 =
-            ApplicationUser.builder()
-                .email("Test email 2 ")
-                .displayName("Test display name 2")
-                .hashedPassword("abc")
-                .build();
+        ApplicationUser user1 = ApplicationUser.builder()
+            .email("Test email 1 ")
+            .displayName("Test display name 1")
+            .hashedPassword("abc")
+            .build();
+        ApplicationUser user2 = ApplicationUser.builder()
+            .email("Test email 2 ")
+            .displayName("Test display name 2")
+            .hashedPassword("abc")
+            .build();
         user1 = applicationUserRepository.save(user1);
         user1Id = user1.getId();
         user2 = applicationUserRepository.save(user2);
@@ -71,12 +72,11 @@ public class DocumentServiceTest extends IntegrationTest {
             .documentPermissionId(List.of(1L))
             .userId(user2Id)
             .build();
-        documentRequest =
-            DocumentRequest.builder()
-                .documentTypeId(documentTypeId)
-                .usersPermissions(Arrays.asList(UTD1, UTD2))
-                .name("Test name")
-                .build();
+        documentRequest = DocumentRequest.builder()
+            .documentTypeId(documentTypeId)
+            .usersPermissions(Arrays.asList(UTD1, UTD2))
+            .name("Test name")
+            .build();
 
     }
 
