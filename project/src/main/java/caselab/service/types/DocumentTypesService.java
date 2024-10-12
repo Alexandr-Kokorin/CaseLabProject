@@ -13,19 +13,20 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class DocumentTypesService {
+    private final DocumentTypeMapper documentTypeMapper;
 
     private final DocumentTypesRepository documentTypesRepository;
     private final MessageSource messageSource;
 
     public DocumentTypeResponse findDocumentTypeById(Long id) {
-        var optionalDocumentType = documentTypesRepository.findById(id).orElseThrow(() ->
+        var documentType = documentTypesRepository.findById(id).orElseThrow(() ->
             getDocumentTypeNoSuchElementException(id));
-        return convertDocumentTypeToDocumentTypeResponse(optionalDocumentType);
+        return documentTypeMapper.entityToResponse(documentType);
     }
 
     public DocumentTypeResponse createDocumentType(DocumentTypeRequest documentTypeRequest) {
-        DocumentType documentTypeForCreating = convertDocumentTypeRequestToDocumentType(documentTypeRequest);
-        return convertDocumentTypeToDocumentTypeResponse(documentTypesRepository.save(documentTypeForCreating));
+        DocumentType documentTypeForCreating = documentTypeMapper.requestToEntity(documentTypeRequest);
+        return documentTypeMapper.entityToResponse(documentTypesRepository.save(documentTypeForCreating));
     }
 
     public DocumentTypeResponse updateDocumentType(Long id, DocumentTypeRequest documentTypeRequest) {
@@ -33,9 +34,9 @@ public class DocumentTypesService {
         if (!documentTypeExist) {
             throw getDocumentTypeNoSuchElementException(id);
         }
-        var documentTypeForUpdating = convertDocumentTypeRequestToDocumentType(documentTypeRequest);
+        var documentTypeForUpdating = documentTypeMapper.requestToEntity(documentTypeRequest);
         documentTypeForUpdating.setId(id);
-        return convertDocumentTypeToDocumentTypeResponse(documentTypesRepository.save(documentTypeForUpdating));
+        return documentTypeMapper.entityToResponse(documentTypesRepository.save(documentTypeForUpdating));
     }
 
     public void deleteDocumentTypeById(Long id) {
@@ -44,16 +45,6 @@ public class DocumentTypesService {
             throw getDocumentTypeNoSuchElementException(id);
         }
         documentTypesRepository.deleteById(id);
-    }
-
-    private DocumentTypeResponse convertDocumentTypeToDocumentTypeResponse(DocumentType documentType) {
-        return new DocumentTypeResponse(documentType.getId(), documentType.getName());
-    }
-
-    private DocumentType convertDocumentTypeRequestToDocumentType(DocumentTypeRequest documentTypeDTO) {
-        DocumentType documentType = new DocumentType();
-        documentType.setName(documentTypeDTO.name());
-        return documentType;
     }
 
     private NoSuchElementException getDocumentTypeNoSuchElementException(Long id) {

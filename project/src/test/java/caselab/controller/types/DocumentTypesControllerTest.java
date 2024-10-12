@@ -51,8 +51,13 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Should create document type with valid payload")
         public void createDocumentType_success() {
-            var payload = new DocumentTypeRequest("test");
-            var response = new DocumentTypeResponse(1L, payload.name());
+            var payload = DocumentTypeRequest.builder().name
+                ("test").build();
+            var response = DocumentTypeResponse
+                .builder()
+                .name(payload.name())
+                .id(1L)
+                .build();
 
             when(documentTypesService.createDocumentType(payload)).thenReturn(response);
 
@@ -102,7 +107,11 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Should return document type when it exists")
         public void getCategoryById_success() {
-            var createdDocumentType = new DocumentTypeResponse(1L, "Test Document Type");
+            var createdDocumentType = DocumentTypeResponse
+                .builder()
+                .id(1L)
+                .name("Test Document Type")
+                .build();
 
             when(documentTypesService.findDocumentTypeById(createdDocumentType.id())).thenReturn(createdDocumentType);
 
@@ -146,11 +155,19 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Should update document type when it exists")
         public void updateCategory_success() {
-            var createdDocumentType = new DocumentTypeResponse(1L, "Old Name");
-            var payload = new DocumentTypeRequest("New Name");
+            var createdDocumentType = DocumentTypeResponse
+                .builder()
+                .id(1L)
+                .name("Old Name")
+                .build();
+
+            var payload = DocumentTypeRequest
+                .builder()
+                .name("New Name")
+                .build();
 
             when(documentTypesService.updateDocumentType(createdDocumentType.id(), payload))
-                .thenReturn(new DocumentTypeResponse(createdDocumentType.id(), payload.name()));
+                .thenReturn(DocumentTypeResponse.builder().id(createdDocumentType.id()).name(payload.name()).build());
 
             var mvcResponse = mockMvc.perform(put(DOCUMENT_TYPES_URI + "/" + createdDocumentType.id())
                     .contentType(MediaType.APPLICATION_JSON)
@@ -220,7 +237,11 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Should delete document type when it exists")
         public void deleteDocumentType_success() {
-            var createdDocumentType = new DocumentTypeResponse(1L, "Test Document Type");
+            var createdDocumentType = DocumentTypeResponse
+                .builder()
+                .id(1L)
+                .name("Test Document Type")
+                .build();
 
             var result = mockMvc.perform(delete(DOCUMENT_TYPES_URI + "/" + createdDocumentType.id())).andReturn();
 
