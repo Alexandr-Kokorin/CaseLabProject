@@ -109,7 +109,7 @@ CREATE TABLE IF NOT EXISTS signature
     signed_at                  timestamptz        ,
     document_version_id        BIGINT             NOT NULL REFERENCES document_version(id) ON DELETE CASCADE,
     application_user_id        BIGINT             NOT NULL REFERENCES application_user(id) ON DELETE CASCADE,
-    signature_data             TEXT               NOT NULL,
+    signature_data             TEXT               ,
 
     PRIMARY KEY (id)
 )
