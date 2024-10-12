@@ -8,7 +8,9 @@ import caselab.domain.repository.DocumentVersionRepository;
 import caselab.domain.repository.SignatureRepository;
 import caselab.exception.EntityNotFoundException;
 import java.time.OffsetDateTime;
+import java.util.Locale;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,18 +20,17 @@ public class SignatureService {
     private final ApplicationUserRepository userRepository;
     private final DocumentVersionRepository documentVersionRepository;
     private final SignatureMapper signatureMapper;
+    private final MessageSource messageSource;
 
     public SignatureCreatedResponse createSignature(SignatureCreateRequest signRequest) {
         var signature = signatureMapper.requestToEntity(signRequest);
 
         var documentVersionForSign = documentVersionRepository
             .findById(signRequest.documentVersionId())
-            .orElseThrow(() -> new EntityNotFoundException(
-                "Версия документа с id=%s не найдена".formatted(signRequest.documentVersionId())));
+            .orElseThrow(() -> getNotFoundException("document.version.not.found", signRequest.documentVersionId()));
         var userForSign = userRepository
             .findById(signRequest.userId())
-            .orElseThrow(() -> new EntityNotFoundException(
-                "Пользователь с id=%s не найден".formatted(signRequest.userId())));
+            .orElseThrow(() -> getNotFoundException("user.not.found", signRequest.userId()));
 
         signature.setApplicationUser(userForSign);
         signature.setDocumentVersion(documentVersionForSign);
@@ -47,4 +48,11 @@ public class SignatureService {
             .signatureData(savedSignature.getSignatureData())
             .build();
     }
+
+    private EntityNotFoundException getNotFoundException(String messageError, Long id) {
+        return new EntityNotFoundException(
+            messageSource.getMessage(messageError, new Object[] {id}, Locale.getDefault())
+        );
+    }
+
 }
