@@ -3,8 +3,8 @@ package caselab.controller.signature.payload;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.enums.SignatureStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Builder;
 import java.time.OffsetDateTime;
+import lombok.Builder;
 
 @Builder
 public record SignatureResponse(
