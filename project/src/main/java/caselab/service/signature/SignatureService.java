@@ -85,6 +85,7 @@ public class SignatureService {
             .findById(id)
             .orElseThrow(() -> getEntityNotFoundException(
                 "user.not.found", id));
+
         return user.getSignatures()
             .stream()
             .map(signatureMapper::entityToSignatureResponse)

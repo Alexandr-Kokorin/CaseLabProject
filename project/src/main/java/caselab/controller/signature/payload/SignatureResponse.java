@@ -19,7 +19,9 @@ public record SignatureResponse(
     OffsetDateTime signedAt,
     @Schema(description = "Хеш подписи")
     String signatureData,
-    @Schema(description = "Пользователь, который поставил подпись")
-    Long userId
+    @Schema(description = "Пользователь, к которому относится подпись")
+    Long userId,
+    @Schema(description = "Версия документа для подписи")
+    Long documentVersionId
 ) {
 }
