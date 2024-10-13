@@ -4,6 +4,7 @@ import caselab.controller.signature.payload.SignatureCreateRequest;
 import caselab.controller.signature.payload.SignatureResponse;
 import caselab.domain.entity.Signature;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 
@@ -14,5 +15,6 @@ import org.mapstruct.ReportingPolicy;
 public interface SignatureMapper {
     Signature requestToEntity(SignatureCreateRequest request);
 
+    @Mapping(target = "userId", source = "signature.applicationUser.id")
     SignatureResponse entityToSignatureResponse(Signature signature);
 }

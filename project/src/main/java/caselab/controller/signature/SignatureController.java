@@ -1,7 +1,6 @@
 package caselab.controller.signature;
 
 import caselab.controller.signature.payload.SignatureCreateRequest;
-import caselab.controller.signature.payload.SignatureCreatedResponse;
 import caselab.controller.signature.payload.SignatureResponse;
 import caselab.service.signature.SignatureService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,7 +27,7 @@ public class SignatureController {
 
     @Operation(summary = "Отправить версию документа на подпись")
     @PostMapping("/send")
-    public SignatureCreatedResponse sendDocumentVersionOnSigning(SignatureCreateRequest signatureCreateRequest) {
+    public SignatureResponse sendDocumentVersionOnSigning(SignatureCreateRequest signatureCreateRequest) {
             return signatureService.createSignature(signatureCreateRequest);
     }
 }

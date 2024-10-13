@@ -1,7 +1,6 @@
 package caselab.service.signature;
 
 import caselab.controller.signature.payload.SignatureCreateRequest;
-import caselab.controller.signature.payload.SignatureCreatedResponse;
 import caselab.controller.signature.payload.SignatureResponse;
 import caselab.domain.entity.Signature;
 import caselab.domain.entity.enums.SignatureStatus;
@@ -45,11 +44,12 @@ public class SignatureService {
             signature.getId()
         ));
 
+        signature.setStatus(SignatureStatus.SIGNED);
         signature.setSignatureData(hash);
         signature.setSignedAt(OffsetDateTime.now());
     }
 
-    public SignatureCreatedResponse createSignature(SignatureCreateRequest signRequest) {
+    public SignatureResponse createSignature(SignatureCreateRequest signRequest) {
         var signature = signatureMapper.requestToEntity(signRequest);
 
         var documentVersionForSign = documentVersionRepository
@@ -69,15 +69,7 @@ public class SignatureService {
 
         var savedSignature = signatureRepository.save(signature);
 
-        return SignatureCreatedResponse
-            .builder()
-            .id(savedSignature.getId())
-            .name(savedSignature.getName())
-            .status(savedSignature.getStatus())
-            .sentAt(savedSignature.getSentAt())
-            .signedAt(savedSignature.getSignedAt())
-            .signatureData(savedSignature.getSignatureData())
-            .build();
+        return signatureMapper.entityToSignatureResponse(savedSignature);
     }
 
     private EntityNotFoundException getEntityNotFoundException(String messageError, Long id) {
