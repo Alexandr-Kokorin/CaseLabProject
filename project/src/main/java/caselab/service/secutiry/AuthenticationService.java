@@ -8,6 +8,7 @@ import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.ApplicationUserRepository;
 import caselab.domain.repository.GlobalPermissionRepository;
 import java.util.List;
+import caselab.exception.UserExistsException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,6 +26,8 @@ public class AuthenticationService {
     private final JwtService jwtService;
 
     public AuthenticationResponse register(RegisterRequest request) {
+        checkEmail(request.email());
+
         var globalPermission = globalPermissionRepository.findByName(GlobalPermissionName.USER);
         var user = ApplicationUser.builder()
             .email(request.email())
@@ -34,9 +37,7 @@ public class AuthenticationService {
             .build();
         appUserRepository.save(user);
         var jwtToken = jwtService.generateToken(user);
-        return AuthenticationResponse.builder()
-            .token(jwtToken)
-            .build();
+        return new AuthenticationResponse(jwtToken);
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
@@ -49,12 +50,17 @@ public class AuthenticationService {
         var user = appUserRepository.findByEmail(request.email())
             .orElseThrow();
         var jwtToken = jwtService.generateToken(user);
-        return AuthenticationResponse.builder()
-            .token(jwtToken)
-            .build();
+        return new AuthenticationResponse(jwtToken);
     }
 
     public String encodePassword(String password) {
         return passwordEncoder.encode(password);
+    }
+
+    private void checkEmail(String email) {
+        var applicationUser = appUserRepository.findByEmail(email);
+        if (applicationUser.isPresent()) {
+            throw new UserExistsException(email);
+        }
     }
 }
