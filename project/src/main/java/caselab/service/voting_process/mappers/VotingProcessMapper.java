@@ -25,12 +25,7 @@ public interface VotingProcessMapper {
     @Mapping(target = "documentVersion", source = "documentVersionId", qualifiedByName = "setDocumentVersion")
     VotingProcess requestToEntity(VotingProcessRequest votingProcessRequest);
 
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "status", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "deadline", source = "deadline", qualifiedByName = "setDeadline")
-    @Mapping(target = "documentVersion", ignore = true)
-    @Mapping(target = "votes", ignore = true)
     VotingProcess requestToEntityForUpdate(VotingProcessRequest votingProcessRequest);
 
     @Named("setDocumentVersion")
