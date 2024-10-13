@@ -16,12 +16,12 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.context.MessageSource;
 import java.util.Optional;
+import java.time.OffsetDateTime;
+import java.util.Locale;
 import caselab.exception.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-import java.time.OffsetDateTime;
-import java.util.Locale;
 
 import static java.time.OffsetDateTime.now;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -47,49 +47,38 @@ public class SignatureServiceTest {
     @Mock
     private MessageSource messageSource;
 
+    @BeforeEach
+    public void setup() {
+        ApplicationUser user = new ApplicationUser();
+        user.setId(1L);
+        user.setEmail("test@example.com");
+
+        signature = new Signature();
+        signature.setId(1L);
+        signature.setStatus(SignatureStatus.NOT_SIGNED);
+        signature.setSignedAt(null);
+        signature.setApplicationUser(user);
+    }
+
     @DisplayName("Should create signature")
     @Test
-    public void createSignatureValid() {
-        var request = SignatureCreateRequest
-            .builder()
-            .name("Test")
-            .userId(1L)
-            .documentVersionId(1L)
-            .build();
+    public void createSignatureValid_shouldReturnCreatedSignature() {
+        var request = getSignatureCreateRequest();
 
-        var mappedSignatureRequest = Signature
-            .builder()
-            .name(request.name())
-            .build();
+        var mappedSignatureRequest = getSignature(request);
 
         var foundUser = ApplicationUser.builder().id(request.userId()).build();
         var foundDocumentVersion = DocumentVersion.builder().id(request.documentVersionId()).build();
 
-        var createdSignature = Signature
-            .builder()
-            .id(1L)
-            .applicationUser(foundUser)
-            .documentVersion(foundDocumentVersion)
-            .name(request.name())
-            .status(SignatureStatus.NOT_SIGNED)
-            .sentAt(now())
-            .build();
+        var createdSignature = getSignature(request);
 
-        var createdSignatureResponse = SignatureResponse
-            .builder()
-            .id(1L)
-            .userId(foundUser.getId())
-            .documentVersionId(foundDocumentVersion.getId())
-            .name(request.name())
-            .status(SignatureStatus.NOT_SIGNED)
-            .sentAt(now())
-            .build();
+        var createdSignatureResponse = getSignatureResponse(foundUser, foundDocumentVersion, request);
 
+        Mockito.when(signatureMapper.requestToEntity(Mockito.any(SignatureCreateRequest.class)))
+            .thenReturn(mappedSignatureRequest);
         Mockito.when(documentVersionRepository.findById(request.documentVersionId()))
             .thenReturn(Optional.of(foundDocumentVersion));
         Mockito.when(userRepository.findById(request.userId())).thenReturn(Optional.of(foundUser));
-        Mockito.when(signatureMapper.requestToEntity(Mockito.any(SignatureCreateRequest.class)))
-            .thenReturn(mappedSignatureRequest);
         Mockito.when(signatureRepository.save(Mockito.any(Signature.class))).thenReturn(createdSignature);
         Mockito.when(signatureMapper.entityToSignatureResponse(Mockito.any(Signature.class)))
             .thenReturn(createdSignatureResponse);
@@ -109,22 +98,45 @@ public class SignatureServiceTest {
         );
     }
 
-    @BeforeEach
-    public void setup() {
-        ApplicationUser user = new ApplicationUser();
-        user.setId(1L);
-        user.setEmail("test@example.com");
+    @DisplayName("Create signature for non-existent user")
+    @Test
+    public void createSignatureForUserNotExist_shouldThrowEntityNotFoundException(){
+        var request = getSignatureCreateRequest();
 
-        signature = new Signature();
-        signature.setId(1L);
-        signature.setStatus(SignatureStatus.NOT_SIGNED);
-        signature.setSignedAt(null);
-        signature.setApplicationUser(user);
+        var mappedSignatureRequest = getSignature(request);
+
+        var foundDocumentVersion = DocumentVersion.builder().id(request.documentVersionId()).build();
+
+        var expectedMessage = messageSource.getMessage("user.not.found", new Object[] {1L}, Locale.getDefault());
+
+        Mockito.when(signatureMapper.requestToEntity(Mockito.any(SignatureCreateRequest.class))).thenReturn(mappedSignatureRequest);
+        Mockito.when(documentVersionRepository.findById(request.documentVersionId())).thenReturn(Optional.of(foundDocumentVersion));
+        Mockito.when(userRepository.findById(request.userId())).thenThrow(new EntityNotFoundException(expectedMessage));
+
+        var exception = assertThrows(EntityNotFoundException.class,() -> signatureService.createSignature(request));
+
+        assertThat(exception.getMessage()).isEqualTo(expectedMessage);
+    }
+
+    @DisplayName("Create signature for non-existent document version")
+    @Test
+    public void createSignatureForDocumentVersionNotExist_shouldThrowEntityNotFoundException(){
+        var request = getSignatureCreateRequest();
+
+        var mappedSignatureRequest = getSignature(request);
+
+        var expectedMessage = messageSource.getMessage("document.version.not.found", new Object[] {1L}, Locale.getDefault());
+
+        Mockito.when(signatureMapper.requestToEntity(Mockito.any(SignatureCreateRequest.class))).thenReturn(mappedSignatureRequest);
+        Mockito.when(documentVersionRepository.findById(request.documentVersionId())).thenThrow(new EntityNotFoundException(expectedMessage));
+
+        var exception = assertThrows(EntityNotFoundException.class,() -> signatureService.createSignature(request));
+
+        assertThat(exception.getMessage()).isEqualTo(expectedMessage);
     }
 
     @Test
     public void testSignatureUpdate_Sign() {
-
         when(signatureRepository.findById(1L)).thenReturn(Optional.of(signature));
         SignatureResponse expectedResponse = new SignatureResponse(1L, "test", SignatureStatus.SIGNED, null,
             OffsetDateTime.now(), "test", 1L, 1L
@@ -168,5 +180,37 @@ public class SignatureServiceTest {
         String expectedMessage =
             messageSource.getMessage("user.not.found", new Object[] {1L}, Locale.getDefault());
         assertEquals(expectedMessage, exception.getMessage());
+    }
+
+    private Signature getSignature(SignatureCreateRequest request) {
+        return Signature
+            .builder()
+            .name(request.name())
+            .build();
+    }
+
+    private SignatureCreateRequest getSignatureCreateRequest() {
+        return SignatureCreateRequest
+            .builder()
+            .name("Test")
+            .userId(1L)
+            .documentVersionId(1L)
+            .build();
+    }
+
+    private SignatureResponse getSignatureResponse(
+        ApplicationUser foundUser,
+        DocumentVersion foundDocumentVersion,
+        SignatureCreateRequest request
+    ) {
+        return SignatureResponse
+            .builder()
+            .id(1L)
+            .userId(foundUser.getId())
+            .documentVersionId(foundDocumentVersion.getId())
+            .name(request.name())
+            .status(SignatureStatus.NOT_SIGNED)
+            .sentAt(now())
+            .build();
     }
 }
