@@ -28,18 +28,17 @@ public class SignatureService {
     private final DocumentVersionRepository documentVersionRepository;
     private final SignatureMapper signatureMapper;
 
-
     public SignatureResponse signatureUpdate(Long id, boolean sign) {
-            var signature = signatureRepository.findById(id)
-                .orElseThrow(() -> getEntityNotFoundException("signature.not.found", id));
-            if(sign) {
-                makeSign(signature);
-            }else{
-                signature.setStatus(SignatureStatus.NOT_SIGNED);
-                signature.setSignedAt(OffsetDateTime.now());
-            }
-            return signatureMapper.entityToSignatureResponse(signature);
+        var signature = signatureRepository.findById(id)
+            .orElseThrow(() -> getEntityNotFoundException("signature.not.found", id));
+        if (sign) {
+            makeSign(signature);
+        } else {
+            signature.setStatus(SignatureStatus.REFUSED);
         }
+        signature.setSignedAt(OffsetDateTime.now());
+        return signatureMapper.entityToSignatureResponse(signature);
+    }
 
     private void makeSign(Signature signature) {
         var user = signature.getApplicationUser();
@@ -52,7 +51,6 @@ public class SignatureService {
 
         signature.setStatus(SignatureStatus.SIGNED);
         signature.setSignatureData(hash);
-        signature.setSignedAt(OffsetDateTime.now());
     }
 
     public SignatureResponse createSignature(SignatureCreateRequest signRequest) {
