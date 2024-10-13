@@ -13,6 +13,6 @@ import org.mapstruct.ReportingPolicy;
         uses = {VoteUserMapper.class})
 public interface VoteMapper {
 
-    @Mapping(target = "VotingProcessId", source = "votingProcess.id")
+    @Mapping(target = "votingProcessId", source = "votingProcess.id")
     VoteResponse entityToResponse(Vote vote);
 }

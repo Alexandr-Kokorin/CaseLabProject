@@ -4,9 +4,10 @@ import caselab.domain.entity.Vote;
 import caselab.domain.entity.enums.VotingProcessStatus;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Builder;
 import java.time.OffsetDateTime;
 import java.util.List;
+import lombok.Builder;
+
 
 @Builder
 public record VotingProcessResponse(

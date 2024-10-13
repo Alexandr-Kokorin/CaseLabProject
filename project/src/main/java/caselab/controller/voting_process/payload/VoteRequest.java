@@ -13,7 +13,7 @@ public record VoteRequest(
     Long applicationUserId,
     @Positive
     @Schema(description = "ID голосования", example = "1")
-    Long VotingProcessId,
+    Long votingProcessId,
     @NotNull
     @Schema(description = "Решение", example = "IN_FAVOUR")
     VoteStatus status

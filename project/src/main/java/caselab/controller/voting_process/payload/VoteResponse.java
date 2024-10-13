@@ -13,6 +13,6 @@ public record VoteResponse(
     @Schema(description = "Пользователь")
     VoteUserResponse applicationUser,
     @Schema(description = "ID голосования", example = "1")
-    Long VotingProcessId
+    Long votingProcessId
 ) {
 }

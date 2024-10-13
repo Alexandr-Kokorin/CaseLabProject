@@ -14,16 +14,17 @@ import caselab.domain.repository.VotingProcessRepository;
 import caselab.exception.EntityNotFoundException;
 import caselab.service.voting_process.mappers.VoteMapper;
 import caselab.service.voting_process.mappers.VotingProcessMapper;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+
 
 @Slf4j
 @Service
@@ -38,22 +39,41 @@ public class VotingProcessService {
     private final VoteMapper voteMapper;
     private final MessageSource messageSource;
 
+    public VotingProcessResponse createVotingProcess(VotingProcessRequest votingProcessRequest) {
+        VotingProcess votingProcess = votingProcessMapper.requestToEntity(votingProcessRequest);
+        votingProcess.setStatus(VotingProcessStatus.IN_PROGRESS);
+        votingProcess.setCreatedAt(OffsetDateTime.now());
+
+        votingProcess.setVotes(setVotes(votingProcessRequest.userIds(), votingProcess));
+        return votingProcessMapper.entityToResponse(votingProcessRepository.save(votingProcess));
+    }
+
+    public VotingProcessResponse getVotingProcessById(Long id) {
+        VotingProcess votingProcess = votingProcessRepository.findById(id)
+            .orElseThrow(() -> votingProcessNotFound(id));
+        return votingProcessMapper.entityToResponse(votingProcess);
+    }
+
+    public void deleteVotingProcess(Long id) {
+        var votingProcessExist = votingProcessRepository.existsById(id);
+        if (!votingProcessExist) {
+            throw votingProcessNotFound(id);
+        }
+        votingProcessRepository.deleteById(id);
+    }
+
     public VotingProcessResponse updateVotingProcess(Long id, VotingProcessRequest votingProcessRequest) {
         if (!votingProcessRepository.existsById(id)) {
             throw votingProcessNotFound(id);
         }
         var votingProcess = votingProcessRepository.findById(id).orElseThrow();
-        var updateVotingProcess = votingProcessMapper.requestToEntity(votingProcessRequest);
+        var updateVotingProcess = votingProcessMapper.requestToEntityForUpdate(votingProcessRequest);
 
         updateVotingProcess.setId(votingProcess.getId());
         updateVotingProcess.setStatus(votingProcess.getStatus());
         updateVotingProcess.setCreatedAt(votingProcess.getCreatedAt());
         updateVotingProcess.setDocumentVersion(votingProcess.getDocumentVersion());
-        List<Vote> votes = new ArrayList<>();
-        for (Long userId : votingProcessRequest.userIds()) {
-            votes.add(createVoteById(userId, updateVotingProcess));
-        }
-        updateVotingProcess.setVotes(votes);
+        updateVotingProcess.setVotes(setVotes(votingProcessRequest.userIds(), updateVotingProcess));
 
         return votingProcessMapper.entityToResponse(votingProcessRepository.save(updateVotingProcess));
     }
@@ -70,13 +90,21 @@ public class VotingProcessService {
 
     public VoteResponse castVote(VoteRequest voteRequest) {
         var vote = voteRepository.findByApplicationUserIdAndVotingProcessId(
-                voteRequest.applicationUserId(), voteRequest.VotingProcessId())
-            .orElseThrow(() -> voteNotFound(voteRequest.VotingProcessId(), voteRequest.applicationUserId()));
+                voteRequest.applicationUserId(), voteRequest.votingProcessId())
+            .orElseThrow(() -> voteNotFound(voteRequest.votingProcessId(), voteRequest.applicationUserId()));
         if (vote.getVotingProcess().getDeadline().isBefore(OffsetDateTime.now())) {
-            throw votingProcessIsOver(voteRequest.VotingProcessId());
+            throw votingProcessIsOver(voteRequest.votingProcessId());
         }
         vote.setStatus(voteRequest.status());
         return voteMapper.entityToResponse(voteRepository.save(vote));
+    }
+
+    private List<Vote> setVotes(List<Long> userIds, VotingProcess votingProcess) {
+        List<Vote> votes = new ArrayList<>();
+        for (Long userId : userIds) {
+            votes.add(createVoteById(userId, votingProcess));
+        }
+        return votes;
     }
 
     private EntityNotFoundException votingProcessNotFound(Long id) {
