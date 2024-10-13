@@ -29,11 +29,15 @@ public class SignatureService {
     private final SignatureMapper signatureMapper;
 
 
-    public SignatureResponse signatureUpdate(Long id) {
+    public SignatureResponse signatureUpdate(Long id, boolean sign) {
             var signature = signatureRepository.findById(id)
                 .orElseThrow(() -> getEntityNotFoundException("signature.not.found", id));
-
-            makeSign(signature);
+            if(sign) {
+                makeSign(signature);
+            }else{
+                signature.setStatus(SignatureStatus.NOT_SIGNED);
+                signature.setSignedAt(OffsetDateTime.now());
+            }
             return signatureMapper.entityToSignatureResponse(signature);
         }
 
