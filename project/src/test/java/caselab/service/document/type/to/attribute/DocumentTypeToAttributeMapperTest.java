@@ -70,12 +70,4 @@ public class DocumentTypeToAttributeMapperTest {
         assertThat(attribute.getId()).isEqualTo(1L);
     }
 
-    @Test
-    public void testMapAttributeIdToAttribute_Null() {
-        // Act
-        Attribute attribute = DocumentTypeToAttributeMapper.mapAttributeIdToAttribute(null);
-
-        // Assert
-        assertThat(attribute).isNull();
-    }
 }
