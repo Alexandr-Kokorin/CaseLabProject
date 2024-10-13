@@ -27,12 +27,9 @@ public interface DocumentTypeToAttributeMapper {
 
     @Named("mapAttributeIdToAttribute")
     static Attribute mapAttributeIdToAttribute(Long attributeId) {
-        if (attributeId == null) {
-            return null;
-        }
-        Attribute attribute = new Attribute();
-        attribute.setId(attributeId);
-        return attribute;
+        return Attribute.builder()
+            .id(attributeId)
+            .build();
     }
 }
 

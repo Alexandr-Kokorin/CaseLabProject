@@ -80,9 +80,15 @@ public class DocumentTypesService {
         );
     }
 
+    private EntityNotFoundException attributeNotFound(Long id) {
+        return new EntityNotFoundException(
+            messageSource.getMessage("attribute.not.found", new Object[] {id}, Locale.getDefault())
+        );
+    }
+
     private DocumentType getExistingDocumentType(Long id) {
         return documentTypeRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("DocumentType not found"));
+            .orElseThrow(() -> documentTypeNotFound(id));
     }
 
     private void updateDocumentTypeName(DocumentType documentType, String name) {
@@ -148,7 +154,7 @@ public class DocumentTypesService {
     private DocumentTypeToAttribute createNewAttributeAssociation(DocumentType documentType,
         Long attributeId, Boolean isOptional) {
         Attribute attribute = attributeRepository.findById(attributeId)
-            .orElseThrow(() -> new EntityNotFoundException("Attribute not found"));
+            .orElseThrow(() -> attributeNotFound(attributeId));
 
         DocumentTypeToAttribute newDtta = new DocumentTypeToAttribute();
         newDtta.setDocumentType(documentType);

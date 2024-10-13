@@ -7,10 +7,8 @@ import caselab.domain.entity.document.type.to.attribute.DocumentTypeToAttribute;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 import org.springframework.boot.test.context.SpringBootTest;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 @SpringBootTest
 public class DocumentTypeToAttributeMapperTest {
@@ -29,10 +27,12 @@ public class DocumentTypeToAttributeMapperTest {
         DocumentTypeToAttribute result = mapper.documentTypeToAttributeRequestToDocumentTypeToAttribute(request);
 
         // Assert
-        assertNotNull(result);
-        assertNotNull(result.getAttribute());
-        assertEquals(1L, result.getAttribute().getId());
-        assertTrue(result.getOptional());
+        assertAll(
+            () -> assertThat(result).isNotNull(),
+            () -> assertThat(result.getAttribute()).isNotNull(),
+            () -> assertThat(result.getAttribute().getId()).isEqualTo(1L),
+            () -> assertThat(result.getOptional()).isEqualTo(true)
+        );
     }
 
     @Test
@@ -49,10 +49,12 @@ public class DocumentTypeToAttributeMapperTest {
         DocumentTypeToAttributeResponse response = mapper.documentTypeToAttributeToDocumentTypeToAttributeResponse(documentTypeToAttribute);
 
         // Assert
-        assertNotNull(response);
-        assertEquals(1L, response.attributeId());
-        assertNotNull(response.isOptional());
-        assertTrue(response.isOptional());
+        assertAll(
+            () -> assertThat(response).isNotNull(),
+        () -> assertThat(response.attributeId()).isEqualTo(1L),
+        () -> assertThat(response.isOptional()).isNotNull(),
+        () -> assertThat(response.isOptional()).isEqualTo(true)
+        );
     }
 
     @Test
@@ -64,8 +66,8 @@ public class DocumentTypeToAttributeMapperTest {
         Attribute attribute = DocumentTypeToAttributeMapper.mapAttributeIdToAttribute(attributeId);
 
         // Assert
-        assertNotNull(attribute);
-        assertEquals(1L, attribute.getId());
+        assertThat(attribute).isNotNull();
+        assertThat(attribute.getId()).isEqualTo(1L);
     }
 
     @Test
@@ -74,6 +76,6 @@ public class DocumentTypeToAttributeMapperTest {
         Attribute attribute = DocumentTypeToAttributeMapper.mapAttributeIdToAttribute(null);
 
         // Assert
-        assertNull(attribute);
+        assertThat(attribute).isNull();
     }
 }
