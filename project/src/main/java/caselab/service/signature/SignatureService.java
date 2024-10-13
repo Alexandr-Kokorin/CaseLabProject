@@ -10,12 +10,14 @@ import caselab.domain.repository.SignatureRepository;
 import caselab.exception.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 
+@SuppressWarnings("MultipleStringLiterals")
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -76,5 +78,16 @@ public class SignatureService {
         return new EntityNotFoundException(
             messageSource.getMessage(messageError, new Object[] {id}, Locale.getDefault())
         );
+    }
+
+    public List<SignatureResponse> findAllSignaturesByUserId(Long id) {
+        var user = userRepository
+            .findById(id)
+            .orElseThrow(() -> getEntityNotFoundException(
+                "user.not.found", id));
+        return user.getSignatures()
+            .stream()
+            .map(signatureMapper::entityToSignatureResponse)
+            .toList();
     }
 }
