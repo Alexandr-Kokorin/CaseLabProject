@@ -8,14 +8,13 @@ import caselab.domain.entity.UserToDocument;
 import caselab.domain.repository.DocumentRepository;
 import caselab.domain.repository.DocumentTypesRepository;
 import caselab.domain.repository.UserToDocumentRepository;
-import caselab.exception.EntityNotFoundException;
+import caselab.exception.entity.DocumentNotFoundException;
+import caselab.exception.entity.DocumentTypeNotFoundException;
 import caselab.service.user.to.document.UserToDocumentMapper;
 import jakarta.transaction.Transactional;
 import java.util.List;
-import java.util.Locale;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -26,7 +25,6 @@ import org.springframework.stereotype.Service;
 public class DocumentService {
 
     private final DocumentRepository documentRepository;
-    private final MessageSource messageSource;
     private final DocumentMapper documentMapper;
     private final DocumentTypesRepository documentTypeRepository;
     private final UserToDocumentMapper userToDocumentMapper;
@@ -40,7 +38,7 @@ public class DocumentService {
 
     public DocumentResponse getDocumentById(Long id) {
         return documentMapper.documentToDocumentResponse(documentRepository.findById(id)
-            .orElseThrow(() -> documentNotFound(id)));
+            .orElseThrow(() -> new DocumentNotFoundException(id)));
     }
 
     public Page<DocumentResponse> getAllDocuments(Pageable pageable) {
@@ -49,11 +47,11 @@ public class DocumentService {
 
     public DocumentResponse updateDocument(Long documentId, DocumentRequest documentRequest) {
         Document document = documentRepository.findById(documentId)
-            .orElseThrow(() -> documentNotFound(documentId));
+            .orElseThrow(() -> new DocumentNotFoundException(documentId));
 
         // Обновляем поля документа
         DocumentType documentType = documentTypeRepository.findById(documentRequest.documentTypeId())
-            .orElseThrow(() -> documentTypeNotFound(documentRequest.documentTypeId()));
+            .orElseThrow(() -> new DocumentTypeNotFoundException(documentRequest.documentTypeId()));
         document.setDocumentType(documentType);
         document.setName(documentRequest.name());
 
@@ -83,19 +81,19 @@ public class DocumentService {
         if (documentRepository.existsById(id)) {
             documentRepository.deleteById(id);
         } else {
-            throw documentNotFound(id);
+            throw new DocumentNotFoundException(id);
         }
     }
 
-    private EntityNotFoundException documentNotFound(Long id) {
-        return new EntityNotFoundException(
-            messageSource.getMessage("document.not.found", new Object[] {id}, Locale.getDefault())
-        );
-    }
+//    private EntityNotFoundException documentNotFound(Long id) {
+//        return new EntityNotFoundException(
+//            messageSource.getMessage("document.not.found", new Object[] {id}, Locale.getDefault())
+//        );
+//    }
 
-    private EntityNotFoundException documentTypeNotFound(Long id) {
-        return new EntityNotFoundException(
-            messageSource.getMessage("document.type.not.found", new Object[] {id}, Locale.getDefault())
-        );
-    }
+//    private EntityNotFoundException documentTypeNotFound(Long id) {
+//        return new EntityNotFoundException(
+//            messageSource.getMessage("document.type.not.found", new Object[] {id}, Locale.getDefault())
+//        );
+//    }
 }

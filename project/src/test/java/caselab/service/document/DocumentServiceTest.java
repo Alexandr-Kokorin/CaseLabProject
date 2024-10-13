@@ -9,10 +9,9 @@ import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.DocumentType;
 import caselab.domain.repository.ApplicationUserRepository;
 import caselab.domain.repository.DocumentTypesRepository;
+import caselab.exception.entity.DocumentNotFoundException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.NoSuchElementException;
-import caselab.exception.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -147,14 +146,14 @@ public class DocumentServiceTest extends IntegrationTest {
         documentService.deleteDocument(id);
 
         // Assert
-        assertThrows(EntityNotFoundException.class, () -> documentService.getDocumentById(id));
+        assertThrows(DocumentNotFoundException.class, () -> documentService.getDocumentById(id));
     }
 
     @DisplayName("Should not found document")
     @Test
     public void testDeleteDocumentNotFound() {
         // Act & Assert
-        assertThrows(EntityNotFoundException.class, () -> documentService.deleteDocument(Long.MAX_VALUE));
+        assertThrows(DocumentNotFoundException.class, () -> documentService.deleteDocument(Long.MAX_VALUE));
     }
 
     @DisplayName("Should return document")

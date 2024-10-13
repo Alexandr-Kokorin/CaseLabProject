@@ -4,11 +4,9 @@ import caselab.controller.users.payload.UserResponse;
 import caselab.controller.users.payload.UserUpdateRequest;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.repository.ApplicationUserRepository;
-import caselab.exception.EntityNotFoundException;
+import caselab.exception.entity.UserNotFoundException;
 import caselab.service.secutiry.AuthenticationService;
 import java.util.List;
-import java.util.Locale;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,7 +14,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.MessageSource;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
@@ -27,19 +24,15 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class ApplicationUserServiceTest {
 
+    private final Long user1Id = 1L;
     @InjectMocks
     private ApplicationUserService userService;
-
     @Mock
     private ApplicationUserRepository userRepository;
     @Mock
     private UserMapper userMapper;
     @Mock
     private AuthenticationService authService;
-    @Mock
-    private MessageSource messageSource;
-
-    private final Long user1Id = 1L;
     private ApplicationUser user1;
     private UserResponse userResponse1;
     private List<ApplicationUser> users;
@@ -103,12 +96,7 @@ public class ApplicationUserServiceTest {
     void findUser_shouldThrowExceptionWhenUserNotFound() {
         when(userRepository.findById(user1Id)).thenReturn(Optional.empty());
 
-        EntityNotFoundException exception =
-            assertThrows(EntityNotFoundException.class, () -> userService.findUser(user1Id));
-
-        String expectedMessage =
-            messageSource.getMessage("user.not.found", new Object[] {user1Id}, Locale.getDefault());
-        assertEquals(expectedMessage, exception.getMessage());
+        assertThrows(UserNotFoundException.class, () -> userService.findUser(user1Id));
     }
 
     @Test
@@ -135,12 +123,7 @@ public class ApplicationUserServiceTest {
 
         when(userRepository.findById(user1Id)).thenReturn(Optional.empty());
 
-        EntityNotFoundException exception =
-            assertThrows(EntityNotFoundException.class, () -> userService.updateUser(user1Id, updateRequest));
-
-        String expectedMessage =
-            messageSource.getMessage("user.not.found", new Object[] {user1Id}, Locale.getDefault());
-        assertEquals(expectedMessage, exception.getMessage());
+        assertThrows(UserNotFoundException.class, () -> userService.updateUser(user1Id, updateRequest));
     }
 
     @Test
@@ -157,12 +140,7 @@ public class ApplicationUserServiceTest {
     void deleteUser_shouldThrowExceptionWhenUserNotFound() {
         when(userRepository.findById(user1Id)).thenReturn(Optional.empty());
 
-        EntityNotFoundException exception =
-            assertThrows(EntityNotFoundException.class, () -> userService.deleteUser(user1Id));
-
-        String expectedMessage =
-            messageSource.getMessage("user.not.found", new Object[] {user1Id}, Locale.getDefault());
-        assertEquals(expectedMessage, exception.getMessage());
+        assertThrows(UserNotFoundException.class, () -> userService.deleteUser(user1Id));
 
         verify(userRepository, times(0)).delete(any(ApplicationUser.class));
     }
