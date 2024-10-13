@@ -76,12 +76,6 @@ public class SignatureService {
         return signatureMapper.entityToSignatureResponse(savedSignature);
     }
 
-    private EntityNotFoundException getEntityNotFoundException(String messageError, Long id) {
-        return new EntityNotFoundException(
-            messageSource.getMessage(messageError, new Object[] {id}, Locale.getDefault())
-        );
-    }
-
     public List<SignatureResponse> findAllSignaturesByUserId(Long id) {
         var user = userRepository
             .findById(id)
@@ -92,5 +86,11 @@ public class SignatureService {
             .stream()
             .map(signatureMapper::entityToSignatureResponse)
             .toList();
+    }
+
+    private EntityNotFoundException getEntityNotFoundException(String messageError, Long id) {
+        return new EntityNotFoundException(
+            messageSource.getMessage(messageError, new Object[] {id}, Locale.getDefault())
+        );
     }
 }

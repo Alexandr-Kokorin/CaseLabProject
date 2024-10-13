@@ -1,24 +1,34 @@
 package caselab.controller.signature;
 
+import caselab.configuration.JwtAuthenticationFilter;
 import caselab.controller.BaseControllerTest;
 import caselab.controller.signature.payload.SignatureCreateRequest;
 import caselab.controller.signature.payload.SignatureResponse;
+import caselab.domain.entity.ApplicationUser;
+import caselab.domain.entity.Document;
+import caselab.domain.entity.DocumentType;
+import caselab.domain.entity.DocumentVersion;
+import caselab.domain.entity.Signature;
 import caselab.domain.entity.enums.SignatureStatus;
-import caselab.exception.EntityNotFoundException;
-import caselab.service.signature.SignatureService;
+import caselab.domain.repository.ApplicationUserRepository;
+import caselab.domain.repository.DocumentRepository;
+import caselab.domain.repository.DocumentTypesRepository;
+import caselab.domain.repository.DocumentVersionRepository;
+import caselab.domain.repository.SignatureRepository;
+import caselab.service.signature.SignatureMapper;
 import lombok.SneakyThrows;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.web.SecurityFilterChain;
 
 import static java.time.OffsetDateTime.now;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -30,25 +40,73 @@ public class SignatureControllerTest extends BaseControllerTest {
     private final String SIGN_URI = "/api/v1/signatures";
     private static final String NOT_FOUND_DOCUMENT_VERSION = "Версия документа с id = %s не найдена";
     private static final String NOT_FOUND_USER = "Пользователь с id = %s не найден";
-
-    @MockBean
-    private SignatureService signatureService;
-
+    @Autowired
+    private DocumentTypesRepository documentTypesRepository;
+    @Autowired
+    private ApplicationUserRepository userRepository;
+    @Autowired
+    private DocumentRepository documentRepository;
+    @Autowired
+    private DocumentVersionRepository documentVersionRepository;
+    @Autowired
+    private SignatureRepository signatureRepository;
+    @Autowired
+    private SignatureMapper signatureMapper;
     @MockBean
     private SecurityFilterChain securityFilterChain;
-
-    private SignatureResponse signatureResponse;
+    private Long userId;
+    private Long documentVersionId;
+    private Long signatureId;
 
     @BeforeEach
-    public void setup() {
-        signatureResponse = SignatureResponse
+    public void addDocumentVersionAndApplicationUser() {
+        var savedDocumentType = documentTypesRepository.save(DocumentType
             .builder()
-            .id(1L)
             .name("test")
-            .userId(1L)
-            .status(SignatureStatus.SIGNED)
-            .signatureData("test")
-            .build();
+            .build());
+
+        var savedDocument = documentRepository.save(Document
+            .builder()
+            .name("test")
+            .documentType(savedDocumentType)
+            .build());
+
+        var savedUser = userRepository.save(ApplicationUser
+            .builder()
+            .email("test@mail.ru")
+            .displayName("test")
+            .hashedPassword("test")
+            .build());
+
+        var savedDocumentVersion = documentVersionRepository.save(DocumentVersion
+            .builder()
+            .name("test")
+            .createdAt(now())
+            .contentUrl("test_url")
+            .document(savedDocument)
+            .build());
+
+        var savedSignature = signatureRepository.save(Signature
+            .builder()
+            .documentVersion(savedDocumentVersion)
+            .applicationUser(savedUser)
+            .name("test")
+            .sentAt(now())
+            .status(SignatureStatus.NOT_SIGNED)
+            .build());
+
+        signatureId = savedSignature.getId();
+        userId = savedUser.getId();
+        documentVersionId = savedDocumentVersion.getId();
+    }
+
+    @AfterEach
+    public void clearTable() {
+        signatureRepository.deleteAll();
+        documentVersionRepository.deleteAll();
+        documentRepository.deleteAll();
+        documentTypesRepository.deleteAll();
+        userRepository.deleteAll();
     }
 
     @Nested
@@ -62,9 +120,6 @@ public class SignatureControllerTest extends BaseControllerTest {
             var signatureRequest = getSignatureCreateRequest();
 
             var signatureResponse = getSignatureResponse();
-
-            when(signatureService.createSignature(any()))
-                .thenReturn(signatureResponse);
 
             mockMvc.perform(post(SIGN_URI + "/send")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -84,14 +139,8 @@ public class SignatureControllerTest extends BaseControllerTest {
         public void createSignatureForNotExistDocumentVersion_notFound() {
             var signatureRequest = getSignatureCreateRequest();
 
-            var errorMessage = NOT_FOUND_DOCUMENT_VERSION.formatted(signatureRequest.documentVersionId());
-
-            when(signatureService.createSignature(any()))
-                .thenThrow(new EntityNotFoundException(errorMessage));
-
-            mockMvc.perform(post(SIGN_URI + "/send")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(signatureRequest)))
+            mockMvc.perform(post(SIGN_URI + "/send",signatureRequest)
+                    .contentType(MediaType.APPLICATION_JSON))
                 .andExpectAll(
                     status().isNotFound(),
                     content().contentType(MediaType.APPLICATION_PROBLEM_JSON)
@@ -102,16 +151,19 @@ public class SignatureControllerTest extends BaseControllerTest {
         @DisplayName("Should return 404 and error message when send request non-existent document version")
         @SneakyThrows
         public void createSignatureForNotExistUser_notFound() {
-            var signatureRequest = getSignatureCreateRequest();
+            userRepository.deleteAll();
+            var signatureCreateRequest = SignatureCreateRequest
+                .builder()
+                .documentVersionId(documentVersionId)
+                .name("test")
+                .userId(3L)
+                .build();
 
-            var errorMessage = NOT_FOUND_USER.formatted(signatureRequest.userId());
-
-            when(signatureService.createSignature(any()))
-                .thenThrow(new EntityNotFoundException(errorMessage));
+            var request = objectMapper.writeValueAsString(signatureCreateRequest);
 
             mockMvc.perform(post(SIGN_URI + "/send")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(signatureRequest)))
+                    .content(request))
                 .andExpectAll(
                     status().isNotFound(),
                     content().contentType(MediaType.APPLICATION_PROBLEM_JSON)
@@ -127,19 +179,20 @@ public class SignatureControllerTest extends BaseControllerTest {
         @DisplayName("Should make a sign")
         @SneakyThrows
         public void testMakeSignature() {
-            when(signatureService.signatureUpdate(1L, true))
-                .thenReturn(signatureResponse);
+            var createdSignature = getSignatureFromDB();
+            var createdSignatureResponse = signatureMapper.entityToSignatureResponse(createdSignature);
 
-            mockMvc.perform(post(SIGN_URI + "/sign/1")
+            mockMvc.perform(post(SIGN_URI + "/sign/" + signatureId)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .param("status","true"))
+                    .param("status", "true"))
                 .andExpectAll(
                     status().isOk(),
-                    jsonPath("$.id").value(signatureResponse.id()),
-                    jsonPath("$.name").value(signatureResponse.name()),
-                    jsonPath("$.userId").value(signatureResponse.userId()),
-                    jsonPath("$.signatureData").value("test"),
-                    jsonPath("$.status").value(signatureResponse.status().toString())
+                    jsonPath("$.id").value(createdSignatureResponse.id()),
+                    jsonPath("$.name").value(createdSignatureResponse.name()),
+                    jsonPath("$.userId").value(createdSignatureResponse.userId()),
+                    jsonPath("$.signatureData").isNotEmpty(),
+                    jsonPath("$.documentVersionId").value(createdSignatureResponse.documentVersionId()),
+                    jsonPath("$.status").value(SignatureStatus.SIGNED.toString())
                 );
         }
 
@@ -147,28 +200,20 @@ public class SignatureControllerTest extends BaseControllerTest {
         @Test
         @SneakyThrows
         public void testNotMakeSignature() {
-            var newSignatureResponseNotSigned = SignatureResponse
-                .builder()
-                .status(SignatureStatus.NOT_SIGNED)
-                .id(1L)
-                .name("test")
-                .userId(1L)
-                .signatureData("test")
-                .build();
+            var createdSignature = getSignatureFromDB();
+            var createdSignatureResponse = signatureMapper.entityToSignatureResponse(createdSignature);
 
-            when(signatureService.signatureUpdate(1L, false))
-                .thenReturn(newSignatureResponseNotSigned);
-
-            mockMvc.perform(post(SIGN_URI + "/sign/1")
+            mockMvc.perform(post(SIGN_URI + "/sign/" + signatureId)
                     .contentType(MediaType.APPLICATION_JSON)
                     .param("status", "false"))
                 .andExpectAll(
                     status().isOk(),
-                    jsonPath("$.id").value(newSignatureResponseNotSigned.id()),
-                    jsonPath("$.name").value(newSignatureResponseNotSigned.name()),
-                    jsonPath("$.userId").value(newSignatureResponseNotSigned.userId()),
-                    jsonPath("$.signatureData").value(newSignatureResponseNotSigned.signatureData()),
-                    jsonPath("$.status").value(newSignatureResponseNotSigned.status().toString())
+                    jsonPath("$.id").value(createdSignatureResponse.id()),
+                    jsonPath("$.name").value(createdSignatureResponse.name()),
+                    jsonPath("$.userId").value(createdSignatureResponse.userId()),
+                    jsonPath("$.documentVersionId").value(createdSignatureResponse.documentVersionId()),
+                    jsonPath("$.signatureData").isEmpty(),
+                    jsonPath("$.status").value(SignatureStatus.REFUSED.toString())
                 );
         }
 
@@ -176,11 +221,8 @@ public class SignatureControllerTest extends BaseControllerTest {
         @SneakyThrows
         @Test
         public void testNotMakeSignatureNotFound() {
-            when(signatureService.signatureUpdate(1L, true))
-                .thenThrow(new EntityNotFoundException("Not found signature"));
-
             mockMvc.perform(get(SIGN_URI + "/1")
-                    .param("status","true")
+                    .param("status", "true")
                     .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
         }
@@ -205,4 +247,9 @@ public class SignatureControllerTest extends BaseControllerTest {
             .name("test")
             .build();
     }
+
+    private Signature getSignatureFromDB() {
+        return signatureRepository.findById(signatureId).orElse(null);
+    }
+
 }
