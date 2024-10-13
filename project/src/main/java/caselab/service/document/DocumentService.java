@@ -84,16 +84,4 @@ public class DocumentService {
             throw new DocumentNotFoundException(id);
         }
     }
-
-//    private EntityNotFoundException documentNotFound(Long id) {
-//        return new EntityNotFoundException(
-//            messageSource.getMessage("document.not.found", new Object[] {id}, Locale.getDefault())
-//        );
-//    }
-
-//    private EntityNotFoundException documentTypeNotFound(Long id) {
-//        return new EntityNotFoundException(
-//            messageSource.getMessage("document.type.not.found", new Object[] {id}, Locale.getDefault())
-//        );
-//    }
 }
