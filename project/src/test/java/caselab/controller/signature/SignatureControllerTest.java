@@ -1,6 +1,5 @@
 package caselab.controller.signature;
 
-import caselab.configuration.JwtAuthenticationFilter;
 import caselab.controller.BaseControllerTest;
 import caselab.controller.signature.payload.SignatureCreateRequest;
 import caselab.controller.signature.payload.SignatureResponse;
@@ -38,8 +37,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class SignatureControllerTest extends BaseControllerTest {
 
     private final String SIGN_URI = "/api/v1/signatures";
-    private static final String NOT_FOUND_DOCUMENT_VERSION = "Версия документа с id = %s не найдена";
-    private static final String NOT_FOUND_USER = "Пользователь с id = %s не найден";
     @Autowired
     private DocumentTypesRepository documentTypesRepository;
     @Autowired
@@ -117,18 +114,25 @@ public class SignatureControllerTest extends BaseControllerTest {
         @Test
         @SneakyThrows
         public void createSignature_success() {
-            var signatureRequest = getSignatureCreateRequest();
+            var signatureCreateRequest = SignatureCreateRequest
+                .builder()
+                .documentVersionId(documentVersionId)
+                .name("test")
+                .userId(userId)
+                .build();
 
+            var request = objectMapper.writeValueAsString(signatureCreateRequest);
             var signatureResponse = getSignatureResponse();
 
             mockMvc.perform(post(SIGN_URI + "/send")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(signatureRequest)))
+                    .content(request))
                 .andExpectAll(
                     status().isOk(),
-                    jsonPath("$.id").value(signatureResponse.id()),
+                    jsonPath("$.id").isNotEmpty(),
                     jsonPath("$.name").value(signatureResponse.name()),
-                    jsonPath("$.userId").value(signatureResponse.userId()),
+                    jsonPath("$.userId").value(userId),
+                    jsonPath("$.documentVersionId").value(documentVersionId),
                     jsonPath("$.status").value(signatureResponse.status().toString())
                 );
         }
@@ -137,10 +141,13 @@ public class SignatureControllerTest extends BaseControllerTest {
         @DisplayName("Should return 404 and error message when send request non-existent document version")
         @SneakyThrows
         public void createSignatureForNotExistDocumentVersion_notFound() {
+            documentVersionRepository.deleteAll();
+
             var signatureRequest = getSignatureCreateRequest();
 
-            mockMvc.perform(post(SIGN_URI + "/send",signatureRequest)
-                    .contentType(MediaType.APPLICATION_JSON))
+            mockMvc.perform(post(SIGN_URI + "/send", signatureRequest)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(signatureRequest)))
                 .andExpectAll(
                     status().isNotFound(),
                     content().contentType(MediaType.APPLICATION_PROBLEM_JSON)
@@ -187,7 +194,7 @@ public class SignatureControllerTest extends BaseControllerTest {
                     .param("status", "true"))
                 .andExpectAll(
                     status().isOk(),
-                    jsonPath("$.id").value(createdSignatureResponse.id()),
+                    jsonPath("$.id").value(signatureId),
                     jsonPath("$.name").value(createdSignatureResponse.name()),
                     jsonPath("$.userId").value(createdSignatureResponse.userId()),
                     jsonPath("$.signatureData").isNotEmpty(),

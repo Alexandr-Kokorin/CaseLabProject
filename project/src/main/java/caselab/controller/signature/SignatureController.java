@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,8 +32,8 @@ public class SignatureController {
     @Operation(summary = "Отправить версию документа на подпись",
                description = "Отправляет версию документа на подписание пользователю и возвращает dto")
     @PostMapping("/send")
-    public SignatureResponse sendDocumentVersionOnSigning(SignatureCreateRequest signatureCreateRequest) {
-            return signatureService.createSignature(signatureCreateRequest);
+    public SignatureResponse sendDocumentVersionOnSigning(@RequestBody SignatureCreateRequest signatureCreateRequest) {
+        return signatureService.createSignature(signatureCreateRequest);
     }
 
     @Operation(summary = "Получить все подписи пользователя",
