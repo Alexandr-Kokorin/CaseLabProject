@@ -30,7 +30,7 @@ public class DocumentTypeToAttribute {
     private DocumentTypeToAttributeId id = new DocumentTypeToAttributeId();
 
     @Column(name = "is_optional", nullable = false)
-    private boolean isOptional;
+    private Boolean optional;
 
     @ManyToOne(optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
@@ -43,4 +43,5 @@ public class DocumentTypeToAttribute {
     @MapsId("attributeId")
     @JoinColumn(name = "attribute_id", nullable = false)
     private Attribute attribute;
+
 }

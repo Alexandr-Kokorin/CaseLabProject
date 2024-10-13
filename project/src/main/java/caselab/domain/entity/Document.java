@@ -43,5 +43,6 @@ public class Document {
     private List<DocumentVersion> documentVersions;
 
     @OneToMany(mappedBy = "document")
+    @ToString.Exclude
     private List<UserToDocument> usersToDocuments;
 }

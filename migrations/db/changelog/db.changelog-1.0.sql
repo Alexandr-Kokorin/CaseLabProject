@@ -178,4 +178,5 @@ INSERT INTO document_permission (name)
 SELECT 'CREATOR'
 WHERE NOT EXISTS (SELECT 1 FROM document_permission WHERE name = 'CREATOR');
 
+-- changeset ???:17
 INSERT INTO global_permission(name) values ('USER');
