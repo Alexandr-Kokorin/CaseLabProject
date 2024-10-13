@@ -28,7 +28,7 @@ public class SignatureService {
     private final DocumentVersionRepository documentVersionRepository;
     private final SignatureMapper signatureMapper;
 
-    public SignatureResponse signatureUpdate(Long id, boolean sign) {
+    public SignatureResponse signatureUpdate(Long id, Boolean sign) {
         var signature = signatureRepository.findById(id)
             .orElseThrow(() -> getEntityNotFoundException("signature.not.found", id));
         if (sign) {

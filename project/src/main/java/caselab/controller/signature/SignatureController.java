@@ -24,8 +24,8 @@ public class SignatureController {
     @PostMapping("/sign/{id}")
     @Operation(summary = "Функция подписания",
                description = "Функция высчитывает хеш подписи и возвращает dto")
-    public SignatureResponse sign(@PathVariable("id") Long id, @RequestParam("status") boolean sign) {
-        return signatureService.signatureUpdate(id,sign);
+    public SignatureResponse sign(@PathVariable("id") Long id, @RequestParam("status") Boolean sign) {
+        return signatureService.signatureUpdate(id, sign);
     }
 
     @Operation(summary = "Отправить версию документа на подпись",
