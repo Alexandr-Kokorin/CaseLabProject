@@ -1,6 +1,6 @@
 package caselab.controller;
 
-import caselab.exception.EntityNotFoundException;
+import caselab.exception.entity.EntityNotFoundException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -15,7 +15,6 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @SuppressWarnings("MultipleStringLiterals")
 @RestControllerAdvice
@@ -26,10 +25,16 @@ public class ControllerExceptionHandler {
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ProblemDetail> notFoundException(EntityNotFoundException exception, Locale locale) {
-        return createProblemDetailResponseEntity(NOT_FOUND, messageSource.getMessage(
-                "errors.404.title", new Object[0], "errors.404.title", locale
-            ), exception.getMessage(), locale
+
+        var problemDetail = ProblemDetail.forStatusAndDetail(
+            HttpStatus.NOT_FOUND,
+            Objects.requireNonNull(messageSource.getMessage(exception.getMessage(),
+                new Object[] {exception.getId()}, exception.getMessage(), locale
+            ))
         );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(problemDetail);
     }
 
     @ExceptionHandler(BindException.class)

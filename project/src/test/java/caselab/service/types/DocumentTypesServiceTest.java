@@ -7,18 +7,23 @@ import caselab.controller.types.payload.DocumentTypeToAttributeRequest;
 import caselab.controller.types.payload.DocumentTypeToAttributeResponse;
 import caselab.domain.IntegrationTest;
 import caselab.domain.repository.DocumentTypesRepository;
-import caselab.exception.EntityNotFoundException;
+import caselab.exception.entity.DocumentTypeNotFoundException;
 import caselab.service.attribute.AttributeService;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.ArrayList;
-import java.util.List;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 public class DocumentTypesServiceTest extends IntegrationTest {
@@ -58,7 +63,10 @@ public class DocumentTypesServiceTest extends IntegrationTest {
         return attributeService.createAttribute(attributeRequest);
     }
 
-    private List<DocumentTypeToAttributeRequest> createDocumentTypeToAttributeRequests(List<AttributeResponse> attributes, List<Boolean> isOptionalList) {
+    private List<DocumentTypeToAttributeRequest> createDocumentTypeToAttributeRequests(
+        List<AttributeResponse> attributes,
+        List<Boolean> isOptionalList
+    ) {
         List<DocumentTypeToAttributeRequest> dttrList = new ArrayList<>();
         for (int i = 0; i < attributes.size(); i++) {
             dttrList.add(DocumentTypeToAttributeRequest.builder()
@@ -115,7 +123,7 @@ public class DocumentTypesServiceTest extends IntegrationTest {
     @Transactional
     @Rollback
     public void findNotExistedDocumentTypeById() {
-        assertThrows(EntityNotFoundException.class, () -> documentTypesService.findDocumentTypeById(1L));
+        assertThrows(DocumentTypeNotFoundException.class, () -> documentTypesService.findDocumentTypeById(1L));
     }
 
     @Test
@@ -138,7 +146,7 @@ public class DocumentTypesServiceTest extends IntegrationTest {
     @Transactional
     @Rollback
     public void deleteNotExistedDocumentTypeById() {
-        assertThrows(EntityNotFoundException.class, () -> documentTypesService.deleteDocumentTypeById(1L));
+        assertThrows(DocumentTypeNotFoundException.class, () -> documentTypesService.deleteDocumentTypeById(1L));
     }
 
     @Test
@@ -156,10 +164,12 @@ public class DocumentTypesServiceTest extends IntegrationTest {
             () -> assertThat(updatedDocumentType).isNotNull(),
             () -> assertEquals(updatedDocumentType.name(), requestForUpdating.name()),
             () -> assertEquals(documentTypesRepository.findAll().size(), 1),
-            () -> assertEquals(updatedDocumentType.attributeResponses().stream()
+            () -> assertEquals(
+                updatedDocumentType.attributeResponses().stream()
                     .map(DocumentTypeToAttributeResponse::attributeId)
                     .toList(),
-                attributesForUpdate.stream().map(AttributeResponse::id).toList())
+                attributesForUpdate.stream().map(AttributeResponse::id).toList()
+            )
         );
     }
 
@@ -168,7 +178,7 @@ public class DocumentTypesServiceTest extends IntegrationTest {
     @Rollback
     public void updateNotExistedDocumentType() {
         assertThrows(
-            EntityNotFoundException.class,
+            DocumentTypeNotFoundException.class,
             () -> documentTypesService.updateDocumentType(1L, new DocumentTypeRequest("test2", null))
         );
     }
