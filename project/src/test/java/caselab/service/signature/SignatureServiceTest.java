@@ -11,7 +11,6 @@ import caselab.domain.repository.DocumentVersionRepository;
 import caselab.domain.repository.SignatureRepository;
 import caselab.exception.entity.DocumentVersionNotFoundException;
 import caselab.exception.entity.SignatureNotFoundException;
-import caselab.exception.entity.UserNotFoundException;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -66,7 +65,7 @@ public class SignatureServiceTest {
 
         var mappedSignatureRequest = getSignature(request);
 
-        var foundUser = ApplicationUser.builder().email(request.email()).build();
+        var foundUser = ApplicationUser.builder().id(1L).email(request.email()).build();
         var foundDocumentVersion = DocumentVersion.builder().id(request.documentVersionId()).build();
 
         var createdSignature = getSignature(request);
@@ -91,7 +90,7 @@ public class SignatureServiceTest {
             () -> assertThat(resultOfCreating.signatureData()).isNull(),
             () -> assertThat(resultOfCreating.sentAt()).isNotNull(),
             () -> assertThat(resultOfCreating.status()).isEqualTo((SignatureStatus.NOT_SIGNED)),
-            () -> assertThat(resultOfCreating.userId()).isNotNull(),
+            () -> assertThat(resultOfCreating.email()).isEqualTo(request.email()),
             () -> assertThat(resultOfCreating.documentVersionId()).isEqualTo(request.documentVersionId()),
             () -> assertThat(resultOfCreating.signedAt()).isNull()
         );
@@ -110,9 +109,10 @@ public class SignatureServiceTest {
             .thenReturn(mappedSignatureRequest);
         Mockito.when(documentVersionRepository.findById(request.documentVersionId()))
             .thenReturn(Optional.of(foundDocumentVersion));
-        Mockito.when(userRepository.findByEmail(request.email())).thenThrow(new UsernameNotFoundException(request.email()));
+        Mockito.when(userRepository.findByEmail(request.email()))
+            .thenThrow(new UsernameNotFoundException(request.email()));
 
-        assertThrows(UserNotFoundException.class, () -> signatureService.createSignature(request));
+        assertThrows(UsernameNotFoundException.class, () -> signatureService.createSignature(request));
     }
 
     @DisplayName("Create signature for non-existent document version")
@@ -142,7 +142,7 @@ public class SignatureServiceTest {
             .signatureData("test")
             .signedAt(OffsetDateTime.now())
             .documentVersionId(1L)
-            .userId(1L)
+            .email(email)
             .build();
 
         when(signatureMapper.entityToSignatureResponse(signature)).thenReturn(expectedResponse);
@@ -171,7 +171,7 @@ public class SignatureServiceTest {
             .sentAt(OffsetDateTime.now())
             .signedAt(null)
             .signatureData("test")
-            .userId(1L)
+            .email(email)
             .documentVersionId(1L)
             .build();
 
@@ -221,7 +221,7 @@ public class SignatureServiceTest {
         return SignatureResponse
             .builder()
             .id(1L)
-            .userId(foundUser.getId())
+            .email(foundUser.getEmail())
             .documentVersionId(foundDocumentVersion.getId())
             .name(request.name())
             .status(SignatureStatus.NOT_SIGNED)

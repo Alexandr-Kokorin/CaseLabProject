@@ -3,10 +3,13 @@ package caselab.controller.signature;
 import caselab.controller.signature.payload.SignatureCreateRequest;
 import caselab.controller.signature.payload.SignatureResponse;
 import caselab.service.signature.SignatureService;
+import caselab.service.users.ApplicationUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class SignatureController {
     private final SignatureService signatureService;
+    private final ApplicationUserService userService;
 
     @PostMapping("/sign/{id}")
     @Operation(summary = "Функция подписания",
@@ -38,8 +42,9 @@ public class SignatureController {
 
     @Operation(summary = "Получить все подписи пользователя",
                description = "Возвращает все подписи пользователя")
-    @GetMapping("/all/{id}")
-    public List<SignatureResponse> getAllSignaturesByUserId(@PathVariable("id") Long id) {
-        return signatureService.findAllSignaturesByUserId(id);
+    @GetMapping("/all")
+    public List<SignatureResponse> getAllSignaturesForUser(Authentication authentication) {
+        var userDetails = (UserDetails) authentication.getPrincipal();
+        return signatureService.findAllSignaturesByEmail(userDetails.getUsername());
     }
 }

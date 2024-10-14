@@ -15,7 +15,7 @@ import org.mapstruct.ReportingPolicy;
 public interface SignatureMapper {
     Signature requestToEntity(SignatureCreateRequest request);
 
-    @Mapping(target = "userId", source = "applicationUser.id")
+    @Mapping(target = "email", source = "applicationUser.email")
     @Mapping(target = "documentVersionId", source = "documentVersion.id")
     SignatureResponse entityToSignatureResponse(Signature signature);
 }

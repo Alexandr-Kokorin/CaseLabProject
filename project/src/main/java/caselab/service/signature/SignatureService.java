@@ -73,10 +73,10 @@ public class SignatureService {
         return signatureMapper.entityToSignatureResponse(savedSignature);
     }
 
-    public List<SignatureResponse> findAllSignaturesByUserId(Long id) {
+    public List<SignatureResponse> findAllSignaturesByEmail(String email) {
         var user = userRepository
-            .findById(id)
-            .orElseThrow(() -> new UserNotFoundException(id));
+            .findByEmail(email)
+            .orElseThrow(() -> new UsernameNotFoundException(email));
 
         return user.getSignatures()
             .stream()

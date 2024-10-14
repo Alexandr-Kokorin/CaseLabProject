@@ -20,7 +20,7 @@ public record SignatureResponse(
     @Schema(description = "Хеш подписи")
     String signatureData,
     @Schema(description = "Пользователь, к которому относится подпись")
-    Long userId,
+    String email,
     @Schema(description = "Версия документа для подписи")
     Long documentVersionId
 ) {
