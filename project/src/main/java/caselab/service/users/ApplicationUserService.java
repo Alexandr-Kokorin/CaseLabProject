@@ -4,13 +4,11 @@ import caselab.controller.users.payload.UserResponse;
 import caselab.controller.users.payload.UserUpdateRequest;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.repository.ApplicationUserRepository;
-import caselab.exception.EntityNotFoundException;
+import caselab.exception.entity.UserNotFoundException;
 import caselab.service.secutiry.AuthenticationService;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -20,7 +18,6 @@ public class ApplicationUserService {
     private final ApplicationUserRepository userRepository;
     private final UserMapper mapper;
     private final AuthenticationService authService;
-    private final MessageSource messageSource;
 
     public List<UserResponse> findAllUsers() {
         List<ApplicationUser> users = userRepository.findAll();
@@ -49,7 +46,7 @@ public class ApplicationUserService {
 
     private ApplicationUser getUserById(Long id) {
         return userRepository.findById(id)
-            .orElseThrow(() -> userNotFound(id));
+            .orElseThrow(() -> new UserNotFoundException(id));
     }
 
     private void updatePassword(ApplicationUser userToUpdate, String password) {
@@ -57,11 +54,5 @@ public class ApplicationUserService {
             String hashedPassword = authService.encodePassword(password);
             userToUpdate.setHashedPassword(hashedPassword);
         }
-    }
-
-    private EntityNotFoundException userNotFound(Long id) {
-        return new EntityNotFoundException(
-            messageSource.getMessage("user.not.found", new Object[] {id}, Locale.getDefault())
-        );
     }
 }

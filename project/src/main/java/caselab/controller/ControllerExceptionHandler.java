@@ -1,7 +1,7 @@
 package caselab.controller;
 
-import caselab.exception.EntityNotFoundException;
-import java.util.List;
+import caselab.exception.UserExistsException;
+import caselab.exception.entity.EntityNotFoundException;
 import java.util.Locale;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
@@ -14,8 +14,6 @@ import org.springframework.validation.BindException;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @SuppressWarnings("MultipleStringLiterals")
 @RestControllerAdvice
@@ -26,43 +24,59 @@ public class ControllerExceptionHandler {
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ProblemDetail> notFoundException(EntityNotFoundException exception, Locale locale) {
-        return createProblemDetailResponseEntity(NOT_FOUND, messageSource.getMessage(
-                "errors.404.title", new Object[0], "errors.404.title", locale
-            ), exception.getMessage(), locale
+        return createProblemDetailResponse(
+            HttpStatus.NOT_FOUND,
+            exception.getMessage(),
+            new Object[] {exception.getId()},
+            locale
+        );
+    }
+
+    @ExceptionHandler(UserExistsException.class)
+    public ResponseEntity<ProblemDetail> userExistsException(UserExistsException exception, Locale locale) {
+        return createProblemDetailResponse(
+            HttpStatus.CONFLICT,
+            exception.getMessage(),
+            new Object[] {exception.getEmail()},
+            locale
         );
     }
 
     @ExceptionHandler(BindException.class)
     public ResponseEntity<ProblemDetail> handleBindException(BindException exception, Locale locale) {
-        List<String> errorMessages = exception.getAllErrors().stream()
-            .map(ObjectError::getDefaultMessage)
-            .toList();
-
-        return createProblemDetailResponseEntity(BAD_REQUEST, messageSource.getMessage(
-                "errors.400.title", new Object[0], "errors.400.title", locale
-            ), errorMessages, locale
+        var problemDetail = createProblemDetail(
+            HttpStatus.BAD_REQUEST,
+            "errors.400.title",
+            new Object[0],
+            locale
         );
+        problemDetail.setProperty("errors", exception.getAllErrors()
+            .stream()
+            .map(ObjectError::getDefaultMessage)
+            .toList()
+        );
+        return ResponseEntity.badRequest().body(problemDetail);
     }
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<?> unauthorizedException(BadCredentialsException e) {
+    public ResponseEntity<String> unauthorizedException(BadCredentialsException e) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
     }
 
-    private ResponseEntity<ProblemDetail> createProblemDetailResponseEntity(
+    private ResponseEntity<ProblemDetail> createProblemDetailResponse(
         HttpStatus status,
         String messageKey,
-        Object errorDetails,
+        Object[] args,
         Locale locale
     ) {
-
-        String message = Objects.requireNonNull(messageSource.getMessage(
-            messageKey, new Object[0], messageKey, locale
-        ));
-
-        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(status, message);
-        problemDetail.setProperty("errors", errorDetails);
-
+        var problemDetail = createProblemDetail(status, messageKey, args, locale);
         return ResponseEntity.status(status).body(problemDetail);
+    }
+
+    private ProblemDetail createProblemDetail(HttpStatus status, String messageKey, Object[] args, Locale locale) {
+        return ProblemDetail.forStatusAndDetail(
+            status,
+            Objects.requireNonNull(messageSource.getMessage(messageKey, args, messageKey, locale))
+        );
     }
 }

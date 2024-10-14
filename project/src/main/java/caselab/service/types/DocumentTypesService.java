@@ -10,16 +10,15 @@ import caselab.domain.entity.document.type.to.attribute.DocumentTypeToAttributeI
 import caselab.domain.repository.AttributeRepository;
 import caselab.domain.repository.DocumentTypeToAttributeRepository;
 import caselab.domain.repository.DocumentTypesRepository;
-import caselab.exception.EntityNotFoundException;
+import caselab.exception.entity.AttributeNotFoundException;
+import caselab.exception.entity.DocumentTypeNotFoundException;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -30,11 +29,10 @@ public class DocumentTypesService {
     private final DocumentTypesRepository documentTypeRepository;
     private final AttributeRepository attributeRepository;
     private final DocumentTypeToAttributeRepository documentTypeToAttributeRepository;
-    private final MessageSource messageSource;
 
     public DocumentTypeResponse findDocumentTypeById(Long id) {
         var documentType = documentTypeRepository.findById(id)
-            .orElseThrow(() -> documentTypeNotFound(id));
+            .orElseThrow(() -> new DocumentTypeNotFoundException(id));
         return documentTypeMapper.entityToResponse(documentType);
     }
 
@@ -65,38 +63,27 @@ public class DocumentTypesService {
         return documentTypeMapper.entityToResponse(savedDocumentType);
     }
 
-
     public void deleteDocumentTypeById(Long id) {
         var documentTypeExist = documentTypeRepository.existsById(id);
         if (!documentTypeExist) {
-            throw documentTypeNotFound(id);
+            throw new DocumentTypeNotFoundException(id);
         }
         documentTypeRepository.deleteById(id);
     }
 
-    private EntityNotFoundException documentTypeNotFound(Long id) {
-        return new EntityNotFoundException(
-            messageSource.getMessage("document.type.not.found", new Object[] {id}, Locale.getDefault())
-        );
-    }
-
-    private EntityNotFoundException attributeNotFound(Long id) {
-        return new EntityNotFoundException(
-            messageSource.getMessage("attribute.not.found", new Object[] {id}, Locale.getDefault())
-        );
-    }
-
     private DocumentType getExistingDocumentType(Long id) {
         return documentTypeRepository.findById(id)
-            .orElseThrow(() -> documentTypeNotFound(id));
+            .orElseThrow(() -> new DocumentTypeNotFoundException(id));
     }
 
     private void updateDocumentTypeName(DocumentType documentType, String name) {
         documentType.setName(name);
     }
 
-    private void processAttributeAssociations(DocumentType documentType,
-        List<DocumentTypeToAttributeRequest> attributeRequests) {
+    private void processAttributeAssociations(
+        DocumentType documentType,
+        List<DocumentTypeToAttributeRequest> attributeRequests
+    ) {
         // Получаем текущие связи из базы данных
         List<DocumentTypeToAttribute> existingAttributes = getExistingAttributes(documentType.getId());
 
@@ -126,15 +113,18 @@ public class DocumentTypesService {
     }
 
     private Map<Long, DocumentTypeToAttribute> buildExistingAttributesMap(
-        List<DocumentTypeToAttribute> existingAttributes) {
+        List<DocumentTypeToAttribute> existingAttributes
+    ) {
         return existingAttributes.stream()
             .collect(Collectors.toMap(dtta -> dtta.getAttribute().getId(), dtta -> dtta));
     }
 
-    private void processAttributeRequest(DocumentTypeToAttributeRequest request,
+    private void processAttributeRequest(
+        DocumentTypeToAttributeRequest request,
         DocumentType documentType,
         Map<Long, DocumentTypeToAttribute> existingAttributesMap,
-        List<DocumentTypeToAttribute> attributesToSave) {
+        List<DocumentTypeToAttribute> attributesToSave
+    ) {
         Long attributeId = request.attributeId();
         Boolean isOptional = request.isOptional();
 
@@ -151,10 +141,12 @@ public class DocumentTypesService {
         }
     }
 
-    private DocumentTypeToAttribute createNewAttributeAssociation(DocumentType documentType,
-        Long attributeId, Boolean isOptional) {
+    private DocumentTypeToAttribute createNewAttributeAssociation(
+        DocumentType documentType,
+        Long attributeId, Boolean isOptional
+    ) {
         Attribute attribute = attributeRepository.findById(attributeId)
-            .orElseThrow(() -> attributeNotFound(attributeId));
+            .orElseThrow(() -> new AttributeNotFoundException(attributeId));
 
         DocumentTypeToAttribute newDtta = new DocumentTypeToAttribute();
         newDtta.setDocumentType(documentType);
