@@ -3,8 +3,12 @@ package caselab.controller.types;
 import caselab.controller.BaseControllerTest;
 import caselab.controller.types.payload.DocumentTypeRequest;
 import caselab.controller.types.payload.DocumentTypeResponse;
-import caselab.exception.EntityNotFoundException;
+import caselab.controller.types.payload.DocumentTypeToAttributeRequest;
+import caselab.exception.entity.DocumentTypeNotFoundException;
 import caselab.service.types.DocumentTypesService;
+import java.util.List;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -17,25 +21,25 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.web.SecurityFilterChain;
-import java.util.NoSuchElementException;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class DocumentTypesControllerTest extends BaseControllerTest {
 
     private static final String DOCUMENT_TYPES_URI = "/api/v1/document_types";
-    private static final String NOT_FOUND = "Тип документа с id = %s не найден";
+
+    // Предоставляем источник с некорректными запросами
     private static final Supplier<Stream<Arguments>> invalidDocumentTypeRequest = () -> Stream.of(
-        Arguments.of(new DocumentTypeRequest(null)),
-        Arguments.of(new DocumentTypeRequest("te")),
-        Arguments.of(new DocumentTypeRequest("testtesttesttesttesttesttesttest"))
+        Arguments.of(new DocumentTypeRequest(null, List.of())),
+        Arguments.of(new DocumentTypeRequest("te", List.of())),
+        Arguments.of(new DocumentTypeRequest("testtesttesttesttesttesttesttest", List.of()))
     );
 
     @MockBean
@@ -48,12 +52,24 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
     @DisplayName("Create document type")
     class CreateDocumentTypeTest {
 
+        public static Stream<Arguments> provideInvalidDocumentTypeRequest() {
+            return invalidDocumentTypeRequest.get();
+        }
+
         @SneakyThrows
         @Test
         @DisplayName("Should create document type with valid payload")
         public void createDocumentType_success() {
-            var payload = DocumentTypeRequest.builder().name
-                ("test").build();
+            // Arrange
+            var attributeRequests = List.of(
+                new DocumentTypeToAttributeRequest(1L, true),
+                new DocumentTypeToAttributeRequest(2L, false)
+            );
+            var payload = DocumentTypeRequest.builder()
+                .name("test")
+                .attributeRequests(attributeRequests)
+                .build();
+
             var response = DocumentTypeResponse
                 .builder()
                 .name(payload.name())
@@ -75,6 +91,7 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
             var actualDocumentType =
                 objectMapper.readValue(mvcResponse.getContentAsString(), DocumentTypeResponse.class);
 
+            // Assert
             assertAll(
                 "Grouped assertions for created document type",
                 () -> assertEquals(actualDocumentType.id(), response.id()),
@@ -92,10 +109,6 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
                     .content(objectMapper.writeValueAsString(documentTypeRequest)))
                 .andExpect(
                     status().isBadRequest());
-        }
-
-        public static Stream<Arguments> provideInvalidDocumentTypeRequest() {
-            return invalidDocumentTypeRequest.get();
         }
     }
 
@@ -135,9 +148,8 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
         @DisplayName("Should return 404 and error message when document type doesn't exist")
         public void getDocumentTypeById_notFound() {
             Long id = 1L;
-            String errorMessage = NOT_FOUND.formatted(id);
 
-            when(documentTypesService.findDocumentTypeById(id)).thenThrow(new EntityNotFoundException(errorMessage));
+            when(documentTypesService.findDocumentTypeById(id)).thenThrow(new DocumentTypeNotFoundException(id));
 
             mockMvc.perform(get(DOCUMENT_TYPES_URI + "/" + id))
                 .andExpectAll(
@@ -152,6 +164,10 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
     @DisplayName("Update document type")
     class UpdateCategoryTest {
 
+        public static Stream<Arguments> provideInvalidDocumentTypeRequest() {
+            return invalidDocumentTypeRequest.get();
+        }
+
         @SneakyThrows
         @Test
         @DisplayName("Should update document type when it exists")
@@ -162,9 +178,14 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
                 .name("Old Name")
                 .build();
 
+            var attributeRequests = List.of(
+                new DocumentTypeToAttributeRequest(1L, true)
+            );
+
             var payload = DocumentTypeRequest
                 .builder()
                 .name("New Name")
+                .attributeRequests(attributeRequests)
                 .build();
 
             when(documentTypesService.updateDocumentType(createdDocumentType.id(), payload))
@@ -195,13 +216,9 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
         @DisplayName("Should return 404 and error message when updating non-existent document type")
         public void updateDocumentType_notFound() {
             Long id = 1L;
-            String errorMessage = NOT_FOUND.formatted(id);
-            var payload = new DocumentTypeRequest("New Name");
+            var payload = new DocumentTypeRequest("New Name", List.of());
 
-            when(documentTypesService.updateDocumentType(
-                id,
-                payload
-            )).thenThrow(new EntityNotFoundException(errorMessage));
+            when(documentTypesService.updateDocumentType(id, payload)).thenThrow(new DocumentTypeNotFoundException(id));
 
             mockMvc.perform(put(DOCUMENT_TYPES_URI + "/" + id)
                     .contentType(MediaType.APPLICATION_JSON)
@@ -222,10 +239,6 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
                     .content(objectMapper.writeValueAsString(documentTypeRequest)))
                 .andExpectAll(
                     status().isBadRequest());
-        }
-
-        public static Stream<Arguments> provideInvalidDocumentTypeRequest() {
-            return invalidDocumentTypeRequest.get();
         }
     }
 

@@ -3,8 +3,9 @@ package caselab.controller.document;
 import caselab.controller.BaseControllerTest;
 import caselab.controller.document.payload.document.dto.DocumentRequest;
 import caselab.controller.document.payload.document.dto.DocumentResponse;
-import caselab.exception.EntityNotFoundException;
+import caselab.exception.entity.DocumentNotFoundException;
 import caselab.service.document.DocumentService;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -15,14 +16,14 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.web.SecurityFilterChain;
-
-import java.util.List;
-import java.util.NoSuchElementException;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -90,7 +91,7 @@ public class DocumentControllerTest extends BaseControllerTest {
     @Test
     public void testGetDocumentById_NotFound() throws Exception {
         // Arrange
-        when(documentService.getDocumentById(1L)).thenThrow(new EntityNotFoundException("Документ не найден"));
+        when(documentService.getDocumentById(1L)).thenThrow(new DocumentNotFoundException(1L));
 
         // Act & Assert
         mockMvc.perform(get(DOCUMENT_URI + "/1")
