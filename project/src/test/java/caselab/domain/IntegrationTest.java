@@ -1,5 +1,9 @@
 package caselab.domain;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
@@ -11,12 +15,7 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import java.io.File;
-import java.nio.file.Path;
-import java.sql.Connection;
-import java.sql.DriverManager;
 
 @Testcontainers
 public abstract class IntegrationTest {
@@ -41,9 +40,10 @@ public abstract class IntegrationTest {
         Path path = new File(".").toPath().toAbsolutePath().getParent().getParent().resolve("migrations/db/changelog/");
 
         Connection connection = DriverManager.getConnection(c.getJdbcUrl(), c.getUsername(), c.getPassword());
-        Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));
+        Database database =
+            DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));
 
-        Liquibase liquibase = new Liquibase("db.changelog-master.yml", new DirectoryResourceAccessor(path), database);
+        Liquibase liquibase = new Liquibase("db.changelog-test.yml", new DirectoryResourceAccessor(path), database);
 
         liquibase.update(new Contexts(), new LabelExpression());
     }

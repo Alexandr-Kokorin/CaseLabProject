@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -38,6 +39,19 @@ public class ControllerExceptionHandler {
             HttpStatus.CONFLICT,
             exception.getMessage(),
             new Object[] {exception.getEmail()},
+            locale
+        );
+    }
+
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<ProblemDetail> userUsernameNotFoundException(
+        UsernameNotFoundException exception,
+        Locale locale
+    ) {
+        return createProblemDetailResponse(
+            HttpStatus.NOT_FOUND,
+            "user.email.not_found",
+            new Object[] {exception.getMessage()},
             locale
         );
     }
@@ -76,7 +90,9 @@ public class ControllerExceptionHandler {
     private ProblemDetail createProblemDetail(HttpStatus status, String messageKey, Object[] args, Locale locale) {
         return ProblemDetail.forStatusAndDetail(
             status,
-            Objects.requireNonNull(messageSource.getMessage(messageKey, args, messageKey, locale))
+            Objects.requireNonNull(
+                messageSource.getMessage(messageKey, args, messageKey, locale)
+            )
         );
     }
 }

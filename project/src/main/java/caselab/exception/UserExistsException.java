@@ -10,7 +10,7 @@ public final class UserExistsException extends ApplicationRuntimeException {
     private final String email;
 
     public UserExistsException(String email) {
-        super("user.mail_is_busy");
+        super("user.email.is_busy");
         this.email = email;
     }
 }

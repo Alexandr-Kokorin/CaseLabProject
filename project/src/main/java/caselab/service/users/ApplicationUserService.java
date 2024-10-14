@@ -9,6 +9,7 @@ import caselab.service.secutiry.AuthenticationService;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -28,6 +29,12 @@ public class ApplicationUserService {
 
     public UserResponse findUser(Long id) {
         ApplicationUser user = getUserById(id);
+        return mapper.entityToResponse(user);
+    }
+
+    public UserResponse findUserByEmail(String email) {
+        ApplicationUser user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new UsernameNotFoundException(email));
         return mapper.entityToResponse(user);
     }
 
