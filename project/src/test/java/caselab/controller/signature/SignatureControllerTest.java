@@ -41,7 +41,7 @@ public class SignatureControllerTest extends BaseControllerTest {
 
     private static AuthenticationResponse token;
     private final String SIGN_URI = "/api/v1/signatures";
-    private final String email = "test@mail.ru";
+    private final String emailForSending = "user@example.com";
     @Autowired
     private DocumentTypesRepository documentTypesRepository;
     @Autowired
@@ -131,7 +131,7 @@ public class SignatureControllerTest extends BaseControllerTest {
     private SignatureResponse getSignatureResponse() {
         return SignatureResponse
             .builder()
-            .email(email)
+            .email(emailForSending)
             .documentVersionId(1L)
             .name("test")
             .status(SignatureStatus.NOT_SIGNED)
@@ -142,7 +142,7 @@ public class SignatureControllerTest extends BaseControllerTest {
     private SignatureCreateRequest getSignatureCreateRequest() {
         return SignatureCreateRequest
             .builder()
-            .email(email)
+            .email(emailForSending)
             .documentVersionId(1L)
             .name("test")
             .build();
@@ -164,7 +164,7 @@ public class SignatureControllerTest extends BaseControllerTest {
                 .builder()
                 .documentVersionId(documentVersionId)
                 .name("test")
-                .email(email)
+                .email(emailForSending)
                 .build();
 
             var request = objectMapper.writeValueAsString(signatureCreateRequest);
@@ -212,7 +212,7 @@ public class SignatureControllerTest extends BaseControllerTest {
                 .builder()
                 .documentVersionId(documentVersionId)
                 .name("test")
-                .email(email)
+                .email("not_exist@gmail.com")
                 .build();
 
             var request = objectMapper.writeValueAsString(signatureCreateRequest);
