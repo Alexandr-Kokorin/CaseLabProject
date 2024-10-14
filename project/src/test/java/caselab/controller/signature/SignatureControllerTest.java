@@ -15,6 +15,7 @@ import caselab.domain.repository.DocumentTypesRepository;
 import caselab.domain.repository.DocumentVersionRepository;
 import caselab.domain.repository.SignatureRepository;
 import caselab.service.signature.SignatureMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,7 +28,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.web.SecurityFilterChain;
 
+import java.util.List;
 import static java.time.OffsetDateTime.now;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -232,6 +236,44 @@ public class SignatureControllerTest extends BaseControllerTest {
                     .param("status", "true")
                     .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
+        }
+    }
+
+    @Nested
+    @DisplayName("Get all signatures by user id")
+    public class GetAllSignatures{
+        @Test
+        @DisplayName("Should return all signatures for user")
+        @SneakyThrows
+        public void findAllSignatures_success() {
+            var mvcResponse = mockMvc.perform(get(SIGN_URI + "/all/" + userId)
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(
+                    status().isOk()
+                ).andReturn()
+                .getResponse();
+
+
+            var foundSignatures = objectMapper.readValue(
+                mvcResponse.getContentAsString(),
+                new TypeReference<List<SignatureResponse>>() {}
+            );
+            assertAll(
+                "Group assertions for found signatures",
+                () -> assertThat(foundSignatures.size()).isEqualTo(1),
+                () -> assertThat(foundSignatures.getFirst()).isNotNull(),
+                () -> assertThat(foundSignatures.getFirst().userId()).isEqualTo(userId));
+        }
+
+        @Test
+        @DisplayName("Should return all signatures for user")
+        @SneakyThrows
+        public void findAllSignaturesWithUserThatNotExist_notFound() {
+            mockMvc.perform(get(SIGN_URI + "/all/2")
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(
+                    status().isNotFound()
+                );
         }
     }
 
