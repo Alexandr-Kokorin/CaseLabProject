@@ -4,12 +4,12 @@ import caselab.controller.users.payload.UserResponse;
 import caselab.controller.users.payload.UserUpdateRequest;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.repository.ApplicationUserRepository;
-import caselab.exception.entity.UserEmailNotFoundException;
 import caselab.exception.entity.UserNotFoundException;
 import caselab.service.secutiry.AuthenticationService;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -33,8 +33,8 @@ public class ApplicationUserService {
     }
 
     public UserResponse findUserByEmail(String email) {
-        ApplicationUser user = userRepository.findByEmail(email).orElseThrow(() ->
-            new UserEmailNotFoundException(email));
+        ApplicationUser user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new UsernameNotFoundException(email));
         return mapper.entityToResponse(user);
     }
 
