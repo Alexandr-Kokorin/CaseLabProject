@@ -12,7 +12,7 @@ public record AuthenticationRequest(
     @Schema(description = "Адрес электронной почты пользователя", example = "user@example.com")
     @Pattern(message = "{user.email.invalid}",
              regexp = "^[\\w-.]+@([\\w-]+\\.)+[\\w-]{2,4}$")
-    @NotBlank(message = "{user.mail.is_blank}")
+    @NotBlank(message = "{user.email.is_blank}")
     String email,
 
     @Schema(description = "Пароль пользователя", example = "password123")
