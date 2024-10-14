@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS application_user
     hashed_password     TEXT          NOT NULL,
 
     PRIMARY KEY (id)
-)
+);
 
 --changeset hottabych04:2
 CREATE TABLE IF NOT EXISTS attribute
@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS attribute
     type           TEXT           NOT NULL,
 
     PRIMARY KEY (id)
-)
+);
 
 --changeset hottabych04:3
 CREATE TABLE IF NOT EXISTS document_type
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS document_type
     name            TEXT          NOT NULL,
 
     PRIMARY KEY (id)
-)
+);
 
 --changeset TimurTimergalin:8
 CREATE TABLE IF NOT EXISTS document
@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS document
     name                     TEXT             NOT NULL,
 
     PRIMARY KEY (id)
-)
+);
 
 --changeset hottabych04:4
 CREATE TABLE IF NOT EXISTS document_version
@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS document_version
     document_id        BIGINT             NOT NULL REFERENCES document(id) ON DELETE CASCADE,
 
     PRIMARY KEY (id)
-)
+);
 
 --changeset hottabych04:5
 CREATE TABLE IF NOT EXISTS user_to_document
@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS user_to_document
     application_user_id            BIGINT          NOT NULL REFERENCES application_user(id) ON DELETE CASCADE,
 
     PRIMARY KEY (id)
-)
+);
 
 --changeset hottabych04:6
 CREATE TABLE IF NOT EXISTS document_attribute_value
@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS document_attribute_value
     attribute_id        BIGINT          NOT NULL REFERENCES attribute(id) ON DELETE CASCADE,
     app_value           TEXT            ,
     PRIMARY KEY (document_version_id, attribute_id)
-)
+);
 
 --changeset hottabych04:7
 CREATE TABLE IF NOT EXISTS document_type_to_attribute
@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS document_type_to_attribute
     is_optional             BOOLEAN         NOT NULL,
 
     PRIMARY KEY (document_type_id, attribute_id)
-)
+);
 
 --changeset TimurTimergalin:9
 CREATE TABLE IF NOT EXISTS document_permission
@@ -88,7 +88,7 @@ CREATE TABLE IF NOT EXISTS document_permission
     name        TEXT             NOT NULL,
 
     PRIMARY KEY (id)
-)
+);
 
 --changeset TimurTimergalin:10
 CREATE TABLE IF NOT EXISTS global_permission
@@ -97,7 +97,7 @@ CREATE TABLE IF NOT EXISTS global_permission
     name        TEXT            NOT NULL,
 
     PRIMARY KEY (id)
-)
+);
 
 --changeset TimurTimergalin:11
 CREATE TABLE IF NOT EXISTS signature
@@ -112,7 +112,7 @@ CREATE TABLE IF NOT EXISTS signature
     signature_data             TEXT               ,
 
     PRIMARY KEY (id)
-)
+);
 
 --changeset TimurTimergalin:12
 CREATE TABLE IF NOT EXISTS document_permissions
@@ -121,7 +121,7 @@ CREATE TABLE IF NOT EXISTS document_permissions
     document_permission_id         BIGINT NOT NULL REFERENCES document_permission(id) ON DELETE CASCADE,
 
     PRIMARY KEY (user_to_document_id, document_permission_id)
-)
+);
 
 --changeset TimurTimergalin:13
 CREATE TABLE IF NOT EXISTS voting_process
@@ -135,7 +135,7 @@ CREATE TABLE IF NOT EXISTS voting_process
     document_version_id        BIGINT                  NOT NULL REFERENCES document_version(id) ON DELETE CASCADE,
 
     PRIMARY KEY (id)
-)
+);
 
 --changeset TimurTimergalin:14
 CREATE TABLE IF NOT EXISTS vote
@@ -146,7 +146,7 @@ CREATE TABLE IF NOT EXISTS vote
     voting_process_id          BIGINT           NOT NULL REFERENCES voting_process(id) ON DELETE CASCADE,
 
     PRIMARY KEY (id)
-)
+);
 
 --changeset TimurTimergalin:15
 CREATE TABLE IF NOT EXISTS global_permission_to_user
@@ -155,7 +155,7 @@ CREATE TABLE IF NOT EXISTS global_permission_to_user
     global_permission_id BIGINT NOT NULL REFERENCES global_permission(id) ON DELETE CASCADE,
 
     PRIMARY KEY (application_user_id, global_permission_id)
-)
+);
 
 -- changeset PAZderev:16
 INSERT INTO document_permission (name)
