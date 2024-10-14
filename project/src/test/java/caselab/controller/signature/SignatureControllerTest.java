@@ -111,7 +111,6 @@ public class SignatureControllerTest extends BaseControllerTest {
     }
 
     @Nested
-    @Tag("Send")
     @DisplayName("Send request to sign the document version")
     class SendRequestToSign {
         @DisplayName("Should make a signature")
@@ -183,7 +182,6 @@ public class SignatureControllerTest extends BaseControllerTest {
     }
 
     @Nested
-    @Tag("Sign")
     @DisplayName("Set signature data for document version")
     class SendRequestToMakeSignatureData {
         @Test
@@ -241,7 +239,7 @@ public class SignatureControllerTest extends BaseControllerTest {
 
     @Nested
     @DisplayName("Get all signatures by user id")
-    public class GetAllSignatures{
+    public class GetAllSignatures {
         @Test
         @DisplayName("Should return all signatures for user")
         @SneakyThrows
@@ -253,16 +251,17 @@ public class SignatureControllerTest extends BaseControllerTest {
                 ).andReturn()
                 .getResponse();
 
-
             var foundSignatures = objectMapper.readValue(
                 mvcResponse.getContentAsString(),
-                new TypeReference<List<SignatureResponse>>() {}
+                new TypeReference<List<SignatureResponse>>() {
+                }
             );
             assertAll(
                 "Group assertions for found signatures",
                 () -> assertThat(foundSignatures.size()).isEqualTo(1),
                 () -> assertThat(foundSignatures.getFirst()).isNotNull(),
-                () -> assertThat(foundSignatures.getFirst().userId()).isEqualTo(userId));
+                () -> assertThat(foundSignatures.getFirst().userId()).isEqualTo(userId)
+            );
         }
 
         @Test

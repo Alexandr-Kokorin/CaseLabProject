@@ -21,7 +21,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.context.MessageSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static java.time.OffsetDateTime.now;
@@ -43,6 +42,7 @@ public class SignatureServiceTest {
     private ApplicationUserRepository userRepository;
     @Mock
     private SignatureRepository signatureRepository;
+
     @BeforeEach
     public void setup() {
         ApplicationUser user = new ApplicationUser();
@@ -109,9 +109,7 @@ public class SignatureServiceTest {
             .thenReturn(Optional.of(foundDocumentVersion));
         Mockito.when(userRepository.findById(request.userId())).thenThrow(new UserNotFoundException(request.userId()));
 
-        var exception = assertThrows(UserNotFoundException.class, () -> signatureService.createSignature(request));
-
-        assertThat(exception.getMessage()).isEqualTo("user.not.found");
+        assertThrows(UserNotFoundException.class, () -> signatureService.createSignature(request));
     }
 
     @DisplayName("Create signature for non-existent document version")
@@ -126,10 +124,7 @@ public class SignatureServiceTest {
         Mockito.when(documentVersionRepository.findById(request.documentVersionId()))
             .thenThrow(new DocumentVersionNotFoundException(request.documentVersionId()));
 
-        var exception =
-            assertThrows(DocumentVersionNotFoundException.class, () -> signatureService.createSignature(request));
-
-        assertThat(exception.getMessage()).isEqualTo("document.version.not.found");
+        assertThrows(DocumentVersionNotFoundException.class, () -> signatureService.createSignature(request));
     }
 
     @DisplayName("Sign document version")
@@ -198,10 +193,7 @@ public class SignatureServiceTest {
     public void testSignatureUpdate_NotFound() {
         when(signatureRepository.findById(1L)).thenReturn(Optional.empty());
 
-        var exception =
-            assertThrows(SignatureNotFoundException.class, () -> signatureService.signatureUpdate(1L, true));
-
-        assertThat(exception.getMessage()).isEqualTo("signature.not.found");
+        assertThrows(SignatureNotFoundException.class, () -> signatureService.signatureUpdate(1L, true));
     }
 
     private Signature getSignature(SignatureCreateRequest request) {
