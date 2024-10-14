@@ -9,19 +9,26 @@ import lombok.Builder;
 public record SignatureResponse(
     @Schema(description = "ID подписи", example = "1")
     Long id,
-    @Schema(description = "Навзание документа")
+
+    @Schema(description = "Название документа", example = "Договор о сотрудничестве")
     String name,
-    @Schema(description = "Статус документа")
+
+    @Schema(description = "Статус документа", example = "SIGNED")
     SignatureStatus status,
-    @Schema(description = "Когда отправили документ на подпись")
+
+    @Schema(description = "Дата и время отправки документа на подпись", example = "2023-04-15T14:30:00+03:00")
     OffsetDateTime sentAt,
-    @Schema(description = "Когда документ подписали")
+
+    @Schema(description = "Дата и время подписания документа", example = "2023-04-16T10:15:00+03:00")
     OffsetDateTime signedAt,
-    @Schema(description = "Хеш подписи")
+
+    @Schema(description = "Хеш подписи", example = "a1b2c3d4e5f6g7h8i9j0")
     String signatureData,
-    @Schema(description = "Пользователь, к которому относится подпись")
+
+    @Schema(description = "Электронная почта пользователя, к которому относится подпись", example = "user@example.com")
     String email,
-    @Schema(description = "Версия документа для подписи")
+
+    @Schema(description = "ID версии документа для подписи", example = "1")
     Long documentVersionId
 ) {
 }

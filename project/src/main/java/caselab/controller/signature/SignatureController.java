@@ -3,11 +3,17 @@ package caselab.controller.signature;
 import caselab.controller.signature.payload.SignatureCreateRequest;
 import caselab.controller.signature.payload.SignatureResponse;
 import caselab.service.signature.SignatureService;
-import caselab.service.users.ApplicationUserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import java.util.List;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ProblemDetail;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,26 +28,57 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/signatures")
 @SecurityRequirement(name = "JWT")
 @RequiredArgsConstructor
+@Tag(name = "Подписи", description = "API взаимодействия с подписями")
 public class SignatureController {
+
     private final SignatureService signatureService;
-    private final ApplicationUserService userService;
 
     @PostMapping("/sign/{id}")
-    @Operation(summary = "Функция подписания",
-               description = "Функция высчитывает хеш подписи и возвращает dto")
-    public SignatureResponse sign(@PathVariable("id") Long id, @RequestParam("status") Boolean sign) {
+    @Operation(summary = "Подписать документ",
+               description = """
+                   Подписывает документ, вычисляет хеш подписи
+                   и возвращает DTO с информацией о подписи
+                   """)
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Успешное подписание документа"),
+        @ApiResponse(responseCode = "404", description = "Подпись не найдена",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    public SignatureResponse sign(
+        @Parameter(description = "ID подписи", required = true)
+        @PathVariable("id") Long id,
+        @Parameter(description = "Статус подписания (true - подписать, false - отклонить)", required = true)
+        @RequestParam("status") Boolean sign
+    ) {
         return signatureService.signatureUpdate(id, sign);
     }
 
     @Operation(summary = "Отправить версию документа на подпись",
-               description = "Отправляет версию документа на подписание пользователю и возвращает dto")
+               description = """
+                   Отправляет версию документа на подписание пользователю
+                   и возвращает DTO с информацией о созданной подписи
+                   """)
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Успешная отправка документа на подпись"),
+        @ApiResponse(responseCode = "404", description = "Версия документа не найдена",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+        @ApiResponse(responseCode = "404", description = "Пользователь не найден",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
     @PostMapping("/send")
-    public SignatureResponse sendDocumentVersionOnSigning(@RequestBody SignatureCreateRequest signatureCreateRequest) {
+    public SignatureResponse sendDocumentVersionOnSigning(
+        @RequestBody SignatureCreateRequest signatureCreateRequest
+    ) {
         return signatureService.createSignature(signatureCreateRequest);
     }
 
     @Operation(summary = "Получить все подписи пользователя",
-               description = "Возвращает все подписи пользователя")
+               description = "Возвращает список всех подписей, связанных с текущим аутентифицированным пользователем")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Успешное получение списка подписей"),
+        @ApiResponse(responseCode = "404", description = "Пользователь не найден",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
     @GetMapping("/all")
     public List<SignatureResponse> getAllSignaturesForUser(Authentication authentication) {
         var userDetails = (UserDetails) authentication.getPrincipal();
