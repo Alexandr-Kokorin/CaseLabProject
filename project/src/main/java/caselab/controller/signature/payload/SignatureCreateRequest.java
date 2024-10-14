@@ -6,6 +6,6 @@ import lombok.Builder;
 public record SignatureCreateRequest(
     Long documentVersionId,
     String name,
-    Long userId
+    String email
 ) {
 }

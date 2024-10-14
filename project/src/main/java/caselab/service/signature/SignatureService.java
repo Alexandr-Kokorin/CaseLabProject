@@ -15,6 +15,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -59,8 +60,8 @@ public class SignatureService {
             .orElseThrow(() -> new DocumentVersionNotFoundException(signRequest.documentVersionId()));
 
         var userForSign = userRepository
-            .findById(signRequest.userId())
-            .orElseThrow(() -> new UserNotFoundException(signRequest.userId()));
+            .findByEmail(signRequest.email())
+            .orElseThrow(() -> new UsernameNotFoundException(signRequest.email()));
 
         signature.setApplicationUser(userForSign);
         signature.setDocumentVersion(documentVersionForSign);

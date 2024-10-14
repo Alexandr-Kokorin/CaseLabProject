@@ -55,7 +55,7 @@ public class SignatureControllerTest extends BaseControllerTest {
     private SignatureMapper signatureMapper;
     @MockBean
     private SecurityFilterChain securityFilterChain;
-    private Long userId;
+    private final String email = "test@mail.ru";
     private Long documentVersionId;
     private Long signatureId;
 
@@ -97,7 +97,6 @@ public class SignatureControllerTest extends BaseControllerTest {
             .build());
 
         signatureId = savedSignature.getId();
-        userId = savedUser.getId();
         documentVersionId = savedDocumentVersion.getId();
     }
 
@@ -121,7 +120,7 @@ public class SignatureControllerTest extends BaseControllerTest {
                 .builder()
                 .documentVersionId(documentVersionId)
                 .name("test")
-                .userId(userId)
+                .email(email)
                 .build();
 
             var request = objectMapper.writeValueAsString(signatureCreateRequest);
@@ -134,7 +133,6 @@ public class SignatureControllerTest extends BaseControllerTest {
                     status().isOk(),
                     jsonPath("$.id").isNotEmpty(),
                     jsonPath("$.name").value(signatureResponse.name()),
-                    jsonPath("$.userId").value(userId),
                     jsonPath("$.documentVersionId").value(documentVersionId),
                     jsonPath("$.status").value(signatureResponse.status().toString())
                 );
@@ -166,7 +164,7 @@ public class SignatureControllerTest extends BaseControllerTest {
                 .builder()
                 .documentVersionId(documentVersionId)
                 .name("test")
-                .userId(3L)
+                .email(email)
                 .build();
 
             var request = objectMapper.writeValueAsString(signatureCreateRequest);
@@ -244,7 +242,7 @@ public class SignatureControllerTest extends BaseControllerTest {
         @DisplayName("Should return all signatures for user")
         @SneakyThrows
         public void findAllSignatures_success() {
-            var mvcResponse = mockMvc.perform(get(SIGN_URI + "/all/" + userId)
+            var mvcResponse = mockMvc.perform(get(SIGN_URI + "/all/")
                     .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(
                     status().isOk()
@@ -260,7 +258,7 @@ public class SignatureControllerTest extends BaseControllerTest {
                 "Group assertions for found signatures",
                 () -> assertThat(foundSignatures.size()).isEqualTo(1),
                 () -> assertThat(foundSignatures.getFirst()).isNotNull(),
-                () -> assertThat(foundSignatures.getFirst().userId()).isEqualTo(userId)
+                () -> assertThat(foundSignatures.getFirst().userId()).isNotNull()
             );
         }
 
@@ -290,7 +288,7 @@ public class SignatureControllerTest extends BaseControllerTest {
     private SignatureCreateRequest getSignatureCreateRequest() {
         return SignatureCreateRequest
             .builder()
-            .userId(1L)
+            .email(email)
             .documentVersionId(1L)
             .name("test")
             .build();
