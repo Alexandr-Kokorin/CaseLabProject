@@ -4,19 +4,16 @@ import caselab.controller.attribute.payload.AttributeRequest;
 import caselab.controller.attribute.payload.AttributeResponse;
 import caselab.domain.entity.Attribute;
 import caselab.domain.repository.AttributeRepository;
+import caselab.exception.entity.AttributeNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-import java.util.NoSuchElementException;
 import java.util.Optional;
-import caselab.exception.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.MessageSource;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -30,8 +27,6 @@ public class AttributeServiceTest {
 
     @Mock
     private AttributeRepository attributeRepository;
-    @Mock
-    private MessageSource messageSource;
 
     @Test
     void testCreateAttribute_shouldReturnCreatedAttribute() {
@@ -75,12 +70,7 @@ public class AttributeServiceTest {
     void testFindAttributeById_whenAttributeNotFound_shouldThrowNoSuchElementException() {
         Mockito.when(attributeRepository.findById(2L)).thenReturn(Optional.empty());
 
-        EntityNotFoundException exception =
-            assertThrows(EntityNotFoundException.class, () -> attributeService.findAttributeById(2L));
-        String expectedMessage =
-            messageSource.getMessage("attribute.not.found", new Object[] {2L}, Locale.getDefault());
-
-        assertEquals(expectedMessage, exception.getMessage());
+        assertThrows(AttributeNotFoundException.class, () -> attributeService.findAttributeById(2L));
     }
 
     @Test
@@ -139,7 +129,7 @@ public class AttributeServiceTest {
 
         Mockito.when(attributeRepository.findById(2L)).thenReturn(Optional.empty());
 
-        assertThrows(EntityNotFoundException.class, () -> attributeService.updateAttribute(2L, attributeRequest));
+        assertThrows(AttributeNotFoundException.class, () -> attributeService.updateAttribute(2L, attributeRequest));
     }
 
     @Test
@@ -155,7 +145,7 @@ public class AttributeServiceTest {
         Mockito.when(attributeRepository.existsById(2L)).thenReturn(false);
 
         assertThrows(
-            EntityNotFoundException.class,
+            AttributeNotFoundException.class,
             () -> attributeService.deleteAttribute(2L),
             "Атрибут с id=2 не найден"
         );
