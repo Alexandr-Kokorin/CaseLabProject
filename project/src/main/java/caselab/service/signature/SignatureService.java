@@ -7,30 +7,28 @@ import caselab.domain.entity.enums.SignatureStatus;
 import caselab.domain.repository.ApplicationUserRepository;
 import caselab.domain.repository.DocumentVersionRepository;
 import caselab.domain.repository.SignatureRepository;
-import caselab.exception.EntityNotFoundException;
+import caselab.exception.entity.DocumentVersionNotFoundException;
+import caselab.exception.entity.SignatureNotFoundException;
+import caselab.exception.entity.UserNotFoundException;
 import jakarta.transaction.Transactional;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 
-@SuppressWarnings("MultipleStringLiterals")
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class SignatureService {
     private final SignatureRepository signatureRepository;
-    private final MessageSource messageSource;
     private final ApplicationUserRepository userRepository;
     private final DocumentVersionRepository documentVersionRepository;
     private final SignatureMapper signatureMapper;
 
     public SignatureResponse signatureUpdate(Long id, Boolean sign) {
         var signature = signatureRepository.findById(id)
-            .orElseThrow(() -> getEntityNotFoundException("signature.not.found", id));
+            .orElseThrow(() -> new SignatureNotFoundException(id));
         if (sign) {
             makeSign(signature);
         } else {
@@ -58,13 +56,11 @@ public class SignatureService {
 
         var documentVersionForSign = documentVersionRepository
             .findById(signRequest.documentVersionId())
-            .orElseThrow(() -> getEntityNotFoundException(
-                "document.version.not.found", signRequest.documentVersionId()));
+            .orElseThrow(() -> new DocumentVersionNotFoundException(signRequest.documentVersionId()));
 
         var userForSign = userRepository
             .findById(signRequest.userId())
-            .orElseThrow(() -> getEntityNotFoundException(
-                "user.not.found", signRequest.userId()));
+            .orElseThrow(() -> new UserNotFoundException(signRequest.userId()));
 
         signature.setApplicationUser(userForSign);
         signature.setDocumentVersion(documentVersionForSign);
@@ -79,18 +75,11 @@ public class SignatureService {
     public List<SignatureResponse> findAllSignaturesByUserId(Long id) {
         var user = userRepository
             .findById(id)
-            .orElseThrow(() -> getEntityNotFoundException(
-                "user.not.found", id));
+            .orElseThrow(() -> new UserNotFoundException(id));
 
         return user.getSignatures()
             .stream()
             .map(signatureMapper::entityToSignatureResponse)
             .toList();
-    }
-
-    private EntityNotFoundException getEntityNotFoundException(String messageError, Long id) {
-        return new EntityNotFoundException(
-            messageSource.getMessage(messageError, new Object[] {id}, Locale.getDefault())
-        );
     }
 }

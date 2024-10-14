@@ -9,24 +9,24 @@ import caselab.domain.entity.enums.SignatureStatus;
 import caselab.domain.repository.ApplicationUserRepository;
 import caselab.domain.repository.DocumentVersionRepository;
 import caselab.domain.repository.SignatureRepository;
+import caselab.exception.entity.DocumentVersionNotFoundException;
+import caselab.exception.entity.SignatureNotFoundException;
+import caselab.exception.entity.UserNotFoundException;
+import java.time.OffsetDateTime;
+import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.context.MessageSource;
-import java.util.Optional;
-import java.time.OffsetDateTime;
-import java.util.Locale;
-import caselab.exception.EntityNotFoundException;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static java.time.OffsetDateTime.now;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
@@ -43,9 +43,6 @@ public class SignatureServiceTest {
     private ApplicationUserRepository userRepository;
     @Mock
     private SignatureRepository signatureRepository;
-    @Mock
-    private MessageSource messageSource;
-
     @BeforeEach
     public void setup() {
         ApplicationUser user = new ApplicationUser();
@@ -106,17 +103,15 @@ public class SignatureServiceTest {
 
         var foundDocumentVersion = DocumentVersion.builder().id(request.documentVersionId()).build();
 
-        var expectedMessage = messageSource.getMessage("user.not.found", new Object[] {1L}, Locale.getDefault());
-
         Mockito.when(signatureMapper.requestToEntity(Mockito.any(SignatureCreateRequest.class)))
             .thenReturn(mappedSignatureRequest);
         Mockito.when(documentVersionRepository.findById(request.documentVersionId()))
             .thenReturn(Optional.of(foundDocumentVersion));
-        Mockito.when(userRepository.findById(request.userId())).thenThrow(new EntityNotFoundException(expectedMessage));
+        Mockito.when(userRepository.findById(request.userId())).thenThrow(new UserNotFoundException(request.userId()));
 
-        var exception = assertThrows(EntityNotFoundException.class, () -> signatureService.createSignature(request));
+        var exception = assertThrows(UserNotFoundException.class, () -> signatureService.createSignature(request));
 
-        assertThat(exception.getMessage()).isEqualTo(expectedMessage);
+        assertThat(exception.getMessage()).isEqualTo("user.not.found");
     }
 
     @DisplayName("Create signature for non-existent document version")
@@ -126,17 +121,15 @@ public class SignatureServiceTest {
 
         var mappedSignatureRequest = getSignature(request);
 
-        var expectedMessage =
-            messageSource.getMessage("document.version.not.found", new Object[] {1L}, Locale.getDefault());
-
         Mockito.when(signatureMapper.requestToEntity(Mockito.any(SignatureCreateRequest.class)))
             .thenReturn(mappedSignatureRequest);
         Mockito.when(documentVersionRepository.findById(request.documentVersionId()))
-            .thenThrow(new EntityNotFoundException(expectedMessage));
+            .thenThrow(new DocumentVersionNotFoundException(request.documentVersionId()));
 
-        var exception = assertThrows(EntityNotFoundException.class, () -> signatureService.createSignature(request));
+        var exception =
+            assertThrows(DocumentVersionNotFoundException.class, () -> signatureService.createSignature(request));
 
-        assertThat(exception.getMessage()).isEqualTo(expectedMessage);
+        assertThat(exception.getMessage()).isEqualTo("document.version.not.found");
     }
 
     @DisplayName("Sign document version")
@@ -199,18 +192,16 @@ public class SignatureServiceTest {
             () -> assertThat(signature.getSignedAt()).isNotNull()
         );
     }
+
     @DisplayName("Signature does not exist")
     @Test
     public void testSignatureUpdate_NotFound() {
         when(signatureRepository.findById(1L)).thenReturn(Optional.empty());
 
         var exception =
-            assertThrows(EntityNotFoundException.class, () -> signatureService.signatureUpdate(1L, true));
+            assertThrows(SignatureNotFoundException.class, () -> signatureService.signatureUpdate(1L, true));
 
-        var expectedMessage =
-            messageSource.getMessage("user.not.found", new Object[] {1L}, Locale.getDefault());
-
-        assertEquals(expectedMessage, exception.getMessage());
+        assertThat(exception.getMessage()).isEqualTo("signature.not.found");
     }
 
     private Signature getSignature(SignatureCreateRequest request) {
@@ -229,7 +220,8 @@ public class SignatureServiceTest {
             .build();
     }
 
-    private SignatureResponse getSignatureResponse(ApplicationUser foundUser, DocumentVersion foundDocumentVersion, SignatureCreateRequest request
+    private SignatureResponse getSignatureResponse(
+        ApplicationUser foundUser, DocumentVersion foundDocumentVersion, SignatureCreateRequest request
     ) {
         return SignatureResponse
             .builder()
