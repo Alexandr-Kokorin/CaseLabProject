@@ -9,7 +9,6 @@ import caselab.domain.repository.DocumentVersionRepository;
 import caselab.domain.repository.SignatureRepository;
 import caselab.exception.entity.DocumentVersionNotFoundException;
 import caselab.exception.entity.SignatureNotFoundException;
-import caselab.exception.entity.UserNotFoundException;
 import jakarta.transaction.Transactional;
 import java.time.OffsetDateTime;
 import java.util.List;
