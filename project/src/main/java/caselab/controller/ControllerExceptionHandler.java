@@ -1,6 +1,7 @@
 package caselab.controller;
 
 import caselab.exception.UserExistsException;
+import caselab.exception.VotingProcessIsOverException;
 import caselab.exception.entity.EntityNotFoundException;
 import java.util.Locale;
 import java.util.Objects;
@@ -38,6 +39,19 @@ public class ControllerExceptionHandler {
             HttpStatus.CONFLICT,
             exception.getMessage(),
             new Object[] {exception.getEmail()},
+            locale
+        );
+    }
+
+    @ExceptionHandler(VotingProcessIsOverException.class)
+    public ResponseEntity<ProblemDetail> votingProcessIsOverException(
+        VotingProcessIsOverException exception,
+        Locale locale
+    ) {
+        return createProblemDetailResponse(
+            HttpStatus.CONFLICT,
+            exception.getMessage(),
+            new Object[] {exception.getId()},
             locale
         );
     }

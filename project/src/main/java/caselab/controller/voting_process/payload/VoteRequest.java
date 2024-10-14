@@ -7,15 +7,18 @@ import jakarta.validation.constraints.Positive;
 import lombok.Builder;
 
 @Builder
+@Schema(description = "Запрос, содержащий информацию о голосе")
 public record VoteRequest(
-    @Positive
+    @NotNull(message = "ID пользователя не может быть null")
+    @Positive(message = "ID пользователя должно быть больше 0")
     @Schema(description = "ID пользователя", example = "1")
     Long applicationUserId,
-    @Positive
+    @NotNull(message = "ID голосования не может быть null")
+    @Positive(message = "ID голосования должно быть больше 0")
     @Schema(description = "ID голосования", example = "1")
     Long votingProcessId,
-    @NotNull
-    @Schema(description = "Решение", example = "IN_FAVOUR")
+    @NotNull(message = "Статус не может быть null")
+    @Schema(description = "Статус", example = "IN_FAVOUR")
     VoteStatus status
 ) {
 }

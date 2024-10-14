@@ -5,10 +5,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
 @Builder
+@Schema(description = "Ответ, содержащий информацию о голосе")
 public record VoteResponse(
     @Schema(description = "ID голоса", example = "1")
     Long id,
-    @Schema(description = "Решение", example = "IN_FAVOUR")
+    @Schema(description = "Статус", example = "IN_FAVOUR")
     VoteStatus status,
     @Schema(description = "Пользователь")
     VoteUserResponse applicationUser,

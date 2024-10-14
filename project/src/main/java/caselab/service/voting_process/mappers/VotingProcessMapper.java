@@ -2,9 +2,7 @@ package caselab.service.voting_process.mappers;
 
 import caselab.controller.voting_process.payload.VotingProcessRequest;
 import caselab.controller.voting_process.payload.VotingProcessResponse;
-import caselab.domain.entity.DocumentVersion;
 import caselab.domain.entity.VotingProcess;
-import caselab.domain.entity.enums.VotingProcessStatus;
 import java.time.OffsetDateTime;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -22,28 +20,8 @@ public interface VotingProcessMapper {
     @Mapping(target = "documentVersionId", source = "documentVersion.id")
     VotingProcessResponse entityToResponse(VotingProcess votingProcess);
 
-    @Mapping(target = "documentVersion", source = "documentVersionId", qualifiedByName = "setDocumentVersion")
-    VotingProcess requestToEntity(VotingProcessRequest votingProcessRequest);
-
     @Mapping(target = "deadline", source = "deadline", qualifiedByName = "setDeadline")
-    VotingProcess requestToEntityForUpdate(VotingProcessRequest votingProcessRequest);
-
-    @Named("setDocumentVersion")
-    static DocumentVersion setDocumentVersion(Long documentVersionId) {
-        return DocumentVersion.builder()
-            .id(documentVersionId)
-            .build();
-    }
-
-    @Named("setStatus")
-    static VotingProcessStatus setStatus() {
-        return VotingProcessStatus.IN_PROGRESS;
-    }
-
-    @Named("setCreatedAt")
-    static OffsetDateTime setCreatedAt() {
-        return OffsetDateTime.now();
-    }
+    VotingProcess requestToEntity(VotingProcessRequest votingProcessRequest);
 
     @Named("setDeadline")
     static OffsetDateTime setDeadline(Long deadline) {
