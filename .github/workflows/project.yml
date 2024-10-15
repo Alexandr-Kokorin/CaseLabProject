@@ -65,5 +65,5 @@ jobs:
 
       - run: mvn -pl project -am verify -Dskip.unit.tests=true
         env:
-          SPRING_MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
-          SPRING_MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
