@@ -35,7 +35,7 @@ public class SignatureService {
             signature.setStatus(SignatureStatus.REFUSED);
         }
         signature.setSignedAt(OffsetDateTime.now());
-        return signatureMapper.entityToSignatureResponse(signature);
+        return signatureMapper.entityToResponse(signature);
     }
 
     private void makeSign(Signature signature) {
@@ -69,7 +69,7 @@ public class SignatureService {
 
         var savedSignature = signatureRepository.save(signature);
 
-        return signatureMapper.entityToSignatureResponse(savedSignature);
+        return signatureMapper.entityToResponse(savedSignature);
     }
 
     public List<SignatureResponse> findAllSignaturesByEmail(String email) {
@@ -79,7 +79,7 @@ public class SignatureService {
 
         return user.getSignatures()
             .stream()
-            .map(signatureMapper::entityToSignatureResponse)
+            .map(signatureMapper::entityToResponse)
             .toList();
     }
 }

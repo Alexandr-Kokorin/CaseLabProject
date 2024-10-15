@@ -4,6 +4,7 @@ import caselab.controller.types.payload.DocumentTypeToAttributeRequest;
 import caselab.controller.types.payload.DocumentTypeToAttributeResponse;
 import caselab.domain.entity.Attribute;
 import caselab.domain.entity.document.type.to.attribute.DocumentTypeToAttribute;
+import caselab.service.types.DocumentTypeToAttributeMapper;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,7 +25,7 @@ public class DocumentTypeToAttributeMapperTest {
             .build();
 
         // Act
-        DocumentTypeToAttribute result = mapper.documentTypeToAttributeRequestToDocumentTypeToAttribute(request);
+        DocumentTypeToAttribute result = mapper.requestToEntity(request);
 
         // Assert
         assertAll(
@@ -46,7 +47,7 @@ public class DocumentTypeToAttributeMapperTest {
         documentTypeToAttribute.setOptional(true);
 
         // Act
-        DocumentTypeToAttributeResponse response = mapper.documentTypeToAttributeToDocumentTypeToAttributeResponse(documentTypeToAttribute);
+        DocumentTypeToAttributeResponse response = mapper.entityToResponse(documentTypeToAttribute);
 
         // Assert
         assertAll(

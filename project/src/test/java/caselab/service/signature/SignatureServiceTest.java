@@ -78,7 +78,7 @@ public class SignatureServiceTest {
             .thenReturn(Optional.of(foundDocumentVersion));
         Mockito.when(userRepository.findByEmail(request.email())).thenReturn(Optional.of(foundUser));
         Mockito.when(signatureRepository.save(Mockito.any(Signature.class))).thenReturn(createdSignature);
-        Mockito.when(signatureMapper.entityToSignatureResponse(Mockito.any(Signature.class)))
+        Mockito.when(signatureMapper.entityToResponse(Mockito.any(Signature.class)))
             .thenReturn(createdSignatureResponse);
 
         var resultOfCreating = signatureService.createSignature(request);
@@ -145,13 +145,13 @@ public class SignatureServiceTest {
             .email(email)
             .build();
 
-        when(signatureMapper.entityToSignatureResponse(signature)).thenReturn(expectedResponse);
+        when(signatureMapper.entityToResponse(signature)).thenReturn(expectedResponse);
         when(signatureRepository.findById(1L)).thenReturn(Optional.of(signature));
 
         var actualResponse = signatureService.signatureUpdate(1L, true);
 
         verify(signatureRepository, times(1)).findById(1L);
-        verify(signatureMapper, times(1)).entityToSignatureResponse(signature);
+        verify(signatureMapper, times(1)).entityToResponse(signature);
 
         assertAll(
             "Grouped assertions for signed document version",
@@ -176,12 +176,12 @@ public class SignatureServiceTest {
             .build();
 
         when(signatureRepository.findById(1L)).thenReturn(Optional.of(signature));
-        when(signatureMapper.entityToSignatureResponse(signature)).thenReturn(expectedResponse);
+        when(signatureMapper.entityToResponse(signature)).thenReturn(expectedResponse);
 
         var actualResponse = signatureService.signatureUpdate(1L, false);
 
         verify(signatureRepository, times(1)).findById(1L);
-        verify(signatureMapper, times(1)).entityToSignatureResponse(signature);
+        verify(signatureMapper, times(1)).entityToResponse(signature);
 
         assertAll(
             "Grouped assertions for not signed document version",

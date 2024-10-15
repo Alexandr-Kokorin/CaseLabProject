@@ -9,7 +9,6 @@ import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.Document;
 import caselab.domain.entity.DocumentType;
 import caselab.domain.entity.UserToDocument;
-import caselab.service.user.to.document.UserToDocumentMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +51,7 @@ public class DocumentMapperTest {
             .build();
 
         // Act
-        Document document = documentMapper.documentRequestToDocument(documentRequest);
+        Document document = documentMapper.requestToEntity(documentRequest);
 
         // Assert
         assertAll(
@@ -99,7 +98,7 @@ public class DocumentMapperTest {
             .build();
 
         // Act
-        DocumentResponse documentResponse = documentMapper.documentToDocumentResponse(document);
+        DocumentResponse documentResponse = documentMapper.entityToResponse(document);
 
         // Assert
         assertAll(
@@ -121,8 +120,8 @@ public class DocumentMapperTest {
     @DisplayName("Should handle null values correctly")
     public void testMapWithNullValues() {
         // Act
-        Document document = documentMapper.documentRequestToDocument(null);
-        DocumentResponse documentResponse = documentMapper.documentToDocumentResponse(null);
+        Document document = documentMapper.requestToEntity(null);
+        DocumentResponse documentResponse = documentMapper.entityToResponse(null);
 
         // Assert
         assertNull(document);

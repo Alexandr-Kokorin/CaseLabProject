@@ -1,12 +1,10 @@
-package caselab.service.document.type.to.attribute;
+package caselab.service.types;
 
 import caselab.controller.types.payload.DocumentTypeToAttributeRequest;
 import caselab.controller.types.payload.DocumentTypeToAttributeResponse;
-import caselab.domain.entity.Attribute;
 import caselab.domain.entity.document.type.to.attribute.DocumentTypeToAttribute;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.Named;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 
@@ -15,21 +13,13 @@ import org.mapstruct.ReportingPolicy;
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface DocumentTypeToAttributeMapper {
 
-    @Mapping(target = "attribute", source = "attributeId", qualifiedByName = "mapAttributeIdToAttribute")
-    @Mapping(target = "optional", source = "isOptional")
-    DocumentTypeToAttribute documentTypeToAttributeRequestToDocumentTypeToAttribute(
-        DocumentTypeToAttributeRequest documentTypeToAttributeRequest);
-
     @Mapping(target = "attributeId", source = "attribute.id")
     @Mapping(target = "isOptional", source = "optional")
-    DocumentTypeToAttributeResponse documentTypeToAttributeToDocumentTypeToAttributeResponse(
+    DocumentTypeToAttributeResponse entityToResponse(
         DocumentTypeToAttribute documentTypeToAttribute);
 
-    @Named("mapAttributeIdToAttribute")
-    static Attribute mapAttributeIdToAttribute(Long attributeId) {
-        return Attribute.builder()
-            .id(attributeId)
-            .build();
-    }
+    @Mapping(target = "optional", source = "isOptional")
+    DocumentTypeToAttribute requestToEntity(
+        DocumentTypeToAttributeRequest documentTypeToAttributeRequest);
 }
 

@@ -5,6 +5,7 @@ import caselab.controller.document.payload.user.to.document.dto.UserToDocumentRe
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.DocumentPermission;
 import caselab.domain.entity.UserToDocument;
+import caselab.service.document.UserToDocumentMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
@@ -35,7 +36,7 @@ public class UserToDocumentMapperTest {
             .build();
 
         // Act
-        UserToDocumentResponse response = userToDocumentMapper.userToDocumentToResponse(userToDocument);
+        UserToDocumentResponse response = userToDocumentMapper.entityToResponse(userToDocument);
         // Assert
         assertNotNull(response);
         assertEquals(1001L, response.id());
@@ -58,7 +59,7 @@ public class UserToDocumentMapperTest {
         assertNotNull(userToDocument);
         assertEquals(1001L, userToDocument.getApplicationUser().getId());
 
-        // Проверяем маппинг списка documentPermissionId в список DocumentPermission
+        // Проверяем маппинг списка documentPermissionIds в список DocumentPermission
         List<Long> mappedPermissionIds = userToDocument.getDocumentPermissions().stream()
             .map(DocumentPermission::getId)
             .collect(Collectors.toList());
@@ -83,7 +84,7 @@ public class UserToDocumentMapperTest {
     }
 
     @Test
-    @DisplayName("Should map empty documentPermissionId list")
+    @DisplayName("Should map empty documentPermissionIds list")
     public void testMapEmptyDocumentPermissions() {
         // Arrange
         UserToDocumentRequest request = UserToDocumentRequest.builder()

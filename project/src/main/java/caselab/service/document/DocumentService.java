@@ -2,21 +2,21 @@ package caselab.service.document;
 
 import caselab.controller.document.payload.document.dto.DocumentRequest;
 import caselab.controller.document.payload.document.dto.DocumentResponse;
+import caselab.controller.document.payload.user.to.document.dto.UserToDocumentRequest;
 import caselab.domain.entity.Document;
 import caselab.domain.entity.DocumentType;
 import caselab.domain.entity.UserToDocument;
+import caselab.domain.repository.ApplicationUserRepository;
 import caselab.domain.repository.DocumentRepository;
 import caselab.domain.repository.DocumentTypesRepository;
 import caselab.domain.repository.UserToDocumentRepository;
 import caselab.exception.entity.DocumentNotFoundException;
 import caselab.exception.entity.DocumentTypeNotFoundException;
-import caselab.service.user.to.document.UserToDocumentMapper;
 import jakarta.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -25,24 +25,42 @@ import org.springframework.stereotype.Service;
 public class DocumentService {
 
     private final DocumentRepository documentRepository;
-    private final DocumentMapper documentMapper;
     private final DocumentTypesRepository documentTypeRepository;
-    private final UserToDocumentMapper userToDocumentMapper;
     private final UserToDocumentRepository userToDocumentRepository;
+    private final ApplicationUserRepository applicationUserRepository;
+    private final UserToDocumentMapper userToDocumentMapper;
+    private final DocumentMapper documentMapper;
 
     public DocumentResponse createDocument(DocumentRequest documentRequest) {
-        Document document = documentMapper.documentRequestToDocument(documentRequest);
+        var document = documentMapper.requestToEntity(documentRequest);
+        document.setDocumentType(documentTypeRepository.findById(documentRequest.documentTypeId())
+            .orElseThrow(() -> new DocumentTypeNotFoundException(documentRequest.documentTypeId())));
+        documentRepository.save(document);
+
+        var userToDocument = UserToDocument.builder()
+            .build(applicationUserRepository.findByEmail(documentRequest.usersPermissions().))
+
         Document savedDocument = documentRepository.save(document);
-        return documentMapper.documentToDocumentResponse(savedDocument);
+        return documentMapper.entityToResponse(savedDocument);
+    }
+
+    private List<UserToDocument> saveUserToDocuments(DocumentRequest documentRequest) {
+        List<UserToDocument> userToDocuments = new ArrayList<>();
+        for (UserToDocumentRequest userToDocumentRequest : documentRequest.usersPermissions()) {
+            userToDocuments.add(create);
+        }
     }
 
     public DocumentResponse getDocumentById(Long id) {
-        return documentMapper.documentToDocumentResponse(documentRepository.findById(id)
+        return documentMapper.entityToResponse(documentRepository.findById(id)
             .orElseThrow(() -> new DocumentNotFoundException(id)));
     }
 
-    public Page<DocumentResponse> getAllDocuments(Pageable pageable) {
-        return documentRepository.findAll(pageable).map(documentMapper::documentToDocumentResponse);
+    public List<DocumentResponse> getAllDocuments() {
+        var documentResponses = documentRepository.findAll();
+        return documentResponses.stream()
+            .map(documentMapper::entityToResponse)
+            .toList();
     }
 
     public DocumentResponse updateDocument(Long documentId, DocumentRequest documentRequest) {
@@ -74,14 +92,13 @@ public class DocumentService {
         document = documentRepository.save(document);
 
         // Возвращаем маппинг обратно в DTO
-        return documentMapper.documentToDocumentResponse(document);
+        return documentMapper.entityToResponse(document);
     }
 
     public void deleteDocument(Long id) {
-        if (documentRepository.existsById(id)) {
-            documentRepository.deleteById(id);
-        } else {
+        if (!documentRepository.existsById(id)) {
             throw new DocumentNotFoundException(id);
         }
+        documentRepository.deleteById(id);
     }
 }

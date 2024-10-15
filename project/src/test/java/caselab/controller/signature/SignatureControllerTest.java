@@ -237,7 +237,7 @@ public class SignatureControllerTest extends BaseControllerTest {
         public void testMakeSignature() {
             var token = login().token();
             var createdSignature = getSignatureFromDB();
-            var createdSignatureResponse = signatureMapper.entityToSignatureResponse(createdSignature);
+            var createdSignatureResponse = signatureMapper.entityToResponse(createdSignature);
 
             mockMvc.perform(post(SIGN_URI + "/sign/" + signatureId)
                     .header("Authorization", "Bearer " + token)
@@ -260,7 +260,7 @@ public class SignatureControllerTest extends BaseControllerTest {
         public void testNotMakeSignature() {
             var token = login().token();
             var createdSignature = getSignatureFromDB();
-            var createdSignatureResponse = signatureMapper.entityToSignatureResponse(createdSignature);
+            var createdSignatureResponse = signatureMapper.entityToResponse(createdSignature);
 
             mockMvc.perform(post(SIGN_URI + "/sign/" + signatureId)
                     .header("Authorization", "Bearer " + token)

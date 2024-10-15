@@ -5,7 +5,7 @@ import lombok.Builder;
 
 @Builder
 public record UserToDocumentResponse(
-    @Schema(description = "ID пользователя", example = "1")
-    Long id
+    @Schema(description = "Email пользователя", example = "1")
+    String email
 ) {
 }

@@ -7,9 +7,9 @@ import lombok.Builder;
 
 @Builder
 public record UserToDocumentRequest(
-    @Schema(description = "ID пользователя", example = "1")
-    Long userId,
+    @Schema(description = "Email пользователя", example = "1")
+    String email,
     @ArraySchema(schema = @Schema(description = "ID прав доступа к документу", example = "1"))
-    List<Long> documentPermissionId
+    List<Long> documentPermissionIds
 ) {
 }

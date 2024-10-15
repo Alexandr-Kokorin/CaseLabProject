@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/documents")
@@ -40,10 +41,10 @@ public class DocumentController {
         return documentService.getDocumentById(id);
     }
 
-    @Operation(summary = "Получить страницу документов")
+    @Operation(summary = "Получить список документов")
     @GetMapping
-    public Page<DocumentResponse> getAllDocuments(Pageable pageable) {
-        return documentService.getAllDocuments(pageable);
+    public List<DocumentResponse> getAllDocuments() {
+        return documentService.getAllDocuments();
     }
 
     @Operation(summary = "Обновить документ")
