@@ -23,7 +23,7 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: maven build
+      - name: Maven Build
         run: mvn -pl project -am package
 
       - id: jacoco
@@ -38,7 +38,7 @@ jobs:
           update-comment: true
 
   checkstyle:
-    name: checkstyle
+    name: Checkstyle
     runs-on: ubuntu-latest
 
     steps:
@@ -52,7 +52,7 @@ jobs:
       - run: mvn -pl project -am checkstyle:check
 
   integration-test:
-    name: integration tests
+    name: Integration Tests
     runs-on: ubuntu-latest
 
     steps:
@@ -64,3 +64,6 @@ jobs:
           cache: maven
 
       - run: mvn -pl project -am verify -Dskip.unit.tests=true
+        env:
+          SPRING_MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+          SPRING_MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
