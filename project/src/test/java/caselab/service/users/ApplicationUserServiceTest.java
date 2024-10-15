@@ -8,6 +8,8 @@ import caselab.exception.entity.UserNotFoundException;
 import caselab.service.secutiry.AuthenticationService;
 import java.util.List;
 import java.util.Optional;
+
+import caselab.service.users.mapper.UserMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

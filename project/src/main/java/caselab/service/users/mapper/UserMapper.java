@@ -1,8 +1,8 @@
-package caselab.service.users;
+package caselab.service.users.mapper;
 
 import caselab.controller.users.payload.UserResponse;
 import caselab.domain.entity.ApplicationUser;
-import caselab.service.document.DocumentMapper;
+import caselab.service.document.mapper.DocumentMapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;

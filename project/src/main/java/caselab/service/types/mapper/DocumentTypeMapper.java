@@ -1,4 +1,4 @@
-package caselab.service.types;
+package caselab.service.types.mapper;
 
 import caselab.controller.types.payload.DocumentTypeRequest;
 import caselab.controller.types.payload.DocumentTypeResponse;

@@ -1,9 +1,9 @@
 package caselab.service.document;
 
-import caselab.controller.document.payload.document.dto.DocumentRequest;
-import caselab.controller.document.payload.document.dto.DocumentResponse;
-import caselab.controller.document.payload.user.to.document.dto.UserToDocumentRequest;
-import caselab.controller.document.payload.user.to.document.dto.UserToDocumentResponse;
+import caselab.controller.document.payload.DocumentRequest;
+import caselab.controller.document.payload.DocumentResponse;
+import caselab.controller.document.payload.UserToDocumentRequest;
+import caselab.controller.document.payload.UserToDocumentResponse;
 import caselab.domain.IntegrationTest;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.DocumentType;

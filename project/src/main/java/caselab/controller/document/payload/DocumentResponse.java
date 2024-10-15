@@ -1,6 +1,5 @@
-package caselab.controller.document.payload.document.dto;
+package caselab.controller.document.payload;
 
-import caselab.controller.document.payload.user.to.document.dto.UserToDocumentResponse;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
@@ -12,9 +11,11 @@ public record DocumentResponse(
     Long id,
     @Schema(description = "ID Типа документа")
     Long documentTypeId,
-    @ArraySchema(schema = @Schema(implementation = UserToDocumentResponse.class))
-    List<UserToDocumentResponse> usersPermissions,
     @Schema(description = "Имя документа", example = "Приказ об отпуске")
-    String name
+    String name,
+    @ArraySchema(schema = @Schema(implementation = Long.class))
+    List<Long> documentVersionIds,
+    @ArraySchema(schema = @Schema(implementation = UserToDocumentResponse.class))
+    List<UserToDocumentResponse> usersPermissions
 ) {
 }

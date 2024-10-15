@@ -12,6 +12,7 @@ import caselab.domain.repository.DocumentTypeToAttributeRepository;
 import caselab.domain.repository.DocumentTypesRepository;
 import caselab.exception.entity.AttributeNotFoundException;
 import caselab.exception.entity.DocumentTypeNotFoundException;
+import caselab.service.types.mapper.DocumentTypeMapper;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Collection;

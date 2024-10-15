@@ -13,6 +13,8 @@ import caselab.exception.entity.DocumentVersionNotFoundException;
 import caselab.exception.entity.SignatureNotFoundException;
 import java.time.OffsetDateTime;
 import java.util.Optional;
+
+import caselab.service.signature.mapper.SignatureMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

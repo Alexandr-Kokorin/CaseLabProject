@@ -5,6 +5,7 @@ import caselab.controller.users.payload.UserUpdateRequest;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.repository.ApplicationUserRepository;
 import caselab.service.secutiry.AuthenticationService;
+import caselab.service.users.mapper.UserMapper;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;

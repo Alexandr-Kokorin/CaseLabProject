@@ -1,4 +1,4 @@
-package caselab.service.types;
+package caselab.service.types.mapper;
 
 import caselab.controller.types.payload.DocumentTypeToAttributeRequest;
 import caselab.controller.types.payload.DocumentTypeToAttributeResponse;
@@ -16,10 +16,12 @@ public interface DocumentTypeToAttributeMapper {
     @Mapping(target = "attributeId", source = "attribute.id")
     @Mapping(target = "isOptional", source = "optional")
     DocumentTypeToAttributeResponse entityToResponse(
-        DocumentTypeToAttribute documentTypeToAttribute);
+        DocumentTypeToAttribute documentTypeToAttribute
+    );
 
     @Mapping(target = "optional", source = "isOptional")
     DocumentTypeToAttribute requestToEntity(
-        DocumentTypeToAttributeRequest documentTypeToAttributeRequest);
+        DocumentTypeToAttributeRequest documentTypeToAttributeRequest
+    );
 }
 

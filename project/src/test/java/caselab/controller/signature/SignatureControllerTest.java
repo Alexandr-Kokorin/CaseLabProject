@@ -15,7 +15,7 @@ import caselab.domain.repository.DocumentRepository;
 import caselab.domain.repository.DocumentTypesRepository;
 import caselab.domain.repository.DocumentVersionRepository;
 import caselab.domain.repository.SignatureRepository;
-import caselab.service.signature.SignatureMapper;
+import caselab.service.signature.mapper.SignatureMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.List;
 import lombok.SneakyThrows;

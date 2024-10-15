@@ -1,8 +1,8 @@
 package caselab.controller.document;
 
 import caselab.controller.BaseControllerTest;
-import caselab.controller.document.payload.document.dto.DocumentRequest;
-import caselab.controller.document.payload.document.dto.DocumentResponse;
+import caselab.controller.document.payload.DocumentRequest;
+import caselab.controller.document.payload.DocumentResponse;
 import caselab.exception.entity.DocumentNotFoundException;
 import caselab.service.document.DocumentService;
 import java.util.List;

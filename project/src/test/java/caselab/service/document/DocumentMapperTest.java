@@ -1,14 +1,16 @@
 package caselab.service.document;
 
 import caselab.Application;
-import caselab.controller.document.payload.document.dto.DocumentRequest;
-import caselab.controller.document.payload.document.dto.DocumentResponse;
-import caselab.controller.document.payload.user.to.document.dto.UserToDocumentRequest;
-import caselab.controller.document.payload.user.to.document.dto.UserToDocumentResponse;
+import caselab.controller.document.payload.DocumentRequest;
+import caselab.controller.document.payload.DocumentResponse;
+import caselab.controller.document.payload.UserToDocumentRequest;
+import caselab.controller.document.payload.UserToDocumentResponse;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.Document;
 import caselab.domain.entity.DocumentType;
 import caselab.domain.entity.UserToDocument;
+import caselab.service.document.mapper.DocumentMapper;
+import caselab.service.document.mapper.UserToDocumentMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

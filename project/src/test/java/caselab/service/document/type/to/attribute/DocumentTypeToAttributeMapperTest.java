@@ -4,7 +4,7 @@ import caselab.controller.types.payload.DocumentTypeToAttributeRequest;
 import caselab.controller.types.payload.DocumentTypeToAttributeResponse;
 import caselab.domain.entity.Attribute;
 import caselab.domain.entity.document.type.to.attribute.DocumentTypeToAttribute;
-import caselab.service.types.DocumentTypeToAttributeMapper;
+import caselab.service.types.mapper.DocumentTypeToAttributeMapper;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 import org.springframework.boot.test.context.SpringBootTest;

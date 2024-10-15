@@ -1,22 +1,26 @@
 package caselab.service.document;
 
-import caselab.controller.document.payload.document.dto.DocumentRequest;
-import caselab.controller.document.payload.document.dto.DocumentResponse;
-import caselab.controller.document.payload.user.to.document.dto.UserToDocumentRequest;
+import caselab.controller.document.payload.DocumentRequest;
+import caselab.controller.document.payload.DocumentResponse;
+import caselab.controller.document.payload.UserToDocumentRequest;
 import caselab.domain.entity.Document;
+import caselab.domain.entity.DocumentPermission;
 import caselab.domain.entity.DocumentType;
 import caselab.domain.entity.UserToDocument;
 import caselab.domain.repository.ApplicationUserRepository;
+import caselab.domain.repository.DocumentPermissionRepository;
 import caselab.domain.repository.DocumentRepository;
 import caselab.domain.repository.DocumentTypesRepository;
 import caselab.domain.repository.UserToDocumentRepository;
 import caselab.exception.entity.DocumentNotFoundException;
+import caselab.exception.entity.DocumentPermissionNotFoundException;
 import caselab.exception.entity.DocumentTypeNotFoundException;
+import caselab.service.document.mapper.DocumentMapper;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -28,27 +32,18 @@ public class DocumentService {
     private final DocumentTypesRepository documentTypeRepository;
     private final UserToDocumentRepository userToDocumentRepository;
     private final ApplicationUserRepository applicationUserRepository;
-    private final UserToDocumentMapper userToDocumentMapper;
+    private final DocumentPermissionRepository documentPermissionRepository;
     private final DocumentMapper documentMapper;
 
     public DocumentResponse createDocument(DocumentRequest documentRequest) {
         var document = documentMapper.requestToEntity(documentRequest);
-        document.setDocumentType(documentTypeRepository.findById(documentRequest.documentTypeId())
-            .orElseThrow(() -> new DocumentTypeNotFoundException(documentRequest.documentTypeId())));
+
+        document.setDocumentType(getDocumentTypeById(documentRequest.documentTypeId()));
+        document.setDocumentVersions(List.of());
         documentRepository.save(document);
+        document.setUsersToDocuments(saveUserToDocuments(documentRequest, document));
 
-        var userToDocument = UserToDocument.builder()
-            .build(applicationUserRepository.findByEmail(documentRequest.usersPermissions().))
-
-        Document savedDocument = documentRepository.save(document);
-        return documentMapper.entityToResponse(savedDocument);
-    }
-
-    private List<UserToDocument> saveUserToDocuments(DocumentRequest documentRequest) {
-        List<UserToDocument> userToDocuments = new ArrayList<>();
-        for (UserToDocumentRequest userToDocumentRequest : documentRequest.usersPermissions()) {
-            userToDocuments.add(create);
-        }
+        return documentMapper.entityToResponse(document);
     }
 
     public DocumentResponse getDocumentById(Long id) {
@@ -63,36 +58,18 @@ public class DocumentService {
             .toList();
     }
 
-    public DocumentResponse updateDocument(Long documentId, DocumentRequest documentRequest) {
-        Document document = documentRepository.findById(documentId)
-            .orElseThrow(() -> new DocumentNotFoundException(documentId));
+    public DocumentResponse updateDocument(Long id, DocumentRequest documentRequest) {
+        var document = documentRepository.findById(id)
+            .orElseThrow(() -> new DocumentNotFoundException(id));
+        var updateDocument = documentMapper.requestToEntity(documentRequest);
 
-        // Обновляем поля документа
-        DocumentType documentType = documentTypeRepository.findById(documentRequest.documentTypeId())
-            .orElseThrow(() -> new DocumentTypeNotFoundException(documentRequest.documentTypeId()));
-        document.setDocumentType(documentType);
-        document.setName(documentRequest.name());
+        updateDocument.setId(document.getId());
+        updateDocument.setDocumentType(getDocumentTypeById(documentRequest.documentTypeId()));
+        updateDocument.setDocumentVersions(new ArrayList<>(document.getDocumentVersions()));
+        documentRepository.save(updateDocument);
+        updateDocument.setUsersToDocuments(saveUserToDocuments(documentRequest, updateDocument));
 
-        // Обновляем пользователей и их права
-        List<UserToDocument> usersToDocuments = documentRequest.usersPermissions().stream()
-            .map(userToDocumentMapper::userToDocumentRequestToUserToDocument)
-            .collect(Collectors.toList());
-
-        // Устанавливаем связь между документом и пользователями
-        Document finalDocument = document;
-        usersToDocuments.forEach(userToDocument -> userToDocument.setDocument(finalDocument));
-
-        // Сохраняем пользователей в базу данных
-        usersToDocuments = userToDocumentRepository.saveAll(usersToDocuments);
-
-        // Устанавливаем обновленный список пользователей в документ
-        document.setUsersToDocuments(usersToDocuments);
-
-        // Сохраняем документ
-        document = documentRepository.save(document);
-
-        // Возвращаем маппинг обратно в DTO
-        return documentMapper.entityToResponse(document);
+        return documentMapper.entityToResponse(updateDocument);
     }
 
     public void deleteDocument(Long id) {
@@ -100,5 +77,38 @@ public class DocumentService {
             throw new DocumentNotFoundException(id);
         }
         documentRepository.deleteById(id);
+    }
+
+    private DocumentType getDocumentTypeById(Long id) {
+        return documentTypeRepository.findById(id)
+            .orElseThrow(() -> new DocumentTypeNotFoundException(id));
+    }
+
+    private List<UserToDocument> saveUserToDocuments(DocumentRequest documentRequest, Document document) {
+        List<UserToDocument> userToDocuments = new ArrayList<>();
+        for (UserToDocumentRequest userToDocumentRequest : documentRequest.usersPermissions()) {
+            userToDocuments.add(createUserToDocument(userToDocumentRequest, document));
+        }
+        return userToDocumentRepository.saveAll(userToDocuments);
+    }
+
+    private UserToDocument createUserToDocument(UserToDocumentRequest userToDocumentRequest, Document document) {
+        var user = applicationUserRepository.findByEmail(userToDocumentRequest.email())
+            .orElseThrow(() -> new UsernameNotFoundException(userToDocumentRequest.email()));
+        return userToDocumentRepository.findByApplicationUserIdAndDocumentId(user.getId(), document.getId())
+            .orElse(UserToDocument.builder()
+                .applicationUser(user)
+                .document(document)
+                .documentPermissions(getDocumentPermissions(userToDocumentRequest.documentPermissionIds()))
+                .build());
+    }
+
+    private List<DocumentPermission> getDocumentPermissions(List<Long> documentPermissionIds) {
+        List<DocumentPermission> documentPermissions = new ArrayList<>();
+        for (Long id : documentPermissionIds) {
+            documentPermissions.add(documentPermissionRepository.findById(id)
+                .orElseThrow(() -> new DocumentPermissionNotFoundException(id)));
+        }
+        return documentPermissions;
     }
 }

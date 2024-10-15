@@ -1,11 +1,11 @@
 package caselab.service.user.to.document;
 
-import caselab.controller.document.payload.user.to.document.dto.UserToDocumentRequest;
-import caselab.controller.document.payload.user.to.document.dto.UserToDocumentResponse;
+import caselab.controller.document.payload.UserToDocumentRequest;
+import caselab.controller.document.payload.UserToDocumentResponse;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.DocumentPermission;
 import caselab.domain.entity.UserToDocument;
-import caselab.service.document.UserToDocumentMapper;
+import caselab.service.document.mapper.UserToDocumentMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;

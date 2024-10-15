@@ -1,10 +1,13 @@
-package caselab.service.document;
+package caselab.service.document.mapper;
 
-import caselab.controller.document.payload.document.dto.DocumentRequest;
-import caselab.controller.document.payload.document.dto.DocumentResponse;
+import caselab.controller.document.payload.DocumentRequest;
+import caselab.controller.document.payload.DocumentResponse;
 import caselab.domain.entity.Document;
+import caselab.domain.entity.DocumentVersion;
+import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 
@@ -16,7 +19,15 @@ public interface DocumentMapper {
 
     @Mapping(target = "documentTypeId", source = "documentType.id")
     @Mapping(target = "usersPermissions", source = "usersToDocuments")
+    @Mapping(target = "documentVersionIds",
+             source = "documentVersions",
+             qualifiedByName = "documentVersionsToDocumentVersionIds")
     DocumentResponse entityToResponse(Document document);
+
+    @Named("documentVersionsToDocumentVersionIds")
+    static List<Long> documentVersionsToDocumentVersionIds(List<DocumentVersion> documentVersions) {
+        return documentVersions.stream().map(DocumentVersion::getId).toList();
+    }
 
     Document requestToEntity(DocumentRequest documentRequest);
 }

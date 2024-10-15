@@ -1,6 +1,6 @@
-package caselab.service.document;
+package caselab.service.document.mapper;
 
-import caselab.controller.document.payload.user.to.document.dto.UserToDocumentResponse;
+import caselab.controller.document.payload.UserToDocumentResponse;
 import caselab.domain.entity.UserToDocument;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

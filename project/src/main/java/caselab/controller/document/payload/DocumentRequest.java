@@ -1,6 +1,5 @@
-package caselab.controller.document.payload.document.dto;
+package caselab.controller.document.payload;
 
-import caselab.controller.document.payload.user.to.document.dto.UserToDocumentRequest;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
@@ -10,9 +9,9 @@ import lombok.Builder;
 public record DocumentRequest(
     @Schema(description = "ID Типа документа")
     Long documentTypeId,
-    @ArraySchema(schema = @Schema(implementation = UserToDocumentRequest.class))
-    List<UserToDocumentRequest> usersPermissions,
     @Schema(description = "Имя документа", example = "Приказ об отпуске")
-    String name
+    String name,
+    @ArraySchema(schema = @Schema(implementation = UserToDocumentRequest.class))
+    List<UserToDocumentRequest> usersPermissions
 ) {
 }

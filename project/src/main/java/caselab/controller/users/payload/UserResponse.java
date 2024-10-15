@@ -1,6 +1,6 @@
 package caselab.controller.users.payload;
 
-import caselab.controller.document.payload.document.dto.DocumentResponse;
+import caselab.controller.document.payload.DocumentResponse;
 import java.util.List;
 import lombok.Builder;
 
