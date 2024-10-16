@@ -8,5 +8,6 @@ public record DocumentTypeToAttributeResponse(
     @Schema(description = "ID аттрибута")
     Long attributeId,
     @Schema(description = "Признак обязательности аттрибута", example = "true")
-    Boolean isOptional) {
+    Boolean isOptional
+) {
 }

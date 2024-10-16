@@ -1,6 +1,5 @@
 package caselab.service.types.mapper;
 
-import caselab.controller.types.payload.DocumentTypeToAttributeRequest;
 import caselab.controller.types.payload.DocumentTypeToAttributeResponse;
 import caselab.domain.entity.document.type.to.attribute.DocumentTypeToAttribute;
 import org.mapstruct.Mapper;
@@ -14,14 +13,8 @@ import org.mapstruct.ReportingPolicy;
 public interface DocumentTypeToAttributeMapper {
 
     @Mapping(target = "attributeId", source = "attribute.id")
-    @Mapping(target = "isOptional", source = "optional")
     DocumentTypeToAttributeResponse entityToResponse(
         DocumentTypeToAttribute documentTypeToAttribute
-    );
-
-    @Mapping(target = "optional", source = "isOptional")
-    DocumentTypeToAttribute requestToEntity(
-        DocumentTypeToAttributeRequest documentTypeToAttributeRequest
     );
 }
 

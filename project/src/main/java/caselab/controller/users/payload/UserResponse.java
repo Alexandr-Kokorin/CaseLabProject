@@ -1,6 +1,5 @@
 package caselab.controller.users.payload;
 
-import caselab.controller.document.payload.DocumentResponse;
 import java.util.List;
 import lombok.Builder;
 
@@ -8,6 +7,6 @@ import lombok.Builder;
 public record UserResponse(
     String email,
     String displayName,
-    List<DocumentResponse> documents
+    List<Long> documentIds
 ) {
 }

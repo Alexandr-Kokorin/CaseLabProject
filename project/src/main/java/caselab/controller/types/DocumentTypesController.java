@@ -6,6 +6,7 @@ import caselab.service.types.DocumentTypesService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -35,6 +36,12 @@ public class DocumentTypesController {
     @GetMapping("/{id}")
     public DocumentTypeResponse findDocumentTypeById(@PathVariable Long id) {
         return documentTypesService.findDocumentTypeById(id);
+    }
+
+    @Operation(summary = "Получить все типы документов")
+    @GetMapping
+    public List<DocumentTypeResponse> findDocumentTypeAll() {
+        return documentTypesService.findDocumentTypeAll();
     }
 
     @Operation(summary = "Обновить тип документа")
