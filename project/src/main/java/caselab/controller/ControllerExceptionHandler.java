@@ -74,8 +74,13 @@ public class ControllerExceptionHandler {
     }
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<String> unauthorizedException(BadCredentialsException e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+    public ResponseEntity<ProblemDetail> unauthorizedException(BadCredentialsException e, Locale locale) {
+        return createProblemDetailResponse(
+            HttpStatus.UNAUTHORIZED,
+            "user.unauthorized",
+            new Object[] {e.getMessage()},
+            locale
+        );
     }
 
     @ExceptionHandler(NotificationException.class)

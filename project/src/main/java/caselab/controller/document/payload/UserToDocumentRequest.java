@@ -13,7 +13,7 @@ import lombok.Builder;
 public record UserToDocumentRequest(
     @JsonProperty("email")
     @NotBlank(message = "{user.to.document.request.email.is_blank}")
-    @Schema(description = "Email пользователя", example = "1")
+    @Schema(description = "Email пользователя", example = "user@example.com")
     String email,
     @JsonProperty("document_permissions")
     @NotNull(message = "{user.to.document.request.document_permissions.is_blank}")

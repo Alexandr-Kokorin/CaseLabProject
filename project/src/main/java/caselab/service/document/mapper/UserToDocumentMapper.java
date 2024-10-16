@@ -9,7 +9,8 @@ import org.mapstruct.ReportingPolicy;
 
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE,
         componentModel = "spring",
-        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
+        uses = {DocumentPermissionMapper.class})
 public interface UserToDocumentMapper {
 
     @Mapping(target = "email", source = "applicationUser.email")
