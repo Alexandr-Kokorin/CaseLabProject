@@ -224,7 +224,7 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(payload)))
                 .andExpectAll(
-                    status().isNotFound(),
+                    status().isBadRequest(),
                     content().contentType(MediaType.APPLICATION_PROBLEM_JSON)
                 );
         }

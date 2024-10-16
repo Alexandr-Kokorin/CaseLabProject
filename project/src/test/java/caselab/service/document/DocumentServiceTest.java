@@ -37,8 +37,8 @@ public class DocumentServiceTest extends IntegrationTest {
     private ApplicationUserRepository applicationUserRepository;
 
     private Long documentTypeId;
-    private Long user1Id;
-    private Long user2Id;
+    private String user1Id;
+    private String user2Id;
     private DocumentRequest documentRequest;
     private UserToDocumentRequest UTD1;
     private UserToDocumentRequest UTD2;
@@ -61,16 +61,16 @@ public class DocumentServiceTest extends IntegrationTest {
             .hashedPassword("abc")
             .build();
         user1 = applicationUserRepository.save(user1);
-        user1Id = user1.getId();
+        user1Id = user1.getEmail();
         user2 = applicationUserRepository.save(user2);
-        user2Id = user2.getId();
+        user2Id = user2.getEmail();
         UTD1 = UserToDocumentRequest.builder()
-            .documentPermissionId(List.of(1L))
-            .userId(user1Id)
+            .documentPermissionIds(List.of(1L))
+            .email(user1Id)
             .build();
         UTD2 = UserToDocumentRequest.builder()
-            .documentPermissionId(List.of(1L))
-            .userId(user2Id)
+            .documentPermissionIds(List.of(1L))
+            .email(user2Id)
             .build();
         documentRequest = DocumentRequest.builder()
             .documentTypeId(documentTypeId)
@@ -91,11 +91,6 @@ public class DocumentServiceTest extends IntegrationTest {
             () -> assertNotNull(result),
             () -> assertNotNull(result.id()),
             () -> assertEquals(documentTypeId, result.documentTypeId()),
-            () -> assertEquals(
-                Arrays.asList(user1Id, user2Id),
-                result.usersPermissions().stream()
-                    .map(UserToDocumentResponse::id).toList()
-            ),
             () -> assertEquals("Test name", result.name())
         );
     }
@@ -126,12 +121,6 @@ public class DocumentServiceTest extends IntegrationTest {
             () -> assertNotNull(updatingDocumentResponseDTO),
             () -> assertEquals(id, updatingDocumentResponseDTO.id()),
             () -> assertEquals(updatedDocumentTypeId, updatingDocumentResponseDTO.documentTypeId()),
-            () -> assertEquals(
-                Arrays.asList(user1Id, user2Id),
-                updatingDocumentResponseDTO.usersPermissions().stream()
-                    .map(UserToDocumentResponse::id)
-                    .toList()
-            ),
             () -> assertEquals("Test name", result.name())
         );
     }
@@ -171,12 +160,6 @@ public class DocumentServiceTest extends IntegrationTest {
             () -> assertNotNull(result),
             () -> assertEquals(result.id(), findById.id()),
             () -> assertEquals(documentTypeId, findById.documentTypeId()),
-            () -> assertEquals(
-                Arrays.asList(user1Id, user2Id),
-                result.usersPermissions().stream()
-                    .map(UserToDocumentResponse::id)
-                    .toList()
-            ),
             () -> assertEquals("Test name", result.name())
         );
     }

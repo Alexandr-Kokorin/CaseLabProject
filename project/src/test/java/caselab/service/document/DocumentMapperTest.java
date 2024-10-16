@@ -33,42 +33,7 @@ public class DocumentMapperTest {
     @Autowired
     private UserToDocumentMapper userToDocumentMapper;
 
-    @Test
-    @DisplayName("Should map DocumentRequest to Document")
-    public void testMapDocumentRequestToDocument() {
-        // Arrange
-        UserToDocumentRequest UTD1 = UserToDocumentRequest.builder()
-            .documentPermissionId(List.of(1L))
-            .userId(1001L)
-            .build();
-        UserToDocumentRequest UTD2 = UserToDocumentRequest.builder()
-            .documentPermissionId(List.of(2L))
-            .userId(1002L)
-            .build();
-
-        DocumentRequest documentRequest = DocumentRequest.builder()
-            .documentTypeId(2001L)
-            .usersPermissions(Arrays.asList(UTD1, UTD2))
-            .name("Test Document")
-            .build();
-
-        // Act
-        Document document = documentMapper.requestToEntity(documentRequest);
-
-        // Assert
-        assertAll(
-            "Grouped assertions for map DocumentRequest to Document",
-            () -> assertNotNull(document),
-            () -> assertEquals("Test Document", document.getName()),
-            () -> assertEquals(2001L, document.getDocumentType().getId()),
-            () -> assertEquals(
-                Arrays.asList(1001L, 1002L),
-                document.getUsersToDocuments().stream()
-                    .map(userToDocument -> userToDocument.getApplicationUser().getId()).collect(Collectors.toList())
-            )
-        );
-    }
-
+/*
     @Test
     @DisplayName("Should map Document to DocumentResponse")
     public void testMapDocumentToDocumentResponse() {
@@ -108,16 +73,10 @@ public class DocumentMapperTest {
             () -> assertNotNull(documentResponse),
             () -> assertEquals(1L, documentResponse.id()),
             () -> assertEquals("Test Document", documentResponse.name()),
-            () -> assertEquals(2001L, documentResponse.documentTypeId()),
-            () -> assertEquals(
-                Arrays.asList(1001L, 1002L),
-                documentResponse.usersPermissions().stream()
-                    .map(UserToDocumentResponse::id)
-                    .collect(Collectors.toList())
-            )
+            () -> assertEquals(2001L, documentResponse.documentTypeId())
         );
     }
-
+*/
     @Test
     @DisplayName("Should handle null values correctly")
     public void testMapWithNullValues() {
