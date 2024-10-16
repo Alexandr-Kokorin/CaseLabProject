@@ -1,5 +1,6 @@
 package caselab.controller;
 
+import caselab.exception.NotificationException;
 import caselab.exception.UserExistsException;
 import caselab.exception.entity.EntityNotFoundException;
 import java.util.Locale;
@@ -75,6 +76,16 @@ public class ControllerExceptionHandler {
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<String> unauthorizedException(BadCredentialsException e) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+    }
+
+    @ExceptionHandler(NotificationException.class)
+    public ResponseEntity<ProblemDetail> notificationException(NotificationException exception, Locale locale) {
+        return createProblemDetailResponse(
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            exception.getMessage(),
+            new Object[0],
+            locale
+        );
     }
 
     private ResponseEntity<ProblemDetail> createProblemDetailResponse(
