@@ -5,9 +5,8 @@ import lombok.Builder;
 
 @Builder
 public record DocumentTypeToAttributeResponse(
-    @Schema(description = "ID аттрибута")
+    @Schema(description = "ID аттрибута", example = "1")
     Long attributeId,
     @Schema(description = "Признак обязательности аттрибута", example = "true")
-    Boolean isOptional
-) {
+    Boolean isOptional) {
 }

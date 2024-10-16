@@ -12,7 +12,7 @@ public record DocumentResponse(
     @Schema(description = "ID документа", example = "1")
     Long id,
     @JsonProperty("document_type_id")
-    @Schema(description = "ID типа документа",example = "1")
+    @Schema(description = "ID типа документа", example = "1")
     Long documentTypeId,
     @JsonProperty("name")
     @Schema(description = "Имя документа", example = "Приказ об отпуске")
