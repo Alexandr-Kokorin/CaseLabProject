@@ -98,7 +98,7 @@ public class AttributeController {
         return attributeService.updateAttribute(id, attributeRequest);
     }
 
-    @Operation(summary = "Удаляет атрибут по id",
+    @Operation(summary = "Удалить атрибут по id",
                description = "Удаляет атрибут по id из базы данных")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "204", description = "Успешное удаление",
