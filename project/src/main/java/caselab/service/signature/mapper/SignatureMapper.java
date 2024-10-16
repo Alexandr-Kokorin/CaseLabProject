@@ -1,4 +1,4 @@
-package caselab.service.signature;
+package caselab.service.signature.mapper;
 
 import caselab.controller.signature.payload.SignatureCreateRequest;
 import caselab.controller.signature.payload.SignatureResponse;
@@ -10,12 +10,12 @@ import org.mapstruct.ReportingPolicy;
 
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE,
         componentModel = "spring",
-        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
-        uses = {SignatureMapper.class})
+        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface SignatureMapper {
+
     Signature requestToEntity(SignatureCreateRequest request);
 
     @Mapping(target = "email", source = "applicationUser.email")
     @Mapping(target = "documentVersionId", source = "documentVersion.id")
-    SignatureResponse entityToSignatureResponse(Signature signature);
+    SignatureResponse entityToResponse(Signature signature);
 }

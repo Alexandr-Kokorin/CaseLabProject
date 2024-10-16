@@ -28,6 +28,7 @@ public class AuthenticationControllerTest extends BaseControllerTest {
     @MockBean
     private SecurityFilterChain securityFilterChain;
 
+
     @Nested
     @Tag("Register")
     @DisplayName("Register user")

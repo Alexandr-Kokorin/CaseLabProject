@@ -9,6 +9,7 @@ import caselab.domain.repository.DocumentVersionRepository;
 import caselab.domain.repository.SignatureRepository;
 import caselab.exception.entity.DocumentVersionNotFoundException;
 import caselab.exception.entity.SignatureNotFoundException;
+import caselab.service.signature.mapper.SignatureMapper;
 import jakarta.transaction.Transactional;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 @Transactional
 public class SignatureService {
+
     private final SignatureRepository signatureRepository;
     private final ApplicationUserRepository userRepository;
     private final DocumentVersionRepository documentVersionRepository;
@@ -35,7 +37,7 @@ public class SignatureService {
             signature.setStatus(SignatureStatus.REFUSED);
         }
         signature.setSignedAt(OffsetDateTime.now());
-        return signatureMapper.entityToSignatureResponse(signature);
+        return signatureMapper.entityToResponse(signature);
     }
 
     private void makeSign(Signature signature) {
@@ -69,7 +71,7 @@ public class SignatureService {
 
         var savedSignature = signatureRepository.save(signature);
 
-        return signatureMapper.entityToSignatureResponse(savedSignature);
+        return signatureMapper.entityToResponse(savedSignature);
     }
 
     public List<SignatureResponse> findAllSignaturesByEmail(String email) {
@@ -79,7 +81,7 @@ public class SignatureService {
 
         return user.getSignatures()
             .stream()
-            .map(signatureMapper::entityToSignatureResponse)
+            .map(signatureMapper::entityToResponse)
             .toList();
     }
 }

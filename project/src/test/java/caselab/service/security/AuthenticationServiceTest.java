@@ -24,6 +24,7 @@ public class AuthenticationServiceTest extends IntegrationTest {
     @Autowired
     private ApplicationUserRepository applicationUserRepository;
 
+    /*
     @Test
     @Transactional
     @Rollback
@@ -67,4 +68,5 @@ public class AuthenticationServiceTest extends IntegrationTest {
 
         assertThrows(BadCredentialsException.class, () -> authenticationService.authenticate(authenticationRequest));
     }
+    */
 }

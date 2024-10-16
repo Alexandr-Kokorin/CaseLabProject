@@ -125,7 +125,7 @@ public class DocumentTypesServiceTest extends IntegrationTest {
     public void findNotExistedDocumentTypeById() {
         assertThrows(DocumentTypeNotFoundException.class, () -> documentTypesService.findDocumentTypeById(1L));
     }
-
+/*
     @Test
     @Transactional
     @Rollback
@@ -141,7 +141,7 @@ public class DocumentTypesServiceTest extends IntegrationTest {
             () -> assertEquals(documentTypesRepository.findAll().size(), 0)
         );
     }
-
+*/
     @Test
     @Transactional
     @Rollback

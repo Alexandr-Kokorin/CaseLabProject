@@ -15,7 +15,7 @@ import caselab.domain.repository.DocumentRepository;
 import caselab.domain.repository.DocumentTypesRepository;
 import caselab.domain.repository.DocumentVersionRepository;
 import caselab.domain.repository.SignatureRepository;
-import caselab.service.signature.SignatureMapper;
+import caselab.service.signature.mapper.SignatureMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.List;
 import lombok.SneakyThrows;
@@ -237,7 +237,7 @@ public class SignatureControllerTest extends BaseControllerTest {
         public void testMakeSignature() {
             var token = login().token();
             var createdSignature = getSignatureFromDB();
-            var createdSignatureResponse = signatureMapper.entityToSignatureResponse(createdSignature);
+            var createdSignatureResponse = signatureMapper.entityToResponse(createdSignature);
 
             mockMvc.perform(post(SIGN_URI + "/sign/" + signatureId)
                     .header("Authorization", "Bearer " + token)
@@ -260,7 +260,7 @@ public class SignatureControllerTest extends BaseControllerTest {
         public void testNotMakeSignature() {
             var token = login().token();
             var createdSignature = getSignatureFromDB();
-            var createdSignatureResponse = signatureMapper.entityToSignatureResponse(createdSignature);
+            var createdSignatureResponse = signatureMapper.entityToResponse(createdSignature);
 
             mockMvc.perform(post(SIGN_URI + "/sign/" + signatureId)
                     .header("Authorization", "Bearer " + token)
