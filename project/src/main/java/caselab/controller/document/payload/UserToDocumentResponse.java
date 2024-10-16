@@ -14,6 +14,7 @@ public record UserToDocumentResponse(
     String email,
     @JsonProperty("document_permissions")
     @ArraySchema(schema = @Schema(implementation = DocumentPermission.class, description = "Права доступа к документу"))
+    //TODO - изменить DocumentPermission на DocumentPermissionResponse
     List<DocumentPermission> documentPermissions
 ) {
 }
