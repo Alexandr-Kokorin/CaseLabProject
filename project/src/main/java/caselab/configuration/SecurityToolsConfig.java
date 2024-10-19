@@ -23,8 +23,8 @@ public class SecurityToolsConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return username -> appUserRepository.findByLogin(username)
-            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return username -> appUserRepository.findByEmail(username)
+            .orElseThrow(() -> new UsernameNotFoundException(username));
     }
 
     @Bean

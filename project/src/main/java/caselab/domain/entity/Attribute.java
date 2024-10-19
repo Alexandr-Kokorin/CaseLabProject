@@ -1,21 +1,24 @@
 package caselab.domain.entity;
 
+import caselab.domain.entity.attribute.value.AttributeValue;
+import caselab.domain.entity.document.type.to.attribute.DocumentTypeToAttribute;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.List;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -33,9 +36,9 @@ public class Attribute {
     @Column(nullable = false)
     private String type;
 
-    @ManyToMany(mappedBy = "attributes")
-    private List<DocumentType> documentTypes;
-
     @OneToMany(mappedBy = "attribute")
     private List<AttributeValue> attributeValues;
+
+    @OneToMany(mappedBy = "attribute")
+    private List<DocumentTypeToAttribute> documentTypesToAttributes;
 }
