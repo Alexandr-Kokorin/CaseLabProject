@@ -1,5 +1,6 @@
 package caselab.controller;
 
+import caselab.exception.NotificationException;
 import caselab.exception.UserExistsException;
 import caselab.exception.VotingProcessIsOverException;
 import caselab.exception.entity.EntityNotFoundException;
@@ -11,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -43,6 +45,7 @@ public class ControllerExceptionHandler {
         );
     }
 
+
     @ExceptionHandler(VotingProcessIsOverException.class)
     public ResponseEntity<ProblemDetail> votingProcessIsOverException(
         VotingProcessIsOverException exception,
@@ -52,6 +55,19 @@ public class ControllerExceptionHandler {
             HttpStatus.CONFLICT,
             exception.getMessage(),
             new Object[] {exception.getId()},
+            locale
+        );
+    }
+
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<ProblemDetail> userUsernameNotFoundException(
+        UsernameNotFoundException exception,
+        Locale locale
+    ) {
+        return createProblemDetailResponse(
+            HttpStatus.NOT_FOUND,
+            "user.email.not_found",
+            new Object[] {exception.getMessage()},
             locale
         );
     }
@@ -73,8 +89,23 @@ public class ControllerExceptionHandler {
     }
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<String> unauthorizedException(BadCredentialsException e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+    public ResponseEntity<ProblemDetail> unauthorizedException(BadCredentialsException e, Locale locale) {
+        return createProblemDetailResponse(
+            HttpStatus.UNAUTHORIZED,
+            "user.unauthorized",
+            new Object[] {e.getMessage()},
+            locale
+        );
+    }
+
+    @ExceptionHandler(NotificationException.class)
+    public ResponseEntity<ProblemDetail> notificationException(NotificationException exception, Locale locale) {
+        return createProblemDetailResponse(
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            exception.getMessage(),
+            new Object[0],
+            locale
+        );
     }
 
     private ResponseEntity<ProblemDetail> createProblemDetailResponse(
@@ -90,7 +121,9 @@ public class ControllerExceptionHandler {
     private ProblemDetail createProblemDetail(HttpStatus status, String messageKey, Object[] args, Locale locale) {
         return ProblemDetail.forStatusAndDetail(
             status,
-            Objects.requireNonNull(messageSource.getMessage(messageKey, args, messageKey, locale))
+            Objects.requireNonNull(
+                messageSource.getMessage(messageKey, args, messageKey, locale)
+            )
         );
     }
 }

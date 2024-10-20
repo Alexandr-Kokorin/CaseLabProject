@@ -30,7 +30,7 @@ public class DocumentTypeToAttribute {
     private DocumentTypeToAttributeId id = new DocumentTypeToAttributeId();
 
     @Column(name = "is_optional", nullable = false)
-    private Boolean optional;
+    private Boolean isOptional;
 
     @ManyToOne(optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)

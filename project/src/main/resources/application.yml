@@ -28,6 +28,21 @@ spring:
       - rate-limit-buckets-project
     caffeine:
       spec: maximumSize=100000,expireAfterAccess=3600s
+  mail:
+    host: ${MAIL_HOST:postbox.cloud.yandex.net}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            connection-timeout: 5000
+            timeout: 5000
+            write-timeout: 5000
+        transport.protocol: smtp
 
 bucket4j:
   enabled: true
@@ -36,12 +51,12 @@ bucket4j:
       url: /.*
       http-response-body: "{ \"status\": 429, \"error\": \"Too Many Requests\", \"message\": \"You have exhausted your API Request Quota\" }"
       rate-limits:
-          cache-key: "getRemoteAddr()"
-          bandwidths:
-            - capacity: 1000
-              time: 1
-              unit: minutes
-              refill-speed: interval
+        cache-key: "getRemoteAddr()"
+        bandwidths:
+          - capacity: 1000
+            time: 1
+            unit: minutes
+            refill-speed: interval
 
 server:
   port: 8080
@@ -69,5 +84,5 @@ management:
         include: '*'
 
 jwt:
-  secret-key: ${JWT_SECRET:55d731c263e1ddb8e50eec214ccf010207b82cfb415c76976751a12f1f04c2ca}
+  secret: ${JWT_SECRET:55d731c263e1ddb8e50eec214ccf010207b82cfb415c76976751a12f1f04c2ca}
   ttl: 30 # in minutes

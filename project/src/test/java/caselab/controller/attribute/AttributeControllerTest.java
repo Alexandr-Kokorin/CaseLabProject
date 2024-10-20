@@ -50,6 +50,7 @@ public class AttributeControllerTest extends BaseControllerTest {
         return invalidAttributeRequests.get();
     }
 
+
     @Test
     @SneakyThrows
     public void testCreateAttribute_whenAttributeRequestIsValid_shouldReturnCreatedAttribute() {

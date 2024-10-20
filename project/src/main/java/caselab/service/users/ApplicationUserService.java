@@ -4,11 +4,13 @@ import caselab.controller.users.payload.UserResponse;
 import caselab.controller.users.payload.UserUpdateRequest;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.repository.ApplicationUserRepository;
-import caselab.exception.entity.UserNotFoundException;
 import caselab.service.secutiry.AuthenticationService;
+import caselab.service.users.mapper.UserMapper;
 import java.util.List;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -26,33 +28,28 @@ public class ApplicationUserService {
             .toList();
     }
 
-    public UserResponse findUser(Long id) {
-        ApplicationUser user = getUserById(id);
+    public UserResponse findUser(String email) {
+        var user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new UsernameNotFoundException(email));
         return mapper.entityToResponse(user);
     }
 
-    public UserResponse updateUser(Long id, UserUpdateRequest updateRequest) {
-        ApplicationUser userToUpdate = getUserById(id);
+    public UserResponse updateUser(Authentication authentication, UserUpdateRequest updateRequest) {
+        var userToUpdate = findUserByAuthentication(authentication);
 
-        updatePassword(userToUpdate, updateRequest.password());
-        mapper.updateUserFromUpdateRequest(updateRequest, userToUpdate);
+        userToUpdate.setHashedPassword(authService.encodePassword(updateRequest.password()));
+        userToUpdate.setDisplayName(updateRequest.displayName());
+
         return mapper.entityToResponse(userRepository.save(userToUpdate));
     }
 
-    public void deleteUser(Long id) {
-        ApplicationUser user = getUserById(id);
-        userRepository.delete(user);
+    public void deleteUser(Authentication authentication) {
+        userRepository.delete(findUserByAuthentication(authentication));
     }
 
-    private ApplicationUser getUserById(Long id) {
-        return userRepository.findById(id)
-            .orElseThrow(() -> new UserNotFoundException(id));
-    }
-
-    private void updatePassword(ApplicationUser userToUpdate, String password) {
-        if (Objects.nonNull(password) && !password.isEmpty()) {
-            String hashedPassword = authService.encodePassword(password);
-            userToUpdate.setHashedPassword(hashedPassword);
-        }
+    public ApplicationUser findUserByAuthentication(Authentication authentication) {
+        var userDetails = (UserDetails) authentication.getPrincipal();
+        return userRepository.findByEmail(userDetails.getUsername())
+            .orElseThrow(() -> new UsernameNotFoundException(userDetails.getUsername()));
     }
 }
