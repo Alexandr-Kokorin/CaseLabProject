@@ -31,8 +31,8 @@ spring:
   mail:
     host: ${MAIL_HOST:postbox.cloud.yandex.net}
     port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME:YCAJEjVQ7IBvk3hmZsuExqj2W}
-    password: ${MAIL_PASSWORD:BFM5aj9oS7NYXRUuHLYx2DdLFtBlzmlRSaLPMUvuz0es}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
     properties:
       mail:
         smtp:
