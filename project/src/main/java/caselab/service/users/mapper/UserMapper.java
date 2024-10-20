@@ -20,6 +20,9 @@ public interface UserMapper {
 
     @Named("usersToDocumentsToDocumentIds")
     static List<Long> usersToDocumentsToDocumentIds(List<UserToDocument> usersToDocuments) {
+        if (usersToDocuments == null) {
+            return List.of();
+        }
         return usersToDocuments.stream().map(userToDocument -> userToDocument.getDocument().getId()).toList();
     }
 }
