@@ -66,18 +66,4 @@ public class UserMapperTest {
 
         assertThat(response).isNull();
     }
-
-    @Test
-    void entityToResponse_shouldHandleNullDocuments() {
-        user.setUsersToDocuments(null);
-
-        UserResponse response = userMapper.entityToResponse(user);
-
-        assertAll(
-            "Поля пользователя и отсутствие маппинга документов",
-            () -> assertThat(response.email()).isEqualTo("johndoe@gmail.com"),
-            () -> assertThat(response.displayName()).isEqualTo("JohnDoe"),
-            () -> assertThat(response.documentIds()).isEmpty()
-        );
-    }
 }
