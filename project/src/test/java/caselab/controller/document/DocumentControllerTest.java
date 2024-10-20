@@ -60,9 +60,6 @@ public class DocumentControllerTest extends BaseControllerTest {
     @Autowired
     private DocumentPermissionRepository documentPermissionRepository;
 
-    private DocumentMapper documentMapper;
-    private DocumentPermissionMapper documentPermissionMapper;
-    private UserToDocumentMapper userToDocumentMapper;
 
     private Long documentId;
     private Long documentTypeId;
