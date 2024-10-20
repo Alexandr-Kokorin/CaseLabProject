@@ -3,10 +3,10 @@ package caselab.service.secutiry;
 import caselab.configuration.security.JwtProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 import java.util.Date;
 import java.util.function.Function;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
