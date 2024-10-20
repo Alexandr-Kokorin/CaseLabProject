@@ -18,7 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -92,7 +92,7 @@ public class ApplicationUserServiceTest {
 
         List<UserResponse> result = userService.findAllUsers();
 
-        assertEquals(userResponses, result);
+        assertThat(result).isEqualTo(userResponses);
     }
 
     @Test
@@ -102,7 +102,7 @@ public class ApplicationUserServiceTest {
 
         UserResponse result = userService.findUser(user1.getEmail());
 
-        assertEquals(userResponse1, result);
+        assertThat(result).isEqualTo(userResponse1);
     }
 
     @Test
@@ -129,9 +129,9 @@ public class ApplicationUserServiceTest {
 
         UserResponse result = userService.updateUser(authentication, updateRequest);
 
-        assertEquals(updatedUserResponse, result);
-        verify(authService, times(1)).encodePassword(updateRequest.password());
-        verify(userRepository, times(1)).save(user1);
+        assertThat(result).isEqualTo(updatedUserResponse);
+        verify(authService).encodePassword(updateRequest.password());
+        verify(userRepository).save(user1);
     }
 
     @Test
@@ -159,7 +159,7 @@ public class ApplicationUserServiceTest {
 
         userService.deleteUser(authentication);
 
-        verify(userRepository, times(1)).delete(user1);
+        verify(userRepository).delete(user1);
     }
 
     @Test
@@ -193,9 +193,9 @@ public class ApplicationUserServiceTest {
 
         UserResponse result = userService.updateUser(authentication, updateRequest);
 
-        assertEquals(updatedUserResponse, result);
-        verify(authService, times(1)).encodePassword(newPassword);
-        verify(userRepository, times(1)).save(existingUser);
+        assertThat(result).isEqualTo(updatedUserResponse);
+        verify(authService).encodePassword(newPassword);
+        verify(userRepository).save(existingUser);
     }
 
     @Test
@@ -219,8 +219,8 @@ public class ApplicationUserServiceTest {
 
         UserResponse result = userService.updateUser(authentication, updateRequest);
 
-        assertEquals(updatedUserResponse, result);
-        verify(authService, times(1)).encodePassword(newPassword);
-        verify(userRepository, times(1)).save(existingUser);
+        assertThat(result).isEqualTo(updatedUserResponse);
+        verify(authService).encodePassword(newPassword);
+        verify(userRepository).save(existingUser);
     }
 }

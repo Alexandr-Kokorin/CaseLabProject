@@ -6,7 +6,6 @@ import caselab.controller.secutiry.payload.AuthenticationResponse;
 import caselab.controller.users.payload.UserUpdateRequest;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -46,51 +45,97 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
         return authToken;
     }
 
-    @Nested
-    @DisplayName("Tests for User Controller")
-    class UserControllerTests {
+    @Test
+    @SneakyThrows
+    @DisplayName("Should return list of all users")
+    public void shouldReturnAllUsers() {
+        var token = login().token();
 
-        @Test
-        @SneakyThrows
-        @DisplayName("Should return list of all users")
-        public void shouldReturnAllUsers() {
-            var token = login().token();
+        mockMvc.perform(get(URL + "/all")
+                .header("Authorization", "Bearer " + token))
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$").isArray()
+            );
+    }
 
-            mockMvc.perform(get(URL + "/all")
-                    .header("Authorization", "Bearer " + token))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray());
-        }
+    @Test
+    @SneakyThrows
+    @DisplayName("Should find user by email")
+    public void shouldFindUserByEmail() {
+        var token = login().token();
+        String email = "user@example.com";
 
-        @Test
-        @SneakyThrows
-        @DisplayName("Should update user information successfully")
-        public void shouldUpdateUser() {
-            var token = login().token();
-            var updateRequest = UserUpdateRequest.builder()
-                .displayName("Updated name")
-                .password("Updated password")
-                .build();
+        mockMvc.perform(get(URL)
+                .header("Authorization", "Bearer " + token)
+                .param("email", email)
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$.email").value(email),
+                jsonPath("$.display_name").isNotEmpty()
+            );
+    }
 
-            var request = objectMapper.writeValueAsString(updateRequest);
+    @Test
+    @SneakyThrows
+    @DisplayName("Should return 404 for non-existing user email")
+    public void shouldReturn404ForNonExistingUserEmail() {
+        var token = login().token();
+        String nonExistingEmail = "nonexistent@example.com";
 
-            mockMvc.perform(put(URL)
-                    .header("Authorization", "Bearer " + token)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(request))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.document_ids").isEmpty());
-        }
+        mockMvc.perform(get(URL)
+                .header("Authorization", "Bearer " + token)
+                .param("email", nonExistingEmail)
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNotFound());
+    }
 
-        @Test
-        @SneakyThrows
-        @DisplayName("Should delete user successfully")
-        public void shouldDeleteUser() {
-            var token = login().token();
+    @Test
+    @SneakyThrows
+    @DisplayName("Should return 400 for invalid email")
+    public void shouldReturn400ForInvalidEmail() {
+        var token = login().token();
+        String invalidEmail = "";
 
-            mockMvc.perform(delete(URL)
-                    .header("Authorization", "Bearer " + token))
-                .andExpect(status().isNoContent());
-        }
+        mockMvc.perform(get(URL)
+                .header("Authorization", "Bearer " + token)
+                .param("email", invalidEmail)
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Should update user information successfully")
+    public void shouldUpdateUser() {
+        var token = login().token();
+        var updateRequest = UserUpdateRequest.builder()
+            .displayName("Updated name")
+            .password("Updated password")
+            .build();
+
+        var request = objectMapper.writeValueAsString(updateRequest);
+
+        mockMvc.perform(put(URL)
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(request))
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$.display_name").value(updateRequest.displayName()),
+                jsonPath("$.document_ids").isEmpty()
+            );
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Should delete user successfully")
+    public void shouldDeleteUser() {
+        var token = login().token();
+
+        mockMvc.perform(delete(URL)
+                .header("Authorization", "Bearer " + token))
+            .andExpect(status().isNoContent());
     }
 }
