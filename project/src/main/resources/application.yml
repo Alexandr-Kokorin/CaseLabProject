@@ -31,8 +31,8 @@ spring:
   mail:
     host: ${MAIL_HOST:postbox.cloud.yandex.net}
     port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
+    username: ${MAIL_USERNAME:YCAJEjVQ7IBvk3hmZsuExqj2W}
+    password: ${MAIL_PASSWORD:BFM5aj9oS7NYXRUuHLYx2DdLFtBlzmlRSaLPMUvuz0es}
     properties:
       mail:
         smtp:
@@ -84,5 +84,5 @@ management:
         include: '*'
 
 jwt:
-  secret-key: ${JWT_SECRET:55d731c263e1ddb8e50eec214ccf010207b82cfb415c76976751a12f1f04c2ca}
+  secret: ${JWT_SECRET:55d731c263e1ddb8e50eec214ccf010207b82cfb415c76976751a12f1f04c2ca}
   ttl: 30 # in minutes
