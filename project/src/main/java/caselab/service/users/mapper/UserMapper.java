@@ -3,6 +3,7 @@ package caselab.service.users.mapper;
 import caselab.controller.users.payload.UserResponse;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.UserToDocument;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -19,10 +20,7 @@ public interface UserMapper {
     UserResponse entityToResponse(ApplicationUser user);
 
     @Named("usersToDocumentsToDocumentIds")
-    static List<Long> usersToDocumentsToDocumentIds(List<UserToDocument> usersToDocuments) {
-        if (usersToDocuments == null) {
-            return List.of();
-        }
+    static List<Long> usersToDocumentsToDocumentIds(@NotNull List<UserToDocument> usersToDocuments) {
         return usersToDocuments.stream().map(userToDocument -> userToDocument.getDocument().getId()).toList();
     }
 }

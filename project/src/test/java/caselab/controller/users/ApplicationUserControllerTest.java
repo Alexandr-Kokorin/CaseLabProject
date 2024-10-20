@@ -61,6 +61,14 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
 
     @Test
     @SneakyThrows
+    @DisplayName("Should return 403 for unauthorized access to get all users")
+    public void shouldReturn403ForUnauthorizedAccessToGetAllUsers() {
+        mockMvc.perform(get(URL + "/all"))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @SneakyThrows
     @DisplayName("Should find user by email")
     public void shouldFindUserByEmail() {
         var token = login().token();
@@ -79,20 +87,6 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
 
     @Test
     @SneakyThrows
-    @DisplayName("Should return 404 for non-existing user email")
-    public void shouldReturn404ForNonExistingUserEmail() {
-        var token = login().token();
-        String nonExistingEmail = "nonexistent@example.com";
-
-        mockMvc.perform(get(URL)
-                .header("Authorization", "Bearer " + token)
-                .param("email", nonExistingEmail)
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isNotFound());
-    }
-
-    @Test
-    @SneakyThrows
     @DisplayName("Should return 400 for invalid email")
     public void shouldReturn400ForInvalidEmail() {
         var token = login().token();
@@ -103,6 +97,31 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
                 .param("email", invalidEmail)
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Should return 403 for unauthorized access to find user by email")
+    public void shouldReturn403ForUnauthorizedAccessToFindUserByEmail() {
+        String email = "user@example.com";
+        mockMvc.perform(get(URL)
+                .param("email", email)
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Should return 404 for non-existing user email")
+    public void shouldReturn404ForNonExistingUserEmail() {
+        var token = login().token();
+        String nonExistingEmail = "nonexistent@example.com";
+
+        mockMvc.perform(get(URL)
+                .header("Authorization", "Bearer " + token)
+                .param("email", nonExistingEmail)
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNotFound());
     }
 
     @Test
@@ -130,6 +149,40 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
 
     @Test
     @SneakyThrows
+    @DisplayName("Should return 400 for invalid user data in updateUser method")
+    public void shouldReturn400ForInvalidUserDataInUpdateUser() {
+        var token = login().token();
+        var invalidUpdateRequest = UserUpdateRequest.builder()
+            .displayName("")
+            .password("short")
+            .build();
+
+        mockMvc.perform(put(URL)
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidUpdateRequest)))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Should return 403 for unauthorized access to update user")
+    public void shouldReturn403ForUnauthorizedAccessToUpdateUser() {
+        var updateRequest = UserUpdateRequest.builder()
+            .displayName("Updated name")
+            .password("Updated password")
+            .build();
+
+        var request = objectMapper.writeValueAsString(updateRequest);
+
+        mockMvc.perform(put(URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(request))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @SneakyThrows
     @DisplayName("Should delete user successfully")
     public void shouldDeleteUser() {
         var token = login().token();
@@ -137,5 +190,13 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
         mockMvc.perform(delete(URL)
                 .header("Authorization", "Bearer " + token))
             .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Should return 403 for unauthorized access to delete user")
+    public void shouldReturn403ForUnauthorizedAccessToDeleteUser() {
+        mockMvc.perform(delete(URL))
+            .andExpect(status().isForbidden());
     }
 }

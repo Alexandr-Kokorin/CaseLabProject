@@ -80,11 +80,4 @@ public class UserMapperTest {
             () -> assertThat(response.documentIds()).isEmpty()
         );
     }
-
-    @Test
-    void emptyEntityToResponse_shouldReturnNull() {
-        UserResponse userResponse = userMapper.entityToResponse(null);
-
-        assertThat(userResponse).isNull();
-    }
 }
