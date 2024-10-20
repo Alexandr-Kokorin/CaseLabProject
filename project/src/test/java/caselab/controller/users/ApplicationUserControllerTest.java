@@ -1,105 +1,202 @@
 package caselab.controller.users;
 
-import caselab.controller.users.payload.UserResponse;
+import caselab.controller.BaseControllerTest;
+import caselab.controller.secutiry.payload.AuthenticationRequest;
+import caselab.controller.secutiry.payload.AuthenticationResponse;
 import caselab.controller.users.payload.UserUpdateRequest;
-import caselab.service.secutiry.JwtService;
-import caselab.service.users.ApplicationUserService;
-import java.util.Collections;
-import java.util.List;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
+import lombok.SneakyThrows;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(ApplicationUserController.class)
-class ApplicationUserControllerTest {
+public class ApplicationUserControllerTest extends BaseControllerTest {
 
-    private final String USERS_URI = "/api/v1/users";
-    private MockMvc mockMvc;
+    private final String URL = "/api/v1/users";
+    private static AuthenticationResponse authToken;
 
-    @MockBean
-    private ApplicationUserService userService;
-    @MockBean
-    private JwtService jwtService;
+    @SneakyThrows
+    private AuthenticationResponse login() {
+        if (authToken != null) {
+            return authToken;
+        }
 
-    @Autowired
-    private WebApplicationContext webApplicationContext;
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    private UserResponse userResponse;
-
-    @BeforeEach
-    void setUp() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-
-        userResponse = UserResponse.builder()
-            .email("john_doe")
-            .displayName("John Doe")
-            .documentIds(List.of())
-            .build();
-    }
-/*
-    @Test
-    @WithMockUser
-    void findAllUsers_shouldReturnUserList() throws Exception {
-        List<UserResponse> users = Collections.singletonList(userResponse);
-        when(userService.findAllUsers()).thenReturn(users);
-
-        mockMvc.perform(get(USERS_URI))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$[0].email").value(userResponse.email()))
-            .andExpect(jsonPath("$[0].displayName").value(userResponse.displayName()))
-            .andExpect(jsonPath("$[0].documents").isArray());
-    }
-
-    @Test
-    @WithMockUser
-    void findUserById_shouldReturnUser() throws Exception {
-        when(userService.findUser(userResponse.email())).thenReturn(userResponse);
-
-        mockMvc.perform(get(USERS_URI + "/" + 1L))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.email").value(userResponse.email()))
-            .andExpect(jsonPath("$.documents").isArray());
-    }
-
-    @Test
-    @WithMockUser(username = "john_doe", authorities = "USER")
-    void updateUser_shouldUpdateUser_WhenUserIsOwner() throws Exception {
-        UserUpdateRequest updateRequest = UserUpdateRequest.builder()
-            .displayName("John Updated")
-            .password("new_password")
+        var request = AuthenticationRequest.builder()
+            .email("user@example.com")
+            .password("password")
             .build();
 
-        when(userService.updateUser(any(Authentication.class), updateRequest)).thenReturn(userResponse);
+        var mvcResponse = mockMvc.perform(post("/api/v1/auth/authenticate")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andReturn();
 
-        mockMvc.perform(put(USERS_URI + "/" + 1L)
+        authToken = objectMapper.readValue(
+            mvcResponse.getResponse().getContentAsString(),
+            AuthenticationResponse.class
+        );
+
+        return authToken;
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Should return list of all users")
+    public void shouldReturnAllUsers() {
+        var token = login().token();
+
+        mockMvc.perform(get(URL + "/all")
+                .header("Authorization", "Bearer " + token))
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$").isArray()
+            );
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Should return 403 for unauthorized access to get all users")
+    public void shouldReturn403ForUnauthorizedAccessToGetAllUsers() {
+        mockMvc.perform(get(URL + "/all"))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Should find user by email")
+    public void shouldFindUserByEmail() {
+        var token = login().token();
+        String email = "user@example.com";
+
+        mockMvc.perform(get(URL)
+                .header("Authorization", "Bearer " + token)
+                .param("email", email)
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$.email").value(email),
+                jsonPath("$.display_name").isNotEmpty()
+            );
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Should return 400 for invalid email")
+    public void shouldReturn400ForInvalidEmail() {
+        var token = login().token();
+        String invalidEmail = "";
+
+        mockMvc.perform(get(URL)
+                .header("Authorization", "Bearer " + token)
+                .param("email", invalidEmail)
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Should return 403 for unauthorized access to find user by email")
+    public void shouldReturn403ForUnauthorizedAccessToFindUserByEmail() {
+        String email = "user@example.com";
+        mockMvc.perform(get(URL)
+                .param("email", email)
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Should return 404 for non-existing user email")
+    public void shouldReturn404ForNonExistingUserEmail() {
+        var token = login().token();
+        String nonExistingEmail = "nonexistent@example.com";
+
+        mockMvc.perform(get(URL)
+                .header("Authorization", "Bearer " + token)
+                .param("email", nonExistingEmail)
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Should update user information successfully")
+    public void shouldUpdateUser() {
+        var token = login().token();
+        var updateRequest = UserUpdateRequest.builder()
+            .displayName("Updated name")
+            .password("Updated password")
+            .build();
+
+        var request = objectMapper.writeValueAsString(updateRequest);
+
+        mockMvc.perform(put(URL)
+                .header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(updateRequest)))
-            .andExpect(status().isOk());
+                .content(request))
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$.display_name").value(updateRequest.displayName()),
+                jsonPath("$.document_ids").isEmpty()
+            );
     }
 
     @Test
-    @WithMockUser(username = "john_doe", authorities = "USER")
-    void deleteUser_shouldDeleteUser_WhenUserIsOwner() throws Exception {
-        mockMvc.perform(delete(USERS_URI + "/" + 1L))
+    @SneakyThrows
+    @DisplayName("Should return 400 for invalid user data in updateUser method")
+    public void shouldReturn400ForInvalidUserDataInUpdateUser() {
+        var token = login().token();
+        var invalidUpdateRequest = UserUpdateRequest.builder()
+            .displayName("")
+            .password("short")
+            .build();
+
+        mockMvc.perform(put(URL)
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidUpdateRequest)))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Should return 403 for unauthorized access to update user")
+    public void shouldReturn403ForUnauthorizedAccessToUpdateUser() {
+        var updateRequest = UserUpdateRequest.builder()
+            .displayName("Updated name")
+            .password("Updated password")
+            .build();
+
+        var request = objectMapper.writeValueAsString(updateRequest);
+
+        mockMvc.perform(put(URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(request))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Should delete user successfully")
+    public void shouldDeleteUser() {
+        var token = login().token();
+
+        mockMvc.perform(delete(URL)
+                .header("Authorization", "Bearer " + token))
             .andExpect(status().isNoContent());
     }
-    */
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Should return 403 for unauthorized access to delete user")
+    public void shouldReturn403ForUnauthorizedAccessToDeleteUser() {
+        mockMvc.perform(delete(URL))
+            .andExpect(status().isForbidden());
+    }
 }

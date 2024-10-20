@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -59,7 +60,7 @@ public class ApplicationUserController {
         @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
-    public UserResponse findUser(@NotBlank String email) {
+    public UserResponse findUser(@RequestParam @NotBlank String email) {
         return userService.findUser(email);
     }
 
