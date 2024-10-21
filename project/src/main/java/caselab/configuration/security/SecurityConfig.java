@@ -1,4 +1,4 @@
-package caselab.configuration;
+package caselab.configuration.security;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
