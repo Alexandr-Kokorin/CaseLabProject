@@ -10,14 +10,14 @@ import caselab.domain.entity.enums.DocumentPermissionName;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
+
 
 import java.util.List;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
+
 
 @SpringBootTest(classes = Application.class)
 public class UserToDocumentMapperTest {
@@ -50,17 +50,18 @@ public class UserToDocumentMapperTest {
 
         UserToDocumentResponse response = userToDocumentMapper.entityToResponse(userToDocument);
 
-        assertNotNull(response);
-        assertEquals("user@example.com", response.email(), "Email should be mapped correctly");
-        assertNotNull(response.documentPermissions(), "Permissions should not be null");
-        assertEquals(1, response.documentPermissions().size(), "Permissions list size should match");
-        assertEquals("READ", response.documentPermissions().get(0).name().toString(), "Permission name should match");
+        assertAll(
+            () -> assertThat(response).isNotNull(),
+            () -> assertThat(response.email()).isEqualTo("user@example.com"),
+            () -> assertThat(response.documentPermissions()).isNotNull(),
+            () -> assertThat(response.documentPermissions()).hasSize(1),
+            () -> assertThat(response.documentPermissions().get(0).name().toString()).isEqualTo("READ")
+        );
     }
 
     @Test
     @DisplayName("Should handle null permissions in UserToDocument entity")
     public void shouldHandleNullPermissions() {
-
         var applicationUser = ApplicationUser.builder()
             .email("user@example.com")
             .build();
@@ -74,19 +75,18 @@ public class UserToDocumentMapperTest {
             .document(document)
             .build();
 
-
         UserToDocumentResponse response = userToDocumentMapper.entityToResponse(userToDocument);
 
-
-        assertNotNull(response);
-        assertEquals("user@example.com", response.email(), "Email should be mapped correctly");
-        assertNull(response.documentPermissions());
+        assertAll(
+            () -> assertThat(response).isNotNull(),
+            () -> assertThat(response.email()).isEqualTo("user@example.com"),
+            () -> assertThat(response.documentPermissions()).isNull()
+        );
     }
 
     @Test
     @DisplayName("Should handle null ApplicationUser in UserToDocument entity")
     public void shouldHandleNullApplicationUser() {
-
         var document = Document.builder()
             .name("Test Document")
             .build();
@@ -102,15 +102,15 @@ public class UserToDocumentMapperTest {
             .documentPermissions(List.of(documentPermission))
             .build();
 
-
         UserToDocumentResponse response = userToDocumentMapper.entityToResponse(userToDocument);
 
-
-        assertNotNull(response);
-        assertNull(response.email(), "Email should be null when ApplicationUser is null");
-        assertNotNull(response.documentPermissions(), "Permissions should not be null");
-        assertEquals(1, response.documentPermissions().size(), "Permissions list size should match");
-        assertEquals("READ", response.documentPermissions().get(0).name().toString(), "Permission name should match");
+        assertAll(
+            () -> assertThat(response).isNotNull(),
+            () -> assertThat(response.email()).isNull(),
+            () -> assertThat(response.documentPermissions()).isNotNull(),
+            () -> assertThat(response.documentPermissions()).hasSize(1),
+            () -> assertThat(response.documentPermissions().get(0).name().toString()).isEqualTo("READ")
+        );
     }
 
 }

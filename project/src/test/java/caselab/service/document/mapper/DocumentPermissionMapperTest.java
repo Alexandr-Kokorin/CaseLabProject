@@ -8,11 +8,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 @SpringBootTest(classes = Application.class)
 public class DocumentPermissionMapperTest {
+
     @Autowired
     private DocumentPermissionMapper documentPermissionMapper;
 
@@ -24,12 +25,13 @@ public class DocumentPermissionMapperTest {
             .name(DocumentPermissionName.READ)
             .build();
 
-
         DocumentPermissionResponse response = documentPermissionMapper.entityToResponse(documentPermission);
 
-
-        assertEquals(1L, response.id(), "Document permission ID should match");
-        assertEquals(DocumentPermissionName.READ, response.name(), "Document permission name should match");
+        assertAll(
+            () -> assertThat(response).isNotNull(),
+            () -> assertThat(response.id()).isEqualTo(1L),
+            () -> assertThat(response.name()).isEqualTo(DocumentPermissionName.READ)
+        );
     }
 
     @Test
@@ -37,8 +39,9 @@ public class DocumentPermissionMapperTest {
     public void shouldReturnNullWhenEntityIsNull() {
         DocumentPermissionResponse response = documentPermissionMapper.entityToResponse(null);
 
-
-        assertNull(response, "Mapped response should be null when input entity is null");
+        assertAll(
+            () -> assertThat(response).isNull()
+        );
     }
 
     @Test
@@ -49,11 +52,12 @@ public class DocumentPermissionMapperTest {
             .name(null)
             .build();
 
-
         DocumentPermissionResponse response = documentPermissionMapper.entityToResponse(documentPermission);
 
-
-        assertNull(response.id(), "Document permission ID should be null");
-        assertNull(response.name(), "Document permission name should be null");
+        assertAll(
+            () -> assertThat(response).isNotNull(),
+            () -> assertThat(response.id()).isNull(),
+            () -> assertThat(response.name()).isNull()
+        );
     }
 }

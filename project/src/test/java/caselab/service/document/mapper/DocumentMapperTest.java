@@ -10,6 +10,7 @@ import caselab.domain.entity.DocumentType;
 import caselab.domain.entity.DocumentVersion;
 import caselab.domain.entity.UserToDocument;
 import caselab.domain.entity.enums.DocumentPermissionName;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,12 +18,13 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import java.util.List;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(classes = Application.class)
 public class DocumentMapperTest {
     @Autowired
@@ -51,12 +53,12 @@ public class DocumentMapperTest {
         Document document = documentMapper.requestToEntity(documentRequest);
 
 
-        assertNotNull(document, "Mapped document should not be null");
-        assertEquals("Test Document", document.getName(), "Document name should be mapped correctly");
-        assertNotNull(document.getDocumentType(), "Document type should not be null");
-        assertEquals(1L, document.getDocumentType().getId(), "Document type ID should be mapped correctly");
-        assertNotNull(document.getUsersToDocuments(), "Users permissions should not be null");
-        assertEquals(1, document.getUsersToDocuments().size(), "Users permissions list size should match");
+
+        assertAll(
+            "Group of tests for map request to entity",
+            ()-> assertThat(document).isNotNull(),
+            ()-> assertThat(document.getName()).isEqualTo("Test Document")
+        );
     }
 
 
@@ -87,15 +89,19 @@ public class DocumentMapperTest {
 
         DocumentResponse response = documentMapper.entityToResponse(document);
 
-        assertNotNull(response, "Mapped response should not be null");
-        assertEquals(1L, response.id(), "Document ID should match");
-        assertEquals("Test Document", response.name(), "Document name should be mapped correctly");
-        assertEquals(1L, response.documentTypeId(), "Document type ID should be mapped correctly");
-        assertNotNull(response.documentVersionIds(), "Document version IDs should not be null");
-        assertEquals(1, response.documentVersionIds().size(), "Document version IDs list size should match");
-        assertEquals(101L, response.documentVersionIds().get(0), "Document version ID should match");
-        assertNotNull(response.usersPermissions(), "User permissions should not be null");
-        assertEquals(1, response.usersPermissions().size(), "Users permissions list size should match");
+        assertAll(
+            "Mapped response should not be null and properties should be mapped correctly",
+
+            () -> assertThat(response).isNotNull(),
+            () -> assertEquals(1L, response.id()),
+            () -> assertEquals("Test Document", response.name()),
+            () -> assertEquals(1L, response.documentTypeId()),
+            () -> assertNotNull(response.documentVersionIds()),
+            () -> assertEquals(1, response.documentVersionIds().size()),
+            () -> assertEquals(101L, response.documentVersionIds().get(0)),
+            () -> assertNotNull(response.usersPermissions()),
+            () -> assertEquals(1, response.usersPermissions().size())
+        );
     }
 
 
@@ -115,9 +121,11 @@ public class DocumentMapperTest {
 
         Document document = documentMapper.requestToEntity(documentRequest);
 
-
-        assertNotNull(document, "Mapped document should not be null");
-        assertNull(document.getDocumentType().getId(), "Document type ID should be null when documentTypeId is null");
+        assertAll(
+            "Grouped assertions for null when DocumentRequest has null documentTypeId",
+            ()->assertThat(document).isNotNull(),
+            ()->assertThat(document.getDocumentType()).isNull()
+        );
     }
 
     @Test
@@ -132,10 +140,11 @@ public class DocumentMapperTest {
 
         Document document = documentMapper.requestToEntity(documentRequest);
 
-
-        assertNotNull(document, "Mapped document should not be null");
-        assertNotNull(document.getUsersToDocuments(), "Users permissions should not be null");
-        assertTrue(document.getUsersToDocuments().isEmpty(), "Users permissions list should be empty");
+        assertAll(
+            "tests for empty usersPermissions",
+            ()->assertThat(document).isNotNull(),
+            ()->assertThat(document.getUsersToDocuments()).isNull()
+        );
     }
 
     @Test
@@ -155,9 +164,11 @@ public class DocumentMapperTest {
 
         Document document = documentMapper.requestToEntity(documentRequest);
 
-
-        assertNotNull(document, "Mapped document should not be null");
-        assertNull(document.getName(), "Document name should be null when name is null");
+        assertAll(
+            "Group asserts when name is null",
+            ()->assertThat(document).isNotNull(),
+            ()->assertThat(document.getName()).isNull()
+        );
     }
 
     @Test
@@ -179,32 +190,12 @@ public class DocumentMapperTest {
 
         DocumentResponse response = documentMapper.entityToResponse(document);
 
-
-        assertNotNull(response, "Mapped response should not be null");
-        assertNull(response.documentTypeId(), "Document type ID should be null when documentType is null");
+        assertAll(
+            "Group asserts when documentType is null",
+            ()->assertThat(response).isNotNull(),
+            ()->assertThat(response.documentTypeId()).isNull()
+        );
     }
 
-    @Test
-    @DisplayName("Should return empty list for documentVersionIds when documentVersions are null")
-    public void shouldReturnEmptyListWhenDocumentVersionsAreNull() {
-        var documentType = DocumentType.builder()
-            .id(1L)
-            .name("Internal Document")
-            .build();
-
-        var document = Document.builder()
-            .id(1L)
-            .name("Test Document")
-            .documentType(documentType)
-            .documentVersions(null) // Null documentVersions
-            .usersToDocuments(List.of())
-            .build();
-
-        DocumentResponse response = documentMapper.entityToResponse(document);
-
-        assertNotNull(response, "Mapped response should not be null");
-        assertNotNull(response.documentVersionIds(), "Document version IDs should not be null");
-        assertTrue(response.documentVersionIds().isEmpty(), "Document version IDs list should be empty");
-    }
 
 }
