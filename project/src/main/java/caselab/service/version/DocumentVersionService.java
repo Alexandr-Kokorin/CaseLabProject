@@ -64,7 +64,7 @@ public class DocumentVersionService {
             .getDocumentPermissions()
             .stream()
             .map(DocumentPermission::getName)
-            .anyMatch(permission)).orElse(false);
+            .noneMatch(permission)).orElse(true);
     }
 
     private DocumentVersionResponse hideInaccessibleFields(
@@ -90,7 +90,7 @@ public class DocumentVersionService {
             .getDocumentType()
             .getDocumentTypesToAttributes()
             .stream()
-            .filter(DocumentTypeToAttribute::getIsOptional)
+            .filter(dtta -> !dtta.getIsOptional())
             .map(DocumentTypeToAttribute::getAttribute)
             .map(Attribute::getId);
 
@@ -134,10 +134,10 @@ public class DocumentVersionService {
                 }
             ).toList();
 
-        documentVersionRepository.save(documentVersion);
+        var saved = documentVersionRepository.save(documentVersion);
         attributeValueRepository.saveAll(attributeValues);
 
-        return documentVersionMapper.map(documentVersion);
+        return documentVersionMapper.map(saved);
     }
 
     public DocumentVersionResponse getDocumentVersionById(Long id, Authentication auth) {
@@ -192,11 +192,11 @@ public class DocumentVersionService {
             throw new MissingDocumentPermissionException(DocumentPermissionName.EDIT.name());
         }
         documentVersionUpdater.update(body, documentVersion);
-        documentVersionRepository.save(documentVersion);
+        var saved = documentVersionRepository.save(documentVersion);
         return hideInaccessibleFields(
-            documentVersionMapper.map(documentVersion),
+            documentVersionMapper.map(saved),
             user,
-            documentVersion.getDocument()
+            saved.getDocument()
         );
     }
 
