@@ -39,7 +39,7 @@ public class DocumentVersionController {
 
     @GetMapping
     public List<DocumentVersionResponse> getDocumentVersions(Authentication auth) {
-        return documentVersionService.getVersionDocuments(auth);
+        return documentVersionService.getDocumentVersions(auth);
     }
 
     @PutMapping("/{id}")

@@ -160,10 +160,10 @@ public class DocumentVersionService {
         );
     }
 
-    public List<DocumentVersionResponse> getVersionDocuments(Authentication auth) {
+    public List<DocumentVersionResponse> getDocumentVersions(Authentication auth) {
         ApplicationUser user = userService.findUserByAuthentication(auth);
-        Stream<DocumentVersion> documentVersions = userToDocumentRepository
-            .findByApplicationUserId(user.getId())
+        Stream<DocumentVersion> documentVersions = user
+            .getUsersToDocuments()
             .stream()
             .map(UserToDocument::getDocument)
             .collect(Collectors.toSet())  // Чтобы убрать повторяющиеся документы
