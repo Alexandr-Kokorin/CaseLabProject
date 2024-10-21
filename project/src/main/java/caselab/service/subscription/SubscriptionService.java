@@ -12,6 +12,7 @@ import jakarta.transaction.Transactional;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -22,6 +23,7 @@ public class SubscriptionService {
 
     private final SubscriptionRepository repository;
     private final DocumentVersionRepository documentVersionRepository;
+    private final KafkaTemplate<String, DocumentEvent> kafkaTemplate;
 
     public void sendEvent(Long documentVersionId, EventType eventType) {
         var subscriptions = repository.findAllByDocumentVersionId(documentVersionId);
@@ -32,7 +34,8 @@ public class SubscriptionService {
                 .documentVersionId(documentVersionId)
                 .eventType(eventType)
                 .build();
-            // TODO: добавить отправку уведомления в Kafka
+
+            kafkaTemplate.send("event-topic", documentEvent);
             log.info("Send document event to kafka: {}", documentEvent);
         });
     }

@@ -23,6 +23,11 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         enable_lazy_load_no_trans: true
+  kafka:
+    bootstrap-servers: localhost:9094
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
   cache:
     cache-names:
       - rate-limit-buckets-project
@@ -64,6 +69,8 @@ server:
 
 logging:
   config: classpath:log4j2-plain.xml
+  level:
+    org.apache.kafka: warn
 
 spring-doc:
   swagger-ui:

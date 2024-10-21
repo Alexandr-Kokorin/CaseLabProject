@@ -2,7 +2,9 @@ package caselab.controller.signature;
 
 import caselab.controller.signature.payload.SignatureCreateRequest;
 import caselab.controller.signature.payload.SignatureResponse;
+import caselab.domain.entity.enums.EventType;
 import caselab.service.signature.SignatureService;
+import caselab.service.subscription.SubscriptionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -32,6 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class SignatureController {
 
     private final SignatureService signatureService;
+    private final SubscriptionService subscriptionService;
 
     @PostMapping("/sign/{id}")
     @Operation(summary = "Подписать документ",
@@ -50,8 +53,9 @@ public class SignatureController {
         @Parameter(description = "Статус подписания (true - подписать, false - отклонить)", required = true)
         @RequestParam("status") Boolean sign
     ) {
-        // TODO: отправить событие об успешном подписании документа
-        return signatureService.signatureUpdate(id, sign);
+        var response = signatureService.signatureUpdate(id, sign);
+        subscriptionService.sendEvent(response.documentVersionId(), EventType.valueOf(response.status().name()));
+        return response;
     }
 
     @Operation(summary = "Отправить версию документа на подпись",
@@ -70,8 +74,9 @@ public class SignatureController {
     public SignatureResponse sendDocumentVersionOnSigning(
         @RequestBody SignatureCreateRequest signatureCreateRequest
     ) {
-        // TODO: отправить событие об отправке документа на подпись
-        return signatureService.createSignature(signatureCreateRequest);
+        var response = signatureService.createSignature(signatureCreateRequest);
+        subscriptionService.sendEvent(response.documentVersionId(), EventType.valueOf(response.status().name()));
+        return response;
     }
 
     @Operation(summary = "Получить все подписи пользователя",

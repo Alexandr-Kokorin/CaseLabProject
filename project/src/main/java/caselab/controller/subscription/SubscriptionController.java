@@ -19,7 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -44,7 +44,7 @@ public class SubscriptionController {
                      description = "Пользователь с указанным адресом электронной почты не найден",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
-    @GetMapping("/subscriptions/all")
+    @GetMapping("/all")
     public ResponseEntity<List<Long>> getAllSubscriptions(Authentication authentication) {
         var user = userService.findUserByAuthentication(authentication);
         var documentsVersionsIds = subscribeService.getIdsOfAllSubscribed(user.getEmail());
@@ -64,7 +64,7 @@ public class SubscriptionController {
                      description = "Пользователь с указанным адресом электронной почты не найден",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
-    @GetMapping("/check-subscription")
+    @GetMapping
     public ResponseEntity<Map<String, Boolean>> isUserSubscribedToDocumentVersion(
         @Parameter(description = "ID версии документа", required = true)
         @RequestParam(name = "documentVersionId") Long documentVersionId,
@@ -90,7 +90,7 @@ public class SubscriptionController {
                      description = "Текущий пользователь уже подписан на события этой версии документа",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
-    @PatchMapping("/subscribe")
+    @PostMapping
     public ResponseEntity<Void> subscribe(
         @Parameter(description = "ID версии документа", required = true)
         @RequestParam(name = "documentVersionId") Long documentVersionId,
@@ -111,7 +111,7 @@ public class SubscriptionController {
         @ApiResponse(responseCode = "404", description = "Пользователь с указанным адресом электронной почты не найден",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
-    @DeleteMapping("/unsubscribe")
+    @DeleteMapping
     public ResponseEntity<Void> unsubscribe(
         @Parameter(description = "ID версии документа", required = true)
         @RequestParam(name = "documentVersionId") Long documentVersionId,
@@ -133,7 +133,7 @@ public class SubscriptionController {
         @ApiResponse(responseCode = "404", description = "Пользователь с указанным адресом электронной почты не найден",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
-    @DeleteMapping("/unsubscribe/all")
+    @DeleteMapping("/all")
     public ResponseEntity<Void> unsubscribe(Authentication authentication) {
         var user = userService.findUserByAuthentication(authentication);
         subscribeService.unsubscribeAll(user.getEmail());
