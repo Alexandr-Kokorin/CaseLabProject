@@ -24,8 +24,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
 @Transactional
+@RequiredArgsConstructor
 public class DocumentService {
 
     private final DocumentRepository documentRepository;
@@ -40,6 +40,7 @@ public class DocumentService {
 
         document.setDocumentType(getDocumentTypeById(documentRequest.documentTypeId()));
         document.setDocumentVersions(List.of());
+        validatePermissions(documentRequest);
         documentRepository.save(document);
         document.setUsersToDocuments(saveUserToDocuments(documentRequest, document));
 
@@ -66,6 +67,7 @@ public class DocumentService {
         updateDocument.setId(document.getId());
         updateDocument.setDocumentType(getDocumentTypeById(documentRequest.documentTypeId()));
         updateDocument.setDocumentVersions(new ArrayList<>(document.getDocumentVersions()));
+        validatePermissions(documentRequest);
         documentRepository.save(updateDocument);
         updateDocument.setUsersToDocuments(saveUserToDocuments(documentRequest, updateDocument));
 
@@ -84,6 +86,17 @@ public class DocumentService {
             .orElseThrow(() -> new DocumentTypeNotFoundException(id));
     }
 
+    private void validatePermissions(DocumentRequest documentRequest) {
+        for (UserToDocumentRequest userToDocumentRequest : documentRequest.usersPermissions()) {
+            applicationUserRepository.findByEmail(userToDocumentRequest.email())
+                .orElseThrow(() -> new UsernameNotFoundException(userToDocumentRequest.email()));
+            for (Long id : userToDocumentRequest.documentPermissionIds()) {
+                documentPermissionRepository.findById(id)
+                    .orElseThrow(() -> new DocumentPermissionNotFoundException(id));
+            }
+        }
+    }
+
     private List<UserToDocument> saveUserToDocuments(DocumentRequest documentRequest, Document document) {
         List<UserToDocument> userToDocuments = new ArrayList<>();
         for (UserToDocumentRequest userToDocumentRequest : documentRequest.usersPermissions()) {
@@ -93,21 +106,22 @@ public class DocumentService {
     }
 
     private UserToDocument createUserToDocument(UserToDocumentRequest userToDocumentRequest, Document document) {
-        var user = applicationUserRepository.findByEmail(userToDocumentRequest.email())
-            .orElseThrow(() -> new UsernameNotFoundException(userToDocumentRequest.email()));
-        return userToDocumentRepository.findByApplicationUserIdAndDocumentId(user.getId(), document.getId())
+        var user = applicationUserRepository.findByEmail(userToDocumentRequest.email()).orElseThrow();
+
+        var userToDocument = userToDocumentRepository.findByApplicationUserIdAndDocumentId(user.getId(), document.getId())
             .orElse(UserToDocument.builder()
                 .applicationUser(user)
                 .document(document)
-                .documentPermissions(getDocumentPermissions(userToDocumentRequest.documentPermissionIds()))
                 .build());
+        userToDocument.setDocumentPermissions(getDocumentPermissions(userToDocumentRequest.documentPermissionIds()));
+
+        return userToDocument;
     }
 
     private List<DocumentPermission> getDocumentPermissions(List<Long> documentPermissionIds) {
         List<DocumentPermission> documentPermissions = new ArrayList<>();
         for (Long id : documentPermissionIds) {
-            documentPermissions.add(documentPermissionRepository.findById(id)
-                .orElseThrow(() -> new DocumentPermissionNotFoundException(id)));
+            documentPermissions.add(documentPermissionRepository.findById(id).orElseThrow());
         }
         return documentPermissions;
     }
