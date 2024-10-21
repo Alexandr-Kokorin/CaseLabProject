@@ -30,7 +30,7 @@ public class DocumentVersionController {
     }
 
     @GetMapping("/{id}")
-    public DocumentVersionResponse getDocumentVersionById(@PathVariable("id") Integer id, Authentication auth) {
+    public DocumentVersionResponse getDocumentVersionById(@PathVariable("id") Long id, Authentication auth) {
         return documentVersionService.getDocumentVersionById(id, auth);
     }
 
@@ -40,13 +40,13 @@ public class DocumentVersionController {
     }
 
     @PutMapping("/{id}")
-    public DocumentVersionResponse updateDocumentVersion(@PathVariable("id") Integer id, @RequestBody
+    public DocumentVersionResponse updateDocumentVersion(@PathVariable("id") Long id, @RequestBody
     UpdateDocumentVersionRequest body, Authentication auth) {
         return documentVersionService.updateDocumentVersion(id, body, auth);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteDocumentVersion(@PathVariable("id") Integer id, Authentication auth) {
+    public void deleteDocumentVersion(@PathVariable("id") Long id, Authentication auth) {
         documentVersionService.deleteDocumentVersion(id, auth);
     }
 }
