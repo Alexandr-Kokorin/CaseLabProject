@@ -26,5 +26,7 @@ services:
         condition: service_completed_successfully
       postgresql:
         condition: service_healthy
+      elasticsearch:
+        condition: service_started
     networks:
       - backend
