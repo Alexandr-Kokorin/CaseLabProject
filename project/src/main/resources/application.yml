@@ -43,8 +43,6 @@ spring:
             timeout: 5000
             write-timeout: 5000
         transport.protocol: smtp
-  elasticsearch:
-    uris: http://elasticsearch:9200
 
 bucket4j:
   enabled: true

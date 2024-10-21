@@ -10,21 +10,28 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AttributeElasticRepository extends ElasticsearchRepository<AttributeDoc, String> {
     @Query("""
-            {
-              "bool": {
-                "should": [
-                  {
-                    "match_phrase": {
-                      "name": {
-                        "query": "?0",
-                        "boost": 2
-                      }
-                    }
-                  }
-                ],
-                "minimum_should_match": 1
-              }
-            }
-            """)
+       {
+         "bool": {
+           "should": [
+             {
+               "fuzzy": {
+                 "name": {
+                   "value": "?0",
+                   "fuzziness": 2
+                 }
+               }
+             },
+             {
+               "fuzzy": {
+                 "type": {
+                   "value": "?0",
+                   "fuzziness": 2
+                 }
+               }
+             }
+           ]
+         }
+       }
+       """)
     Page<AttributeDoc> searchByQuery(String query, Pageable pageable);
 }
