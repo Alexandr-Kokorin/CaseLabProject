@@ -100,13 +100,16 @@ public class ControllerExceptionHandler {
         return createProblemDetailResponse(
             HttpStatus.BAD_REQUEST,
             exception.getMessage(),
-            new Object[]{},
+            new Object[] {},
             locale
         );
     }
 
     @ExceptionHandler(MissingDocumentPermissionException.class)
-    public ResponseEntity<ProblemDetail> missingDocumentPermission(MissingDocumentPermissionException exception, Locale locale) {
+    public ResponseEntity<ProblemDetail> missingDocumentPermission(
+        MissingDocumentPermissionException exception,
+        Locale locale
+    ) {
         return createProblemDetailResponse(
             HttpStatus.FORBIDDEN,
             exception.getMessage(),
