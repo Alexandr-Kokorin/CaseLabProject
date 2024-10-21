@@ -50,6 +50,7 @@ public class SignatureController {
         @Parameter(description = "Статус подписания (true - подписать, false - отклонить)", required = true)
         @RequestParam("status") Boolean sign
     ) {
+        // TODO: отправить событие об успешном подписании документа
         return signatureService.signatureUpdate(id, sign);
     }
 
@@ -69,6 +70,7 @@ public class SignatureController {
     public SignatureResponse sendDocumentVersionOnSigning(
         @RequestBody SignatureCreateRequest signatureCreateRequest
     ) {
+        // TODO: отправить событие об отправке документа на подпись
         return signatureService.createSignature(signatureCreateRequest);
     }
 
