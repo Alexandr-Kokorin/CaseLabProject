@@ -7,4 +7,5 @@ public record CreateDocumentVersionRequest(
     String name,
     String content,
     List<AttributeValuePair> attributes
-) {}
+) {
+}

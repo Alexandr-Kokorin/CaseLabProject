@@ -5,6 +5,7 @@ import caselab.controller.version.payload.DocumentVersionResponse;
 import caselab.controller.version.payload.UpdateDocumentVersionRequest;
 import caselab.service.version.DocumentVersionService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -15,7 +16,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/versions")
@@ -25,7 +25,10 @@ public class DocumentVersionController {
     private final DocumentVersionService documentVersionService;
 
     @PostMapping
-    public DocumentVersionResponse createDocumentVersion(@RequestBody CreateDocumentVersionRequest body, Authentication auth) {
+    public DocumentVersionResponse createDocumentVersion(
+        @RequestBody CreateDocumentVersionRequest body,
+        Authentication auth
+    ) {
         return documentVersionService.createDocumentVersion(body, auth);
     }
 
@@ -40,8 +43,10 @@ public class DocumentVersionController {
     }
 
     @PutMapping("/{id}")
-    public DocumentVersionResponse updateDocumentVersion(@PathVariable("id") Long id, @RequestBody
-    UpdateDocumentVersionRequest body, Authentication auth) {
+    public DocumentVersionResponse updateDocumentVersion(
+        @PathVariable("id") Long id, @RequestBody
+    UpdateDocumentVersionRequest body, Authentication auth
+    ) {
         return documentVersionService.updateDocumentVersion(id, body, auth);
     }
 

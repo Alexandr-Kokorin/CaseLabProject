@@ -107,7 +107,7 @@ public class DocumentVersionService {
             .orElseThrow(() -> new DocumentNotFoundException(body.documentId()));
 
         if (checkLacksPermission(user, document, DocumentPermissionName::canEdit)) {
-            throw new MissingDocumentPermissionException("edit");
+            throw new MissingDocumentPermissionException(DocumentPermissionName.EDIT.name());
         }
         checkMandatoryAttributesPresent(body, document);
 
@@ -189,7 +189,7 @@ public class DocumentVersionService {
             () -> new DocumentVersionNotFoundException(id)
         );
         if (checkLacksPermission(user, documentVersion.getDocument(), DocumentPermissionName::canEdit)) {
-            throw new MissingDocumentPermissionException("edit");
+            throw new MissingDocumentPermissionException(DocumentPermissionName.EDIT.name());
         }
         documentVersionUpdater.update(body, documentVersion);
         documentVersionRepository.save(documentVersion);
@@ -207,7 +207,7 @@ public class DocumentVersionService {
         );
 
         if (checkLacksPermission(user, documentVersion.getDocument(), DocumentPermissionName::canEdit)) {
-            throw new MissingDocumentPermissionException("edit");
+            throw new MissingDocumentPermissionException(DocumentPermissionName.EDIT.name());
         }
         documentVersionRepository.delete(documentVersion);
     }
