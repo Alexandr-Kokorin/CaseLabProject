@@ -2,6 +2,8 @@ package caselab.controller;
 
 import caselab.exception.NotificationException;
 import caselab.exception.UserExistsException;
+import caselab.exception.document.version.MissingAttributesException;
+import caselab.exception.document.version.MissingDocumentPermissionException;
 import caselab.exception.entity.EntityNotFoundException;
 import java.util.Locale;
 import java.util.Objects;
@@ -89,6 +91,26 @@ public class ControllerExceptionHandler {
             HttpStatus.INTERNAL_SERVER_ERROR,
             exception.getMessage(),
             new Object[0],
+            locale
+        );
+    }
+
+    @ExceptionHandler(MissingAttributesException.class)
+    public ResponseEntity<ProblemDetail> missingAttributes(MissingAttributesException exception, Locale locale) {
+        return createProblemDetailResponse(
+            HttpStatus.BAD_REQUEST,
+            exception.getMessage(),
+            new Object[]{},
+            locale
+        );
+    }
+
+    @ExceptionHandler(MissingDocumentPermissionException.class)
+    public ResponseEntity<ProblemDetail> missingDocumentPermission(MissingDocumentPermissionException exception, Locale locale) {
+        return createProblemDetailResponse(
+            HttpStatus.FORBIDDEN,
+            exception.getMessage(),
+            new Object[] {exception.getPermissionName()},
             locale
         );
     }
