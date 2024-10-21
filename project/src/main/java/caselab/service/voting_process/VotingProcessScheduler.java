@@ -4,12 +4,12 @@ import caselab.domain.entity.Vote;
 import caselab.domain.entity.VotingProcess;
 import caselab.domain.repository.VotingProcessRepository;
 import jakarta.transaction.Transactional;
+import java.time.OffsetDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import java.time.OffsetDateTime;
 
 @SuppressWarnings("MissingSwitchDefault")
 @Slf4j
