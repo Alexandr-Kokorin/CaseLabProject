@@ -2,7 +2,9 @@ package caselab.controller;
 
 import caselab.exception.NotificationException;
 import caselab.exception.UserExistsException;
+import caselab.exception.VotingProcessIsOverException;
 import caselab.exception.entity.EntityNotFoundException;
+import caselab.exception.entity.VoteNotFoundException;
 import java.util.Locale;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +40,30 @@ public class ControllerExceptionHandler {
     public ResponseEntity<ProblemDetail> userExistsException(UserExistsException exception, Locale locale) {
         return createProblemDetailResponse(
             HttpStatus.CONFLICT,
+            exception.getMessage(),
+            new Object[] {exception.getEmail()},
+            locale
+        );
+    }
+
+
+    @ExceptionHandler(VotingProcessIsOverException.class)
+    public ResponseEntity<ProblemDetail> votingProcessIsOverException(
+        VotingProcessIsOverException exception,
+        Locale locale
+    ) {
+        return createProblemDetailResponse(
+            HttpStatus.CONFLICT,
+            exception.getMessage(),
+            new Object[] {exception.getId()},
+            locale
+        );
+    }
+
+    @ExceptionHandler(VoteNotFoundException.class)
+    public ResponseEntity<ProblemDetail> voteNotFoundException(VoteNotFoundException exception, Locale locale) {
+        return createProblemDetailResponse(
+            HttpStatus.NOT_FOUND,
             exception.getMessage(),
             new Object[] {exception.getEmail()},
             locale
