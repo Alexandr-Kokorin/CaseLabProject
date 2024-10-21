@@ -14,24 +14,22 @@ import caselab.domain.repository.VoteRepository;
 import caselab.domain.repository.VotingProcessRepository;
 import caselab.exception.VotingProcessIsOverException;
 import caselab.exception.entity.DocumentVersionNotFoundException;
-import caselab.exception.entity.UserNotFoundException;
 import caselab.exception.entity.VoteNotFoundException;
 import caselab.exception.entity.VotingProcessNotFoundException;
-import caselab.service.voting_process.mappers.VoteMapper;
-import caselab.service.voting_process.mappers.VotingProcessMapper;
+import caselab.service.voting_process.mapper.VoteMapper;
+import caselab.service.voting_process.mapper.VotingProcessMapper;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-@SuppressWarnings("MissingSwitchDefault")
-@Slf4j
 @Service
-@EnableScheduling
+@Transactional
 @RequiredArgsConstructor
 public class VotingProcessService {
 
@@ -50,8 +48,9 @@ public class VotingProcessService {
         votingProcess.setStatus(VotingProcessStatus.IN_PROGRESS);
         votingProcess.setCreatedAt(OffsetDateTime.now());
         votingProcess.setDocumentVersion(documentVersion);
+        validateEmails(votingProcessRequest.emails());
         votingProcessRepository.save(votingProcess);
-        votingProcess.setVotes(saveVotes(votingProcessRequest.userIds(), votingProcess));
+        votingProcess.setVotes(saveVotes(votingProcessRequest.emails(), votingProcess));
 
         return votingProcessMapper.entityToResponse(votingProcess);
     }
@@ -70,78 +69,60 @@ public class VotingProcessService {
     }
 
     public VotingProcessResponse updateVotingProcess(Long id, VotingProcessRequest votingProcessRequest) {
-        if (!votingProcessRepository.existsById(id)) {
-            throw new VotingProcessNotFoundException(id);
-        }
-        var votingProcess = votingProcessRepository.findById(id).orElseThrow();
+        var votingProcess = votingProcessRepository.findById(id)
+            .orElseThrow(() -> new VotingProcessNotFoundException(id));
 
         var updateVotingProcess = votingProcessMapper.requestToEntity(votingProcessRequest);
         updateVotingProcess.setId(votingProcess.getId());
         updateVotingProcess.setStatus(votingProcess.getStatus());
         updateVotingProcess.setCreatedAt(votingProcess.getCreatedAt());
         updateVotingProcess.setDocumentVersion(votingProcess.getDocumentVersion());
+        validateEmails(votingProcessRequest.emails());
         votingProcessRepository.save(updateVotingProcess);
-        updateVotingProcess.setVotes(saveVotes(votingProcessRequest.userIds(), updateVotingProcess));
+        updateVotingProcess.setVotes(saveVotes(votingProcessRequest.emails(), updateVotingProcess));
 
         return votingProcessMapper.entityToResponse(updateVotingProcess);
     }
 
-    public VoteResponse castVote(VoteRequest voteRequest) {
+    public VoteResponse castVote(Authentication authentication, VoteRequest voteRequest) {
+        var userDetails = (UserDetails) authentication.getPrincipal();
+        var user = applicationUserRepository.findByEmail(userDetails.getUsername())
+            .orElseThrow(() -> new UsernameNotFoundException(userDetails.getUsername()));
+
         var vote = voteRepository.findByApplicationUserIdAndVotingProcessId(
-                voteRequest.applicationUserId(), voteRequest.votingProcessId())
-            .orElseThrow(() -> new VoteNotFoundException(voteRequest.applicationUserId()));
+                user.getId(), voteRequest.votingProcessId())
+            .orElseThrow(() -> new VoteNotFoundException(user.getEmail()));
+
         if (vote.getVotingProcess().getDeadline().isBefore(OffsetDateTime.now())) {
             throw new VotingProcessIsOverException(voteRequest.votingProcessId());
         }
+
         vote.setStatus(voteRequest.status());
         return voteMapper.entityToResponse(voteRepository.save(vote));
     }
 
-    private List<Vote> saveVotes(List<Long> userIds, VotingProcess votingProcess) {
+    private void validateEmails(List<String> emails) {
+        for (String email : emails) {
+            applicationUserRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException(email));
+        }
+    }
+
+    private List<Vote> saveVotes(List<String> emails, VotingProcess votingProcess) {
         List<Vote> votes = new ArrayList<>();
-        for (Long userId : userIds) {
-            votes.add(createVoteById(userId, votingProcess));
+        for (String email : emails) {
+            votes.add(createVoteById(email, votingProcess));
         }
         return voteRepository.saveAll(votes);
     }
 
-    private Vote createVoteById(Long userId, VotingProcess votingProcess) {
-        var user = applicationUserRepository.findById(userId)
-            .orElseThrow(() -> new UserNotFoundException(userId));
-        return voteRepository.findByApplicationUserIdAndVotingProcessId(userId, votingProcess.getId())
+    private Vote createVoteById(String email, VotingProcess votingProcess) {
+        var user = applicationUserRepository.findByEmail(email).orElseThrow();
+
+        return voteRepository.findByApplicationUserIdAndVotingProcessId(user.getId(), votingProcess.getId())
             .orElse(Vote.builder()
                 .status(VoteStatus.NOT_VOTED)
                 .applicationUser(user)
                 .votingProcess(votingProcess)
                 .build());
-    }
-
-    @Scheduled(fixedDelayString = "#{@scheduler.interval}")
-    public void deadlineProcessing() {
-        log.info("Processing...");
-        var votingProcesses = votingProcessRepository.findAll();
-        for (VotingProcess votingProcess : votingProcesses) {
-            if (votingProcess.getDeadline().isBefore(OffsetDateTime.now())) {
-                var statistics = calculateResult(votingProcess);
-                votingProcess.setStatus(statistics.getVotingProcessStatus());
-                votingProcessRepository.save(votingProcess);
-                // Отправить сообщение на почту о завершении голосования всем участникам
-            }
-        }
-        log.info("Completed");
-    }
-
-    private VotingStatistics calculateResult(VotingProcess votingProcess) {
-        var statistics = new VotingStatistics();
-        for (Vote vote : votingProcess.getVotes()) {
-            switch (vote.getStatus()) {
-                case IN_FAVOUR -> statistics.incCountInFavour();
-                case AGAINST -> statistics.incCountAgainst();
-                case ABSTAINED -> statistics.incCountAbstained();
-                case NOT_VOTED -> statistics.incCountNotVoted();
-            }
-        }
-        statistics.calculateStatus(votingProcess.getThreshold());
-        return statistics;
     }
 }

@@ -9,15 +9,10 @@ import lombok.Builder;
 @Builder
 @Schema(description = "Запрос, содержащий информацию о голосе")
 public record VoteRequest(
-    @NotNull(message = "ID пользователя не может быть null")
-    @Positive(message = "ID пользователя должно быть больше 0")
-    @Schema(description = "ID пользователя", example = "1")
-    Long applicationUserId,
-    @NotNull(message = "ID голосования не может быть null")
-    @Positive(message = "ID голосования должно быть больше 0")
+    @Positive(message = "{vote.request.id.not_positive}")
     @Schema(description = "ID голосования", example = "1")
-    Long votingProcessId,
-    @NotNull(message = "Статус не может быть null")
+    long votingProcessId,
+    @NotNull(message = "{vote.request.status.is_null}")
     @Schema(description = "Статус", example = "IN_FAVOUR")
     VoteStatus status
 ) {

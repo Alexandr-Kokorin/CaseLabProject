@@ -6,6 +6,7 @@ import caselab.exception.VotingProcessIsOverException;
 import caselab.exception.entity.EntityNotFoundException;
 import java.util.Locale;
 import java.util.Objects;
+import caselab.exception.entity.VoteNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
@@ -55,6 +56,16 @@ public class ControllerExceptionHandler {
             HttpStatus.CONFLICT,
             exception.getMessage(),
             new Object[] {exception.getId()},
+            locale
+        );
+    }
+
+    @ExceptionHandler(VoteNotFoundException.class)
+    public ResponseEntity<ProblemDetail> voteNotFoundException(VoteNotFoundException exception, Locale locale) {
+        return createProblemDetailResponse(
+            HttpStatus.NOT_FOUND,
+            exception.getMessage(),
+            new Object[] {exception.getEmail()},
             locale
         );
     }

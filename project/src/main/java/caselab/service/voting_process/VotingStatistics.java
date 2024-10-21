@@ -2,16 +2,14 @@ package caselab.service.voting_process;
 
 import caselab.domain.entity.enums.VotingProcessStatus;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 public class VotingStatistics {
 
-    private Integer countInFavour;
-    private Integer countAgainst;
-    private Integer countAbstained;
-    private Integer countNotVoted;
+    private int countInFavour;
+    private int countAgainst;
+    private int countAbstained;
+    private int countNotVoted;
     private VotingProcessStatus votingProcessStatus;
 
     public VotingStatistics() {
@@ -38,7 +36,7 @@ public class VotingStatistics {
         countNotVoted++;
     }
 
-    public void calculateStatus(Double threshold) {
+    public void calculateStatus(double threshold) {
         double result = countInFavour / (double) (countInFavour + countAgainst);
         votingProcessStatus = result < threshold ? VotingProcessStatus.DENIED : VotingProcessStatus.ACCEPTED;
     }

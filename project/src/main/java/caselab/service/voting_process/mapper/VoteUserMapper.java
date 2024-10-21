@@ -1,4 +1,4 @@
-package caselab.service.voting_process.mappers;
+package caselab.service.voting_process.mapper;
 
 import caselab.controller.voting_process.payload.VoteUserResponse;
 import caselab.domain.entity.ApplicationUser;

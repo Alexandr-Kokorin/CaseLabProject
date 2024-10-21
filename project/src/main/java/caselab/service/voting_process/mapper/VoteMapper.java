@@ -1,4 +1,4 @@
-package caselab.service.voting_process.mappers;
+package caselab.service.voting_process.mapper;
 
 import caselab.controller.voting_process.payload.VoteResponse;
 import caselab.domain.entity.Vote;
@@ -13,6 +13,5 @@ import org.mapstruct.ReportingPolicy;
         uses = {VoteUserMapper.class})
 public interface VoteMapper {
 
-    @Mapping(target = "votingProcessId", source = "votingProcess.id")
     VoteResponse entityToResponse(Vote vote);
 }

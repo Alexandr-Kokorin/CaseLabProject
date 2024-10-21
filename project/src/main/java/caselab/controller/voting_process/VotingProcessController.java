@@ -17,6 +17,7 @@ import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -96,8 +97,8 @@ public class VotingProcessController {
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @PostMapping("/vote")
-    public VoteResponse castVote(@Valid @RequestBody VoteRequest voteRequest) {
-        return votingProcessService.castVote(voteRequest);
+    public VoteResponse castVote(Authentication authentication, @Valid @RequestBody VoteRequest voteRequest) {
+        return votingProcessService.castVote(authentication, voteRequest);
     }
 
     @Operation(summary = "Удалить голосование",

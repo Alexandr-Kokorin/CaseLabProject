@@ -11,11 +11,11 @@ import lombok.Builder;
 @Schema(description = "Ответ, содержащий информацию о голосовании")
 public record VotingProcessResponse(
     @Schema(description = "ID голосования", example = "1")
-    Long id,
+    long id,
     @Schema(description = "Название", example = "Голосование")
     String name,
     @Schema(description = "Порог принятия", example = "0.6")
-    Double threshold,
+    double threshold,
     @Schema(description = "Результат голосования", example = "ACCEPTED")
     VotingProcessStatus status,
     @Schema(description = "Время создания", example = "2024-10-31T01:30+01:00")
@@ -23,7 +23,7 @@ public record VotingProcessResponse(
     @Schema(description = "Время окончания", example = "2024-10-31T01:30+01:00")
     OffsetDateTime deadline,
     @Schema(description = "ID версии документа", example = "1")
-    Long documentVersionId,
+    long documentVersionId,
     @ArraySchema(schema = @Schema(implementation = VoteResponse.class, description = "Голос"))
     List<VoteResponse> votes
 ) {

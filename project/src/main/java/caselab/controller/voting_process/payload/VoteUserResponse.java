@@ -6,9 +6,7 @@ import lombok.Builder;
 @Builder
 @Schema(description = "Ответ, содержащий информацию о пользователе")
 public record VoteUserResponse(
-    @Schema(description = "ID пользователя", example = "1")
-    Long id,
-    @Schema(description = "Email пользователя", example = "admin@mail.ru")
+    @Schema(description = "Email пользователя", example = "user@example.com")
     String email,
     @Schema(description = "Имя пользователя", example = "Иван Иванов")
     String displayName

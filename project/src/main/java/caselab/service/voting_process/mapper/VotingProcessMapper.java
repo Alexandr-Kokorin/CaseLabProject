@@ -1,4 +1,4 @@
-package caselab.service.voting_process.mappers;
+package caselab.service.voting_process.mapper;
 
 import caselab.controller.voting_process.payload.VotingProcessRequest;
 import caselab.controller.voting_process.payload.VotingProcessResponse;
@@ -24,7 +24,7 @@ public interface VotingProcessMapper {
     VotingProcess requestToEntity(VotingProcessRequest votingProcessRequest);
 
     @Named("setDeadline")
-    static OffsetDateTime setDeadline(Long deadline) {
+    static OffsetDateTime setDeadline(long deadline) {
         return OffsetDateTime.now().plusDays(deadline);
     }
 }
