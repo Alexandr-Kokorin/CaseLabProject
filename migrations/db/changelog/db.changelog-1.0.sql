@@ -179,4 +179,13 @@ SELECT 'CREATOR'
 WHERE NOT EXISTS (SELECT 1 FROM document_permission WHERE name = 'CREATOR');
 
 -- changeset ???:17
-INSERT INTO global_permission(name) values ('USER');
+INSERT INTO global_permission(name)
+values ('USER');
+
+-- changeset ghostofendless:18
+CREATE TABLE IF NOT EXISTS subscription
+(
+    id                  BIGSERIAL PRIMARY KEY,
+    document_version_id BIGINT       NOT NULL,
+    user_email          TEXT         NOT NULL
+);
