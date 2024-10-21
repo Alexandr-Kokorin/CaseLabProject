@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 public class DocumentVersionMapperTest {
@@ -76,13 +75,6 @@ public class DocumentVersionMapperTest {
             "/smth"
         );
 
-        assertEquals(expected.getId(), result.getId());
-        assertEquals(expected.getName(), result.getName());
-        assertEquals(expected.getCreatedAt(), result.getCreatedAt());
-        assertEquals(expected.getDocumentId(), result.getDocumentId());
-        assertEquals(expected.getContentUrl(), result.getContentUrl());
-        assertTrue(result.getSignatureIds().isEmpty());
-        assertTrue(result.getVotingProcessesId().isEmpty());
-        assertEquals(expected.getAttributes(), result.getAttributes());
+        assertEquals(expected, result);
     }
 }
