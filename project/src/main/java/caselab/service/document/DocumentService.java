@@ -108,11 +108,12 @@ public class DocumentService {
     private UserToDocument createUserToDocument(UserToDocumentRequest userToDocumentRequest, Document document) {
         var user = applicationUserRepository.findByEmail(userToDocumentRequest.email()).orElseThrow();
 
-        var userToDocument = userToDocumentRepository.findByApplicationUserIdAndDocumentId(user.getId(), document.getId())
-            .orElse(UserToDocument.builder()
-                .applicationUser(user)
-                .document(document)
-                .build());
+        var userToDocument =
+            userToDocumentRepository.findByApplicationUserIdAndDocumentId(user.getId(), document.getId())
+                .orElse(UserToDocument.builder()
+                    .applicationUser(user)
+                    .document(document)
+                    .build());
         userToDocument.setDocumentPermissions(getDocumentPermissions(userToDocumentRequest.documentPermissionIds()));
 
         return userToDocument;
