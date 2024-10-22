@@ -4,7 +4,9 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import java.time.Duration;
 import java.util.List;
 import lombok.Builder;
 
@@ -17,9 +19,9 @@ public record VotingProcessRequest(
     @Positive(message = "{voting.process.request.threshold.not_positive}")
     @Schema(description = "Порог принятия", example = "0.6")
     double threshold,
-    @Positive(message = "{voting.process.request.deadline.not_positive}")
-    @Schema(description = "Время до дедлайна (в днях)", example = "7")
-    long deadline,
+    @NotNull(message = "{voting.process.request.deadline.is_null}")
+    @Schema(description = "Время до дедлайна", example = "P1DT2H10M10S")
+    Duration deadline,
     @Positive(message = "{voting.process.request.document_version_id.not_positive}")
     @Schema(description = "ID версии документа", example = "1")
     long documentVersionId,

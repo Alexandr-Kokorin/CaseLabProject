@@ -16,6 +16,7 @@ import caselab.exception.VotingProcessIsOverException;
 import caselab.exception.entity.DocumentVersionNotFoundException;
 import caselab.exception.entity.VoteNotFoundException;
 import caselab.exception.entity.VotingProcessNotFoundException;
+import caselab.service.users.ApplicationUserService;
 import caselab.service.voting_process.mapper.VoteMapper;
 import caselab.service.voting_process.mapper.VotingProcessMapper;
 import jakarta.transaction.Transactional;
@@ -24,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class VotingProcessService {
 
+    private final ApplicationUserService applicationUserService;
     private final ApplicationUserRepository applicationUserRepository;
     private final DocumentVersionRepository documentVersionRepository;
     private final VotingProcessRepository votingProcessRepository;
@@ -47,7 +48,9 @@ public class VotingProcessService {
         var votingProcess = votingProcessMapper.requestToEntity(votingProcessRequest);
         votingProcess.setStatus(VotingProcessStatus.IN_PROGRESS);
         votingProcess.setCreatedAt(OffsetDateTime.now());
+        votingProcess.setDeadline(votingProcess.getCreatedAt().plus(votingProcessRequest.deadline()));
         votingProcess.setDocumentVersion(documentVersion);
+
         validateEmails(votingProcessRequest.emails());
         votingProcessRepository.save(votingProcess);
         votingProcess.setVotes(saveVotes(votingProcessRequest.emails(), votingProcess));
@@ -56,9 +59,7 @@ public class VotingProcessService {
     }
 
     public VotingProcessResponse getVotingProcessById(Long id) {
-        var votingProcess = votingProcessRepository.findById(id)
-            .orElseThrow(() -> new VotingProcessNotFoundException(id));
-        return votingProcessMapper.entityToResponse(votingProcess);
+        return votingProcessMapper.entityToResponse(findVotingProcessById(id));
     }
 
     public void deleteVotingProcess(Long id) {
@@ -69,14 +70,15 @@ public class VotingProcessService {
     }
 
     public VotingProcessResponse updateVotingProcess(Long id, VotingProcessRequest votingProcessRequest) {
-        var votingProcess = votingProcessRepository.findById(id)
-            .orElseThrow(() -> new VotingProcessNotFoundException(id));
-
+        var votingProcess = findVotingProcessById(id);
         var updateVotingProcess = votingProcessMapper.requestToEntity(votingProcessRequest);
+
         updateVotingProcess.setId(votingProcess.getId());
         updateVotingProcess.setStatus(votingProcess.getStatus());
         updateVotingProcess.setCreatedAt(votingProcess.getCreatedAt());
+        updateVotingProcess.setDeadline(votingProcess.getCreatedAt().plus(votingProcessRequest.deadline()));
         updateVotingProcess.setDocumentVersion(votingProcess.getDocumentVersion());
+
         validateEmails(votingProcessRequest.emails());
         votingProcessRepository.save(updateVotingProcess);
         updateVotingProcess.setVotes(saveVotes(votingProcessRequest.emails(), updateVotingProcess));
@@ -85,9 +87,7 @@ public class VotingProcessService {
     }
 
     public VoteResponse castVote(Authentication authentication, VoteRequest voteRequest) {
-        var userDetails = (UserDetails) authentication.getPrincipal();
-        var user = applicationUserRepository.findByEmail(userDetails.getUsername())
-            .orElseThrow(() -> new UsernameNotFoundException(userDetails.getUsername()));
+        var user = applicationUserService.findUserByAuthentication(authentication);
 
         var vote = voteRepository.findByApplicationUserIdAndVotingProcessId(
                 user.getId(), voteRequest.votingProcessId())
@@ -101,17 +101,19 @@ public class VotingProcessService {
         return voteMapper.entityToResponse(voteRepository.save(vote));
     }
 
+    private VotingProcess findVotingProcessById(Long id) {
+        return votingProcessRepository.findById(id)
+            .orElseThrow(() -> new VotingProcessNotFoundException(id));
+    }
+
     private void validateEmails(List<String> emails) {
-        for (String email : emails) {
-            applicationUserRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException(email));
-        }
+        emails.forEach((email) -> applicationUserRepository.findByEmail(email)
+            .orElseThrow(() -> new UsernameNotFoundException(email)));
     }
 
     private List<Vote> saveVotes(List<String> emails, VotingProcess votingProcess) {
         List<Vote> votes = new ArrayList<>();
-        for (String email : emails) {
-            votes.add(createVoteById(email, votingProcess));
-        }
+        emails.forEach((email) -> votes.add(createVoteById(email, votingProcess)));
         return voteRepository.saveAll(votes);
     }
 
