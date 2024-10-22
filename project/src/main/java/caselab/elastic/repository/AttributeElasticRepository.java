@@ -1,6 +1,6 @@
-package caselab.domain.repository.elastic;
+package caselab.elastic.repository;
 
-import caselab.domain.elastic.AttributeDoc;
+import caselab.elastic.entity.AttributeDoc;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.annotations.Query;

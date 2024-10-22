@@ -1,4 +1,4 @@
-package caselab.domain.elastic;
+package caselab.elastic.entity;
 
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;

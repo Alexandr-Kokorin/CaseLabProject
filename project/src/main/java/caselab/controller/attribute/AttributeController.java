@@ -2,7 +2,7 @@ package caselab.controller.attribute;
 
 import caselab.controller.attribute.payload.AttributeRequest;
 import caselab.controller.attribute.payload.AttributeResponse;
-import caselab.service.attribute.AttributeIndexingService;
+import caselab.elastic.service.AttributeElasticService;
 import caselab.service.attribute.AttributeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -34,8 +34,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Tag(name = "Атрибуты", description = "API взаимодействия с атрибутами типов документов")
 public class AttributeController {
-    private final AttributeIndexingService attributeIndexingService;
     private final AttributeService attributeService;
+    private final AttributeElasticService attributeElasticService;
 
     @Operation(summary = "Добавить атрибут",
                description = "Добавляет атрибут в базу данных")
@@ -123,7 +123,6 @@ public class AttributeController {
         @RequestParam(name = "page", defaultValue = "0") int page,
         @RequestParam(name = "size", defaultValue = "10") int size
     ) {
-        attributeIndexingService.reindexAllAttributes();
-        return attributeService.searchAttributesElastic(query, page, size);
+        return attributeElasticService.searchValuesElastic(query, page, size);
     }
 }
