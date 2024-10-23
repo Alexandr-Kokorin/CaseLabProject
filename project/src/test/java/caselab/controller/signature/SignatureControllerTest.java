@@ -5,6 +5,7 @@ import caselab.controller.secutiry.payload.AuthenticationRequest;
 import caselab.controller.secutiry.payload.AuthenticationResponse;
 import caselab.controller.signature.payload.SignatureCreateRequest;
 import caselab.controller.signature.payload.SignatureResponse;
+import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.Document;
 import caselab.domain.entity.DocumentType;
 import caselab.domain.entity.DocumentVersion;
@@ -27,6 +28,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import static java.time.OffsetDateTime.now;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -53,9 +55,17 @@ public class SignatureControllerTest extends BaseControllerTest {
     @Autowired
     private SignatureRepository signatureRepository;
     @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
     private SignatureMapper signatureMapper;
     private Long documentVersionId;
     private Long signatureId;
+
+    @BeforeEach
+    public void setUp() {
+        token = null;
+        // Также можно добавить очистку базы данных или других ресурсов
+    }
 
     @BeforeEach
     public void addDocumentVersionAndApplicationUser() {
@@ -70,7 +80,16 @@ public class SignatureControllerTest extends BaseControllerTest {
             .documentType(savedDocumentType)
             .build());
 
-        var savedUser = userRepository.findByEmail("user@example.com");
+        if (userRepository.findByEmail("user@example.com").isEmpty()) {
+            userRepository.save(ApplicationUser.builder()
+                .email("user@example.com")
+                .displayName("Test User")
+                .hashedPassword(passwordEncoder.encode("password"))
+                .build());
+        }
+
+        var savedUser = userRepository.findByEmail("user@example.com")
+            .orElseThrow(() -> new IllegalStateException("User not found with email: user@example.com"));
 
         var savedDocumentVersion = documentVersionRepository.save(DocumentVersion
             .builder()
@@ -83,7 +102,7 @@ public class SignatureControllerTest extends BaseControllerTest {
         var savedSignature = signatureRepository.save(Signature
             .builder()
             .documentVersion(savedDocumentVersion)
-            .applicationUser(savedUser.get())
+            .applicationUser(savedUser)
             .name("test")
             .sentAt(now())
             .status(SignatureStatus.NOT_SIGNED)

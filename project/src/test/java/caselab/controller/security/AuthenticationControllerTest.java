@@ -4,91 +4,174 @@ import caselab.controller.BaseControllerTest;
 import caselab.controller.secutiry.payload.AuthenticationRequest;
 import caselab.controller.secutiry.payload.AuthenticationResponse;
 import caselab.controller.secutiry.payload.RegisterRequest;
-import caselab.service.secutiry.AuthenticationService;
+import caselab.domain.repository.ApplicationUserRepository;
+import caselab.service.secutiry.ClaimsExtractorService;
+import caselab.service.secutiry.JwtService;
 import lombok.SneakyThrows;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
+
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 public class AuthenticationControllerTest extends BaseControllerTest {
 
-    private final String AUTH_URI = "/api/v1/auth";
+    private static final String AUTH_URI = "/api/v1/auth";
 
-    @MockBean
-    private AuthenticationService authenticationService;
     @MockBean
     private SecurityFilterChain securityFilterChain;
 
+    @Autowired
+    private ApplicationUserRepository appUserRepository;
 
-    @Nested
-    @Tag("Register")
-    @DisplayName("Register user")
-    class RegisterTest {
+    @Autowired
+    private JwtService jwtService;
 
-        @SneakyThrows
-        @Test
-        @DisplayName("Should register user with valid payload")
-        public void register_success() {
-            var payload = new RegisterRequest("test@mail.ru", "displayName", "password");
-            var response = new AuthenticationResponse("token");
+    @Autowired
+    private ClaimsExtractorService claimsExtractorService;
 
-            when(authenticationService.register(payload)).thenReturn(response);
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
-            var mvcResponse = mockMvc.perform(post(AUTH_URI + "/register")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(payload)))
-                .andExpectAll(
-                    status().is2xxSuccessful(),
-                    content().contentType(MediaType.APPLICATION_JSON)
-                )
-                .andReturn()
-                .getResponse();
-
-            var actualResponse = objectMapper.readValue(mvcResponse.getContentAsString(), AuthenticationResponse.class);
-
-            assertEquals(actualResponse, response);
-        }
+    @BeforeEach
+    void setUp() {
+        // Очищаем базу данных перед каждым тестом
+        appUserRepository.deleteAll();
     }
 
-    @Nested
-    @Tag("Authenticate")
-    @DisplayName("Authenticate user")
-    class AuthenticateTest {
+    @SneakyThrows
+    @Test
+    @DisplayName("Регистрация пользователя с корректными данными")
+    public void shouldRegisterUserSuccessfully() {
+        RegisterRequest registerRequest = createRegisterRequest("test@mail.ru",
+            "displayName",
+            "password");
 
-        @SneakyThrows
-        @Test
-        @DisplayName("Should authenticate user with valid payload")
-        public void authenticate_success() {
-            var payload = AuthenticationRequest.builder()
-                .email("test@mail.ru")
-                .password("password")
-                .build();
-            var response = new AuthenticationResponse("token");
+        // Выполняем регистрацию и проверяем токен
+        String token = performRegistrationAndGetToken(registerRequest);
 
-            when(authenticationService.authenticate(payload)).thenReturn(response);
+        // Проверяем содержимое токена
+        assertTokenContainsEmailAndIsValid(token, registerRequest.email());
+    }
 
-            var mvcResponse = mockMvc.perform(post(AUTH_URI + "/authenticate")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(payload)))
-                .andExpectAll(
-                    status().is2xxSuccessful(),
-                    content().contentType(MediaType.APPLICATION_JSON)
-                )
-                .andReturn()
-                .getResponse();
+    @Test
+    @DisplayName("Ошибка при повторной регистрации")
+    void shouldFailIfUserAlreadyExists() throws Exception {
+        RegisterRequest registerRequest = createRegisterRequest("test@mail.ru",
+            "displayName",
+            "password");
 
-            var actualResponse = objectMapper.readValue(mvcResponse.getContentAsString(), AuthenticationResponse.class);
+        // Первичная регистрация
+        performRegistrationAndGetToken(registerRequest);
 
-            assertEquals(actualResponse, response);
-        }
+        // Повторная регистрация
+        mockMvc.perform(post(AUTH_URI + "/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(registerRequest)))
+            .andExpect(status().isConflict());
+    }
+
+    @Test
+    @DisplayName("Успешная аутентификация пользователя")
+    void shouldAuthenticateUserSuccessfully() throws Exception {
+        RegisterRequest registerRequest = createRegisterRequest("test@mail.ru",
+            "displayName",
+            "password");
+
+        // Первичная регистрация
+        performRegistrationAndGetToken(registerRequest);
+
+        // Аутентификация
+        AuthenticationRequest authRequest = createAuthenticationRequest(registerRequest.email(), registerRequest.password());
+        String token = performAuthenticationAndGetToken(authRequest);
+
+        // Проверяем содержимое токена
+        assertTokenContainsEmailAndIsValid(token, registerRequest.email());
+    }
+
+    @Test
+    @DisplayName("Ошибка аутентификации - неверный пароль")
+    void shouldFailAuthenticationWithInvalidPassword() throws Exception {
+        RegisterRequest registerRequest = createRegisterRequest("test@mail.ru",
+            "displayName",
+            "password");
+
+        // Первичная регистрация
+        performRegistrationAndGetToken(registerRequest);
+
+        // Аутентификация с неверным паролем
+        AuthenticationRequest authRequest = createAuthenticationRequest(registerRequest.email(),
+            "wrongPassword");
+
+        mockMvc.perform(post(AUTH_URI + "/authenticate")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(authRequest)))
+            .andExpect(status().isUnauthorized());
+    }
+
+    // Вспомогательные методы
+    private RegisterRequest createRegisterRequest(String email, String displayName, String password) {
+        return RegisterRequest.builder()
+            .email(email)
+            .displayName(displayName)
+            .password(password)
+            .build();
+    }
+
+    private AuthenticationRequest createAuthenticationRequest(String email, String password) {
+        return AuthenticationRequest.builder()
+            .email(email)
+            .password(password)
+            .build();
+    }
+
+    @SneakyThrows
+    private String performRegistrationAndGetToken(RegisterRequest request) {
+        var response = mockMvc.perform(post(AUTH_URI + "/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpectAll(
+                status().is2xxSuccessful(),
+                content().contentType(MediaType.APPLICATION_JSON),
+                jsonPath("$.token", notNullValue())
+            )
+            .andReturn()
+            .getResponse();
+
+        var authenticationResponse = objectMapper.readValue(response.getContentAsString(),
+            AuthenticationResponse.class);
+        return authenticationResponse.token();
+    }
+
+    @SneakyThrows
+    private String performAuthenticationAndGetToken(AuthenticationRequest request) {
+        var response = mockMvc.perform(post(AUTH_URI + "/authenticate")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.token", notNullValue()))
+            .andReturn()
+            .getResponse();
+
+        var authenticationResponse = objectMapper.readValue(response.getContentAsString(),
+            AuthenticationResponse.class);
+        return authenticationResponse.token();
+    }
+
+    private void assertTokenContainsEmailAndIsValid(String token, String expectedEmail) {
+        assertAll(
+            () -> assertNotNull(token, "Токен не должен быть null"),
+            () -> assertEquals(expectedEmail, claimsExtractorService.extractEmail(token),
+                "Email внутри токена должен совпадать с email пользователя"),
+            () -> assertFalse(claimsExtractorService.isTokenExpired(token), "Токен не должен быть просрочен")
+        );
     }
 }
