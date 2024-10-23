@@ -9,6 +9,7 @@ import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import java.util.ArrayList;
 
 @Mapper(uses = {AttributeValueMapper.class}, componentModel = "spring")
 public interface DocumentVersionMapper {
@@ -27,11 +28,21 @@ public interface DocumentVersionMapper {
         DocumentVersion entity,
         @MappingTarget DocumentVersionResponse response
     ) {
-        response.setSignatureIds(
-            entity.getSignatures().stream().map(Signature::getId).toList()
-        );
-        response.setVotingProcessesId(
-            entity.getVotingProcesses().stream().map(VotingProcess::getId).toList()
-        );
+        if (entity.getSignatures() != null) {
+            response.setSignatureIds(
+                entity.getSignatures().stream().map(Signature::getId).toList()
+            );
+        } else {
+            response.setSignatureIds(new ArrayList<>());
+        }
+
+        if (entity.getVotingProcesses() != null) {
+            response.setVotingProcessesId(
+                entity.getVotingProcesses().stream().map(VotingProcess::getId).toList()
+            );
+        } else {
+            response.setVotingProcessesId(new ArrayList<>());
+        }
+
     }
 }
