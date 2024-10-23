@@ -44,14 +44,11 @@ public class DocumentVersionStorage implements FileStorage {
 
         String fileName = generateFileName(file);
 
-        InputStream inputStream;
-        try {
-            inputStream = file.getInputStream();
+        try (InputStream inputStream = file.getInputStream()) {
+            upload(inputStream, fileName);
         } catch (IOException e) {
             throw new DocumentStorageException(e.getMessage(), e.getCause());
         }
-
-        upload(inputStream, fileName);
 
         log.debug("Document was successfully uploaded with name: " + fileName);
         return fileName;
@@ -70,7 +67,6 @@ public class DocumentVersionStorage implements FileStorage {
                  IOException e) {
             throw new DocumentStorageException(e.getMessage(), e.getCause());
         }
-
     }
 
     private String generateFileName(MultipartFile file){
@@ -85,12 +81,12 @@ public class DocumentVersionStorage implements FileStorage {
                 GetObjectArgs.builder()
                     .bucket(bucket)
                     .object(fileName)
-                    .build());
-
-        } catch (ServerException | InsufficientDataException | ErrorResponseException | IOException |
-                 NoSuchAlgorithmException | InvalidKeyException | InvalidResponseException | XmlParserException |
-                 InternalException e) {
-            throw new DocumentStorageException(e.getMessage(), e.getCause());
+                    .build()
+            );
+        } catch (ErrorResponseException | InsufficientDataException | InternalException | InvalidKeyException |
+                 InvalidResponseException | IOException | NoSuchAlgorithmException | XmlParserException |
+                 ServerException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -109,6 +105,5 @@ public class DocumentVersionStorage implements FileStorage {
                  XmlParserException e) {
             throw new DocumentStorageException(e.getMessage(), e.getCause());
         }
-
     }
 }

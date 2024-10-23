@@ -76,7 +76,7 @@ public class SignatureControllerTest extends BaseControllerTest {
             .builder()
             .name("test")
             .createdAt(now())
-            .contentUrl("test_url")
+            .contentName("test_url")
             .document(savedDocument)
             .build());
 
