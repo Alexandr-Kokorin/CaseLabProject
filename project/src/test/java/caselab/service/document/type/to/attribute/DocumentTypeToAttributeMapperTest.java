@@ -31,9 +31,9 @@ public class DocumentTypeToAttributeMapperTest {
         // Assert
         assertAll(
             () -> assertThat(response).isNotNull(),
-        () -> assertThat(response.attributeId()).isEqualTo(1L),
-        () -> assertThat(response.isOptional()).isNotNull(),
-        () -> assertThat(response.isOptional()).isEqualTo(true)
+            () -> assertThat(response.attributeId()).isEqualTo(1L),
+            () -> assertThat(response.isOptional()).isNotNull(),
+            () -> assertThat(response.isOptional()).isEqualTo(true)
         );
     }
 
