@@ -43,5 +43,4 @@ public class DocumentTypeToAttribute {
     @MapsId("attributeId")
     @JoinColumn(name = "attribute_id", nullable = false)
     private Attribute attribute;
-
 }

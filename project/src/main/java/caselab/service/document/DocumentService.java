@@ -29,7 +29,7 @@ import org.springframework.stereotype.Service;
 public class DocumentService {
 
     private final DocumentRepository documentRepository;
-    private final DocumentTypesRepository documentTypeRepository;
+    private final DocumentTypesRepository documentTypesRepository;
     private final UserToDocumentRepository userToDocumentRepository;
     private final ApplicationUserRepository applicationUserRepository;
     private final DocumentPermissionRepository documentPermissionRepository;
@@ -80,7 +80,7 @@ public class DocumentService {
     }
 
     private DocumentType getDocumentTypeById(Long id) {
-        return documentTypeRepository.findById(id)
+        return documentTypesRepository.findById(id)
             .orElseThrow(() -> new DocumentTypeNotFoundException(id));
     }
 
