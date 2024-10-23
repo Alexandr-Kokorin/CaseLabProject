@@ -3,12 +3,11 @@ package caselab.service.document;
 import caselab.controller.document.payload.DocumentRequest;
 import caselab.controller.document.payload.DocumentResponse;
 import caselab.controller.document.payload.UserToDocumentRequest;
-import caselab.controller.document.payload.UserToDocumentResponse;
 import caselab.domain.IntegrationTest;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.DocumentType;
 import caselab.domain.repository.ApplicationUserRepository;
-import caselab.domain.repository.DocumentTypesRepository;
+import caselab.domain.repository.DocumentTypeRepository;
 import caselab.exception.entity.DocumentNotFoundException;
 import java.util.Arrays;
 import java.util.List;
@@ -32,7 +31,7 @@ public class DocumentServiceTest extends IntegrationTest {
     @Autowired
     private DocumentService documentService;
     @Autowired
-    private DocumentTypesRepository documentTypeRepository;
+    private DocumentTypeRepository documentTypeRepository;
     @Autowired
     private ApplicationUserRepository applicationUserRepository;
 
