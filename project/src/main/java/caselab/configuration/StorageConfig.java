@@ -10,14 +10,14 @@ import io.minio.errors.InternalException;
 import io.minio.errors.InvalidResponseException;
 import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 @Slf4j
 @Configuration
@@ -33,7 +33,7 @@ public class StorageConfig {
     private String secretKey;
 
     @Bean
-    public MinioClient minioClient(){
+    public MinioClient minioClient() {
         return MinioClient.builder()
             .endpoint(url)
             .credentials(accessKey, secretKey)
@@ -41,52 +41,51 @@ public class StorageConfig {
     }
 
     @Bean
-    public boolean bucketsInit(){
+    public boolean bucketsInit() {
         for (String bucket : buckets) {
             bucketInit(bucket);
         }
         return true;
     }
 
-    private void bucketInit(String bucketName){
+    private void bucketInit(String bucketName) {
         boolean found = bucketExists(bucketName);
         if (!found) {
             crateBucket(bucketName);
         } else {
-            log.debug("Bucket " + bucketName + " already exists");
+            log.debug(bucketName + " bucket already exists");
         }
     }
 
-    private boolean bucketExists(String bucketName){
+    private boolean bucketExists(String bucketName) {
         try {
             return minioClient().bucketExists(
                 BucketExistsArgs.builder()
                     .bucket(bucketName)
                     .build()
             );
-        } catch (ErrorResponseException | InsufficientDataException | InternalException | InvalidKeyException |
-                 InvalidResponseException | IOException | NoSuchAlgorithmException | ServerException |
-                 XmlParserException e) {
+        } catch (ErrorResponseException | InsufficientDataException | InternalException | InvalidKeyException
+                 | InvalidResponseException | IOException | NoSuchAlgorithmException | ServerException
+                 | XmlParserException e) {
             log.error("An error occurred while checking the bucket " + bucketName);
             throw new InitStorageException(e.getMessage(), e.getCause());
         }
     }
 
-    private void crateBucket(String bucketName){
-
+    private void crateBucket(String bucketName) {
         try {
             minioClient().makeBucket(
                 MakeBucketArgs.builder()
                     .bucket(bucketName)
                     .build());
-        } catch (ErrorResponseException | InsufficientDataException | InternalException | InvalidKeyException |
-                 InvalidResponseException | IOException | NoSuchAlgorithmException | ServerException |
-                 XmlParserException e) {
+        } catch (ErrorResponseException | InsufficientDataException | InternalException | InvalidKeyException
+                 | InvalidResponseException | IOException | NoSuchAlgorithmException | ServerException
+                 | XmlParserException e) {
             log.error("An error occurred while initializing the bucket " + bucketName);
             throw new InitStorageException(e.getMessage(), e.getCause());
         }
 
-        log.debug("Bucket " + bucketName + "successfully created");
+        log.debug(bucketName + "bucket successfully created");
     }
 
 }

@@ -5,8 +5,6 @@ import caselab.controller.version.payload.DocumentVersionResponse;
 import caselab.controller.version.payload.UpdateDocumentVersionRequest;
 import caselab.service.version.DocumentVersionService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
@@ -52,13 +50,9 @@ public class DocumentVersionController {
     }
 
     @GetMapping("/content/{id}")
-    public ResponseEntity<Resource> getDocumentVersionContent(@PathVariable Long id, Authentication auth){
-        try (InputStream stream = documentVersionService.getDocumentVersionContent(id, auth)) {
-            var resource = new InputStreamResource(stream);
-            return new ResponseEntity<>(resource, HttpStatus.OK);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    public ResponseEntity<Resource> getDocumentVersionContent(@PathVariable Long id, Authentication auth) {
+        var resource = new InputStreamResource(documentVersionService.getDocumentVersionContent(id, auth));
+        return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
     @PutMapping("/{id}")

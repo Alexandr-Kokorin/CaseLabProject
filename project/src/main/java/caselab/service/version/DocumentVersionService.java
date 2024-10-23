@@ -78,7 +78,7 @@ public class DocumentVersionService {
     ) {
         if (checkLacksPermission(user, document, DocumentPermissionName::canRead)) {
             response.setAttributes(null);
-            response.setContentUrl(null);
+            response.setContentName(null);
         }
 
         return response;
@@ -189,7 +189,7 @@ public class DocumentVersionService {
             .toList();
     }
 
-    public InputStream getDocumentVersionContent(Long id, Authentication auth){
+    public InputStream getDocumentVersionContent(Long id, Authentication auth) {
         ApplicationUser user = userService.findUserByAuthentication(auth);
 
         DocumentVersion documentVersion = documentVersionRepository.findById(id).orElseThrow(

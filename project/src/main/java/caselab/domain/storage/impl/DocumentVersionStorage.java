@@ -12,16 +12,16 @@ import io.minio.errors.InternalException;
 import io.minio.errors.InvalidResponseException;
 import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 import static org.apache.commons.io.FilenameUtils.getExtension;
 
 @Slf4j
@@ -37,7 +37,7 @@ public class DocumentVersionStorage implements FileStorage {
     @Override
     public String put(MultipartFile file) {
 
-        if(file.isEmpty() || file.getOriginalFilename() == null){
+        if (file.isEmpty() || file.getOriginalFilename() == null) {
             log.error("Document upload failed. Document must have name");
             throw new DocumentStorageException("Document must have name");
         }
@@ -54,7 +54,7 @@ public class DocumentVersionStorage implements FileStorage {
         return fileName;
     }
 
-    private void upload(InputStream inputStream, String fileName){
+    private void upload(InputStream inputStream, String fileName) {
         try {
             minioClient.putObject(
                 PutObjectArgs.builder()
@@ -62,14 +62,14 @@ public class DocumentVersionStorage implements FileStorage {
                     .bucket(bucket)
                     .object(fileName)
                     .build());
-        } catch (ErrorResponseException | InsufficientDataException | InternalException | InvalidKeyException |
-                 InvalidResponseException | NoSuchAlgorithmException | ServerException | XmlParserException |
-                 IOException e) {
+        } catch (ErrorResponseException | InsufficientDataException | InternalException | InvalidKeyException
+                 | InvalidResponseException | NoSuchAlgorithmException | ServerException | XmlParserException
+                 | IOException e) {
             throw new DocumentStorageException(e.getMessage(), e.getCause());
         }
     }
 
-    private String generateFileName(MultipartFile file){
+    private String generateFileName(MultipartFile file) {
         String extension = getExtension(file.getOriginalFilename());
         return UUID.randomUUID() + "." + extension;
     }
@@ -83,9 +83,9 @@ public class DocumentVersionStorage implements FileStorage {
                     .object(fileName)
                     .build()
             );
-        } catch (ErrorResponseException | InsufficientDataException | InternalException | InvalidKeyException |
-                 InvalidResponseException | IOException | NoSuchAlgorithmException | XmlParserException |
-                 ServerException e) {
+        } catch (ErrorResponseException | InsufficientDataException | InternalException | InvalidKeyException
+                 | InvalidResponseException | IOException | NoSuchAlgorithmException | XmlParserException
+                 | ServerException e) {
             throw new RuntimeException(e);
         }
     }
@@ -100,9 +100,9 @@ public class DocumentVersionStorage implements FileStorage {
                     .build());
 
             return true;
-        } catch (ErrorResponseException | InsufficientDataException | InternalException | InvalidKeyException |
-                 InvalidResponseException | IOException | NoSuchAlgorithmException | ServerException |
-                 XmlParserException e) {
+        } catch (ErrorResponseException | InsufficientDataException | InternalException | InvalidKeyException
+                 | InvalidResponseException | IOException | NoSuchAlgorithmException | ServerException
+                 | XmlParserException e) {
             throw new DocumentStorageException(e.getMessage(), e.getCause());
         }
     }

@@ -5,11 +5,11 @@ import caselab.domain.entity.Document;
 import caselab.domain.entity.DocumentVersion;
 import caselab.domain.entity.Signature;
 import caselab.domain.entity.VotingProcess;
+import java.util.ArrayList;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
-import java.util.ArrayList;
 
 @Mapper(uses = {AttributeValueMapper.class}, componentModel = "spring")
 public interface DocumentVersionMapper {

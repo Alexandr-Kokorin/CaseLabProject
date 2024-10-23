@@ -45,7 +45,7 @@ public class DocumentVersionMapperTest {
         documentVersion.setCreatedAt(createdAt);
 
         documentVersion.setDocument(document);
-        documentVersion.setContentUrl("/smth");
+        documentVersion.setContentName("/smth");
         documentVersion.setVotingProcesses(List.of());
         documentVersion.setSignatures(List.of());
 
