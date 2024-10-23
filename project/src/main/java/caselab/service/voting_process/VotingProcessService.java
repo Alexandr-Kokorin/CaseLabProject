@@ -93,7 +93,7 @@ public class VotingProcessService {
                 user.getId(), voteRequest.votingProcessId())
             .orElseThrow(() -> new VoteNotFoundException(user.getEmail()));
 
-        if (vote.getVotingProcess().getDeadline().isBefore(OffsetDateTime.now())) {
+        if (vote.getVotingProcess().getStatus() != VotingProcessStatus.IN_PROGRESS) {
             throw new VotingProcessIsOverException(voteRequest.votingProcessId());
         }
 

@@ -37,7 +37,7 @@ public class VotingStatistics {
     }
 
     public void calculateStatus(double threshold) {
-        double result = countInFavour / (double) (countInFavour + countAgainst);
+        double result = countInFavour / (double) (countInFavour + countAgainst + countAbstained + countNotVoted);
         votingProcessStatus = result < threshold ? VotingProcessStatus.DENIED : VotingProcessStatus.ACCEPTED;
     }
 }
