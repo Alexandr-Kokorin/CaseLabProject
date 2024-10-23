@@ -4,17 +4,12 @@ import caselab.controller.BaseControllerTest;
 import caselab.controller.secutiry.payload.AuthenticationRequest;
 import caselab.controller.secutiry.payload.AuthenticationResponse;
 import caselab.controller.secutiry.payload.RegisterRequest;
-import caselab.domain.repository.ApplicationUserRepository;
 import caselab.service.secutiry.ClaimsExtractorService;
-import caselab.service.secutiry.JwtService;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
 
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.*;
@@ -25,20 +20,8 @@ public class AuthenticationControllerTest extends BaseControllerTest {
 
     private static final String AUTH_URI = "/api/v1/auth";
 
-    @MockBean
-    private SecurityFilterChain securityFilterChain;
-
-    @Autowired
-    private ApplicationUserRepository appUserRepository;
-
-    @Autowired
-    private JwtService jwtService;
-
     @Autowired
     private ClaimsExtractorService claimsExtractorService;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
 
     @SneakyThrows
     @Test
