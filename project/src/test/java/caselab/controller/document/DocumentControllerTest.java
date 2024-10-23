@@ -1,35 +1,23 @@
 package caselab.controller.document;
 
 import caselab.controller.BaseControllerTest;
+import caselab.controller.attribute.payload.AttributeRequest;
+import caselab.controller.attribute.payload.AttributeResponse;
 import caselab.controller.document.payload.DocumentRequest;
+import caselab.controller.document.payload.DocumentResponse;
 import caselab.controller.document.payload.UserToDocumentRequest;
 import caselab.controller.secutiry.payload.AuthenticationRequest;
 import caselab.controller.secutiry.payload.AuthenticationResponse;
-import caselab.domain.entity.Document;
-import caselab.domain.entity.DocumentPermission;
-import caselab.domain.entity.DocumentType;
-import caselab.domain.entity.UserToDocument;
-import caselab.domain.repository.ApplicationUserRepository;
-import caselab.domain.repository.DocumentPermissionRepository;
-import caselab.domain.repository.DocumentRepository;
-import caselab.domain.repository.DocumentTypesRepository;
-import caselab.domain.repository.DocumentVersionRepository;
-import caselab.domain.repository.SignatureRepository;
-import caselab.domain.repository.UserToDocumentRepository;
-import caselab.exception.entity.DocumentPermissionNotFoundException;
-import caselab.service.document.mapper.DocumentMapper;
-import caselab.service.document.mapper.DocumentPermissionMapper;
-import caselab.service.document.mapper.UserToDocumentMapper;
+import caselab.controller.types.payload.DocumentTypeRequest;
+import caselab.controller.types.payload.DocumentTypeResponse;
+import caselab.controller.types.payload.DocumentTypeToAttributeRequest;
 import groovy.util.logging.Slf4j;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import java.util.ArrayList;
 import java.util.List;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -43,50 +31,91 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Slf4j
 public class DocumentControllerTest extends BaseControllerTest {
     private static AuthenticationResponse token;
-    private final String DOC_URI = "/api/v1/documents";
-    @Autowired
-    private ApplicationUserRepository applicationUserRepository;
-    @Autowired
-    private DocumentRepository documentRepository;
-    @Autowired
-    private DocumentVersionRepository documentVersionRepository;
-    @Autowired
-    private DocumentTypesRepository documentTypesRepository;
-    @Autowired
-    private SignatureRepository signatureRepository;
-    @Autowired
-    private UserToDocumentRepository userToDocumentRepository;
-
-    @Autowired
-    private DocumentPermissionRepository documentPermissionRepository;
-
+    private static final String DOC_URI = "/api/v1/documents";
+    private static final String DOCUMENT_TYPES_URI = "/api/v1/document_types";
 
     private Long documentId;
     private Long documentTypeId;
 
     @BeforeEach
-    public void addDocumentType() {
-        var savedUser = applicationUserRepository.findByEmail("user@example.com");
+    public void addDocumentType() throws Exception {
+        var token = login().token();
 
-        var savedDocumentType = documentTypesRepository.save(DocumentType
-            .builder()
-            .name("testType")
-            .build());
+        var attributeRequest = AttributeRequest.builder()
+            .type("test")
+            .name("test")
+            .build();
 
-        var savedDocument = documentRepository.save(Document
-            .builder()
+        var attributeResponse = mockMvc.perform(post("/api/v1/attributes")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(attributeRequest)))
+            .andExpect(status().isOk())
+            .andReturn();
+
+        var savedAttribute = objectMapper.readValue(
+            attributeResponse.getResponse().getContentAsString(),
+            AttributeResponse.class
+        );
+
+        var documentTypeRequest = DocumentTypeRequest.builder()
+            .attributeRequests(List.of(
+                DocumentTypeToAttributeRequest.builder()
+                    .attributeId(savedAttribute.id())
+                    .isOptional(true)
+                    .build()
+            ))
             .name("testDocument")
-            .documentType(savedDocumentType)
-            .build());
-        savedDocument.setUsersToDocuments(saveUserToDocuments(createDocumentRequest(), savedDocument));
-        documentId = savedDocument.getId();
-        documentTypeId = savedDocumentType.getId();
+            .build();
+
+        var documentTypeResponse = mockMvc.perform(post(DOCUMENT_TYPES_URI)
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(documentTypeRequest)))
+            .andExpect(status().isOk())
+            .andReturn();
+
+        var savedDocumentType = objectMapper.readValue(
+            documentTypeResponse.getResponse().getContentAsString(),
+            DocumentTypeResponse.class
+        );
+
+        documentTypeId = savedDocumentType.id();
+
+        var documentRequest = createDocumentRequest();
+        var documentResponse = mockMvc.perform(post(DOC_URI)
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(documentRequest)))
+            .andExpect(status().isOk())
+            .andReturn();
+
+        var savedDocument = objectMapper.readValue(
+            documentResponse.getResponse().getContentAsString(),
+            DocumentResponse.class
+        );
+
+        documentId = savedDocument.id();
     }
+
+
     @AfterEach
-    public void clearTables() {
-        documentRepository.deleteAll();
-        documentTypesRepository.deleteAll();
-        signatureRepository.deleteAll();
+    public void cleanup() throws Exception {
+        if (documentId != null) {
+            var token = login().token();
+
+            var getResponse = mockMvc.perform(get(DOC_URI + "/" + documentId)
+                    .header("Authorization", "Bearer " + token)
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
+
+            if (getResponse.getResponse().getStatus() == 200) {
+                mockMvc.perform(delete(DOC_URI + "/" + documentId)
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isNoContent());
+            }
+        }
     }
 
     @SneakyThrows
@@ -132,7 +161,7 @@ public class DocumentControllerTest extends BaseControllerTest {
                 .content(requestContent))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").isNotEmpty())
-            .andExpect(jsonPath("$.name").value("New Document"))
+            .andExpect(jsonPath("$.name").value("testDocument"))
             .andExpect(jsonPath("$.document_type_id").value(documentTypeId))
             .andExpect(jsonPath("$.user_permissions").isNotEmpty());
     }
@@ -279,35 +308,10 @@ public class DocumentControllerTest extends BaseControllerTest {
     private DocumentRequest createDocumentRequest() {
         return DocumentRequest.builder()
             .documentTypeId(documentTypeId)
-            .name("New Document")
+            .name("testDocument")
             .usersPermissions(List.of(new UserToDocumentRequest("user@example.com", List.of(1L))))
             .build();
     }
 
-    private List<UserToDocument> saveUserToDocuments(DocumentRequest documentRequest, Document document) {
-        List<UserToDocument> userToDocuments = new ArrayList<>();
-        for (UserToDocumentRequest userToDocumentRequest : documentRequest.usersPermissions()) {
-            userToDocuments.add(createUserToDocument(userToDocumentRequest, document));
-        }
-        return userToDocumentRepository.saveAll(userToDocuments);
-    }
 
-    private UserToDocument createUserToDocument(UserToDocumentRequest userToDocumentRequest, Document document) {
-        var user = applicationUserRepository.findByEmail(userToDocumentRequest.email())
-            .orElseThrow(() -> new UsernameNotFoundException(userToDocumentRequest.email()));
-        return userToDocumentRepository.findByApplicationUserIdAndDocumentId(user.getId(), document.getId())
-            .orElse(UserToDocument.builder()
-                .applicationUser(user)
-                .document(document)
-                .documentPermissions(getDocumentPermissions(userToDocumentRequest.documentPermissionIds()))
-                .build());
-    }
-    private List<DocumentPermission> getDocumentPermissions(List<Long> documentPermissionIds) {
-        List<DocumentPermission> documentPermissions = new ArrayList<>();
-        for (Long id : documentPermissionIds) {
-            documentPermissions.add(documentPermissionRepository.findById(id)
-                .orElseThrow(() -> new DocumentPermissionNotFoundException(id)));
-        }
-        return documentPermissions;
-    }
 }
