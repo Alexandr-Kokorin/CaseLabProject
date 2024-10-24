@@ -8,8 +8,6 @@ public record CreateDocumentVersionRequest(
     Long documentId,
     @JsonProperty("name")
     String name,
-    @JsonProperty("content")
-    String content,
     @JsonProperty("attributes")
     List<AttributeValuePair> attributes
 ) {

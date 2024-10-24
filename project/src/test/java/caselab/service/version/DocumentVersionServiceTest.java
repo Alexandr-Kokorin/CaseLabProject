@@ -21,6 +21,7 @@ import caselab.domain.repository.AttributeValueRepository;
 import caselab.domain.repository.DocumentRepository;
 import caselab.domain.repository.DocumentVersionRepository;
 import caselab.domain.repository.UserToDocumentRepository;
+import caselab.domain.storage.FileStorage;
 import caselab.exception.document.version.MissingAttributesException;
 import caselab.exception.document.version.MissingDocumentPermissionException;
 import caselab.exception.entity.AttributeNotFoundException;
@@ -28,6 +29,7 @@ import caselab.exception.entity.DocumentVersionNotFoundException;
 import caselab.service.users.ApplicationUserService;
 import caselab.service.version.mapper.DocumentVersionMapper;
 import caselab.service.version.mapper.DocumentVersionUpdater;
+import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -67,6 +69,8 @@ public class DocumentVersionServiceTest {
     private DocumentVersionMapper documentVersionMapper;
     @Mock
     private DocumentVersionUpdater documentVersionUpdater;
+    @Mock
+    private FileStorage documentVersionStorage;
 
     private DocumentType documentType;
     private Document document;
@@ -162,7 +166,7 @@ public class DocumentVersionServiceTest {
         );
         documentVersion.setName("documentVersion");
         documentVersion.setCreatedAt(OffsetDateTime.now());
-        documentVersion.setContentUrl("/smth");
+        documentVersion.setContentName("/smth");
         documentVersion.setDocument(document);
         documentVersion.setSignatures(List.of());
         documentVersion.setVotingProcesses(List.of());
@@ -180,14 +184,13 @@ public class DocumentVersionServiceTest {
             () -> service.createDocumentVersion(new CreateDocumentVersionRequest(
                 1L,
                 "",
-                "",
                 List.of()
-            ), null)
+            ), null, null)
         );
     }
 
     @Test
-    public void createDocumentVersion_missingAttributes() {
+    public void createDocumentVersion_missingAttributes() throws IOException {
         Mockito.when(userService.findUserByAuthentication(Mockito.any())).thenReturn(creator);
         Mockito.when(documentRepository.findById(Mockito.any())).thenReturn(Optional.of(document));
         Mockito.when(userToDocumentRepository.findByApplicationUserIdAndDocumentId(Mockito.any(), Mockito.any()))
@@ -196,18 +199,17 @@ public class DocumentVersionServiceTest {
         CreateDocumentVersionRequest request = new CreateDocumentVersionRequest(
             1L,
             "",
-            "",
             List.of(
                 new AttributeValuePair(1L, ""),
                 new AttributeValuePair(3L, "")  // Не хватает аттрибута с id=2
             )
         );
 
-        assertThrows(MissingAttributesException.class, () -> service.createDocumentVersion(request, null));
+        assertThrows(MissingAttributesException.class, () -> service.createDocumentVersion(request, null, null));
     }
 
     @Test
-    public void createDocumentVersion_unknownAttribute() {
+    public void createDocumentVersion_unknownAttribute() throws IOException {
         Mockito.when(userService.findUserByAuthentication(Mockito.any())).thenReturn(creator);
         Mockito.when(documentRepository.findById(Mockito.any())).thenReturn(Optional.of(document));
         Mockito.when(userToDocumentRepository.findByApplicationUserIdAndDocumentId(Mockito.any(), Mockito.any()))
@@ -221,7 +223,6 @@ public class DocumentVersionServiceTest {
         CreateDocumentVersionRequest request = new CreateDocumentVersionRequest(
             1L,
             "",
-            "",
             List.of(
                 new AttributeValuePair(1L, ""),
                 new AttributeValuePair(2L, ""),
@@ -229,11 +230,11 @@ public class DocumentVersionServiceTest {
             )
         );
 
-        assertThrows(AttributeNotFoundException.class, () -> service.createDocumentVersion(request, null));
+        assertThrows(AttributeNotFoundException.class, () -> service.createDocumentVersion(request, null, null));
     }
 
     @Test
-    public void createDocumentVersion_success() {
+    public void createDocumentVersion_success() throws IOException {
         Mockito.when(userService.findUserByAuthentication(Mockito.any())).thenReturn(creator);
         Mockito.when(documentRepository.findById(Mockito.any())).thenReturn(Optional.of(document));
         Mockito.when(userToDocumentRepository.findByApplicationUserIdAndDocumentId(Mockito.any(), Mockito.any()))
@@ -253,7 +254,6 @@ public class DocumentVersionServiceTest {
         CreateDocumentVersionRequest request = new CreateDocumentVersionRequest(
             1L,
             "",
-            "",
             List.of(
                 new AttributeValuePair(1L, ""),
                 new AttributeValuePair(2L, ""),
@@ -261,7 +261,7 @@ public class DocumentVersionServiceTest {
             )
         );
 
-        assertDoesNotThrow(() -> service.createDocumentVersion(request, null));
+        assertDoesNotThrow(() -> service.createDocumentVersion(request, null, null));
     }
 
     @Test
@@ -290,7 +290,7 @@ public class DocumentVersionServiceTest {
 
         var response = new DocumentVersionResponse();
         response.setAttributes(List.of());
-        response.setContentUrl("/smth");
+        response.setContentName("/smth");
 
         Mockito.when(documentVersionMapper.map(documentVersion)).thenReturn(response);
         assertEquals(response, service.getDocumentVersionById(1L, null));
@@ -305,12 +305,12 @@ public class DocumentVersionServiceTest {
 
         var response = new DocumentVersionResponse();
         response.setAttributes(List.of());
-        response.setContentUrl("/smth");
+        response.setContentName("/smth");
 
         Mockito.when(documentVersionMapper.map(documentVersion)).thenReturn(response);
         var result = service.getDocumentVersionById(1L, null);
         assertNull(result.getAttributes());
-        assertNull(result.getContentUrl());
+        assertNull(result.getContentName());
     }
 
     @Test

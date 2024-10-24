@@ -44,8 +44,8 @@ public class DocumentVersion {
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
-    @Column(name = "content_url")
-    private String contentUrl;
+    @Column(name = "content_name")
+    private String contentName;
 
     @ManyToOne(optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)

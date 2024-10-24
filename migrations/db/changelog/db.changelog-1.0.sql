@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS document_version
     id                 BIGSERIAL          NOT NULL,
     name               TEXT               NOT NULL,
     created_at         timestamptz        NOT NULL,
-    content_url        TEXT               ,
+    content_name       TEXT               ,
     document_id        BIGINT             NOT NULL REFERENCES document(id) ON DELETE CASCADE,
 
     PRIMARY KEY (id)
