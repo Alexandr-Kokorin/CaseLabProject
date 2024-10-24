@@ -18,6 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MvcResult;
 import java.util.List;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -30,92 +31,93 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @Slf4j
 public class DocumentControllerTest extends BaseControllerTest {
+  
     private static AuthenticationResponse token;
     private static final String DOC_URI = "/api/v1/documents";
     private static final String DOCUMENT_TYPES_URI = "/api/v1/document_types";
 
-    private Long documentId;
     private Long documentTypeId;
+    private Long attributeId;
 
     @BeforeEach
-    public void addDocumentType() throws Exception {
-        var token = login().token();
-
-        var attributeRequest = AttributeRequest.builder()
-            .type("test")
-            .name("test")
-            .build();
-
-        var attributeResponse = mockMvc.perform(post("/api/v1/attributes")
-                .header("Authorization", "Bearer " + token)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(attributeRequest)))
-            .andExpect(status().isOk())
-            .andReturn();
-
-        var savedAttribute = objectMapper.readValue(
-            attributeResponse.getResponse().getContentAsString(),
-            AttributeResponse.class
-        );
-
-        var documentTypeRequest = DocumentTypeRequest.builder()
-            .attributeRequests(List.of(
-                DocumentTypeToAttributeRequest.builder()
-                    .attributeId(savedAttribute.id())
-                    .isOptional(true)
-                    .build()
-            ))
+    public void createEntity() {
+        token = login();
+        attributeId = createAttribute();
+        documentTypeId = createDocumentType();
+    }
+    @SneakyThrows
+    private long createAttribute() {
+        var request = AttributeRequest.builder()
             .name("testDocument")
+            .type("type")
             .build();
 
-        var documentTypeResponse = mockMvc.perform(post(DOCUMENT_TYPES_URI)
-                .header("Authorization", "Bearer " + token)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(documentTypeRequest)))
-            .andExpect(status().isOk())
-            .andReturn();
+        var mvcResponse = createRequest("/api/v1/attributes", objectMapper.writeValueAsString(request));
 
-        var savedDocumentType = objectMapper.readValue(
-            documentTypeResponse.getResponse().getContentAsString(),
-            DocumentTypeResponse.class
-        );
+        return readValue(mvcResponse, AttributeResponse.class).id();
+    }
+    @SneakyThrows
+    private long createDocumentType() {
+        var request = DocumentTypeRequest.builder()
+            .name("name")
+            .attributeRequests(List.of(new DocumentTypeToAttributeRequest(attributeId, true)))
+            .build();
 
-        documentTypeId = savedDocumentType.id();
+        var mvcResponse = createRequest("/api/v1/document_types", objectMapper.writeValueAsString(request));
 
-        var documentRequest = createDocumentRequest();
-        var documentResponse = mockMvc.perform(post(DOC_URI)
-                .header("Authorization", "Bearer " + token)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(documentRequest)))
-            .andExpect(status().isOk())
-            .andReturn();
+        return readValue(mvcResponse, DocumentTypeResponse.class).id();
+    }
+    @SneakyThrows
+    private DocumentRequest createDocumentRequest() {
+        return DocumentRequest.builder()
+            .name("testDocument")
+            .documentTypeId(documentTypeId)
+            .usersPermissions(List.of(new UserToDocumentRequest("user@example.com", List.of(1L))))
+            .build();
 
-        var savedDocument = objectMapper.readValue(
-            documentResponse.getResponse().getContentAsString(),
-            DocumentResponse.class
-        );
+    }
+    @SneakyThrows
+    private long createDocument(){
+        var request = DocumentRequest.builder()
+            .name("name")
+            .documentTypeId(documentTypeId)
+            .usersPermissions(List.of(new UserToDocumentRequest("user@example.com", List.of(1L))))
+            .build();
 
-        documentId = savedDocument.id();
+        var mvcResponse = createRequest("/api/v1/documents", objectMapper.writeValueAsString(request));
+
+        return readValue(mvcResponse, DocumentResponse.class).id();
     }
 
+    @SneakyThrows
+    private MvcResult createRequest(String url, String request) {
+        return mockMvc.perform(post(url)
+                .header("Authorization", "Bearer " + token.token())
+                .content(request)
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andReturn();
+    }
+
+    @SneakyThrows
+    private <T> T readValue(MvcResult mvcResponse, Class<T> valueType) {
+        return objectMapper.readValue(
+            mvcResponse.getResponse().getContentAsString(),
+            valueType
+        );
+    }
 
     @AfterEach
-    public void cleanup() throws Exception {
-        if (documentId != null) {
-            var token = login().token();
+    public void deleteEntity() {
+        deleteRequest("/api/v1/document_types", documentTypeId);
+        deleteRequest("/api/v1/attributes", attributeId);
+    }
 
-            var getResponse = mockMvc.perform(get(DOC_URI + "/" + documentId)
-                    .header("Authorization", "Bearer " + token)
-                    .contentType(MediaType.APPLICATION_JSON))
-                .andReturn();
-
-            if (getResponse.getResponse().getStatus() == 200) {
-                mockMvc.perform(delete(DOC_URI + "/" + documentId)
-                        .header("Authorization", "Bearer " + token)
-                        .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isNoContent());
-            }
-        }
+    @SneakyThrows
+    private void deleteRequest(String url, long id) {
+        mockMvc.perform(delete(url + "/" + id)
+                .header("Authorization", "Bearer " + token.token()))
+            .andExpect(status().isNoContent());
     }
 
     @SneakyThrows
@@ -149,21 +151,23 @@ public class DocumentControllerTest extends BaseControllerTest {
     @DisplayName("Should create a new document")
     @SneakyThrows
     public void createDocument_success() {
-        var token = login().token();
-
         var documentRequest = createDocumentRequest();
 
         var requestContent = objectMapper.writeValueAsString(documentRequest);
 
-        mockMvc.perform(post(DOC_URI)
-                .header("Authorization", "Bearer " + token)
+        var response = mockMvc.perform(post(DOC_URI)
+                .header("Authorization", "Bearer " + token.token())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestContent))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").isNotEmpty())
             .andExpect(jsonPath("$.name").value("testDocument"))
             .andExpect(jsonPath("$.document_type_id").value(documentTypeId))
-            .andExpect(jsonPath("$.user_permissions").isNotEmpty());
+            .andExpect(jsonPath("$.user_permissions").isNotEmpty())
+            .andReturn();
+
+        var documentId = readValue(response, DocumentResponse.class).id();
+        deleteRequest("/api/v1/documents", documentId);
     }
 
 
@@ -171,7 +175,7 @@ public class DocumentControllerTest extends BaseControllerTest {
     @DisplayName("Should return 404 and error message when send request non-existent document type id")
     @SneakyThrows
     public void createDocument_failure(){
-        var token = login().token();
+
         var nonExistingDocumentTypeId = documentTypeId+1;
 
         var documentRequest = DocumentRequest.builder()
@@ -183,7 +187,7 @@ public class DocumentControllerTest extends BaseControllerTest {
         var requestContent = objectMapper.writeValueAsString(documentRequest);
 
         mockMvc.perform(post(DOC_URI)
-                .header("Authorization", "Bearer " + token)
+                .header("Authorization", "Bearer " + token.token())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestContent))
             .andExpect(status().isNotFound())
@@ -194,27 +198,34 @@ public class DocumentControllerTest extends BaseControllerTest {
     @DisplayName("Should return a document by ID")
     @SneakyThrows
     public void getDocumentById_success() {
-        var token = login().token();
+        var documentId = createDocument();
 
         mockMvc.perform(get(DOC_URI + "/" + documentId)
-                .header("Authorization", "Bearer " + token)
+                .header("Authorization", "Bearer " + token.token())
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(documentId))
-            .andExpect(jsonPath("$.name").value("testDocument"))
+            .andExpect(jsonPath("$.name").value("name"))
             .andExpect(jsonPath("$.document_type_id").value(documentTypeId))
             .andExpect(jsonPath("$.user_permissions").isNotEmpty());
+
+        deleteRequest("/api/v1/documents", documentId);
     }
+
+
     @Test
     @DisplayName("Shouldn't return a document by wrong ID")
     @SneakyThrows
     public void getDocumentByWrongId_failure() {
-        var token = login().token();
-        var wrongDocumentId = documentId+1;
+        var documentId = createDocument();
+        var wrongDocumentId = documentId + 1;
+
         mockMvc.perform(get(DOC_URI + "/" + wrongDocumentId)
-                .header("Authorization", "Bearer " + token)
+                .header("Authorization", "Bearer " + token.token())
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isNotFound());
+
+        deleteRequest("/api/v1/documents", documentId);
     }
     @Test
     @DisplayName("Should return a list of all documents")
@@ -244,22 +255,29 @@ public class DocumentControllerTest extends BaseControllerTest {
             .usersPermissions(List.of(new UserToDocumentRequest("user@example.com", List.of(1L))))
             .build();
 
-        var requestContent = objectMapper.writeValueAsString(updatedDocumentRequest);
-
-        mockMvc.perform(put(DOC_URI + "/" + documentId)
-                .header("Authorization", "Bearer " + token)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestContent))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(documentId))
-            .andExpect(jsonPath("$.name").value("Updated Document"))
-            .andExpect(jsonPath("$.document_type_id").value(documentTypeId));
-    }
     @Test
-    @DisplayName("Shouldn't update a document")
+    @DisplayName("Should return a list of all documents")
     @SneakyThrows
-    public void updateDocument_failure() {
-        var token = login().token();
+    public void getAllDocuments_success() {
+        var documentId = createDocument();
+
+        mockMvc.perform(get(DOC_URI)
+                .header("Authorization", "Bearer " + token.token())
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$[0].id").value(documentId))
+            .andExpect(jsonPath("$[0].name").value("name"))
+            .andExpect(jsonPath("$[0].document_type_id").value(documentTypeId));
+
+        deleteRequest("/api/v1/documents", documentId);
+    }
+
+    @Test
+    @DisplayName("Should update a document")
+    @SneakyThrows
+    public void updateDocument_success() {
+        var documentId = createDocument();
 
         var updatedDocumentRequest = DocumentRequest.builder()
             .documentTypeId(documentTypeId)
@@ -268,50 +286,73 @@ public class DocumentControllerTest extends BaseControllerTest {
             .build();
 
         var requestContent = objectMapper.writeValueAsString(updatedDocumentRequest);
-        var wrongDocumentId = documentId+1;
+
+        mockMvc.perform(put(DOC_URI + "/" + documentId)
+                .header("Authorization", "Bearer " + token.token())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestContent))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(documentId))
+            .andExpect(jsonPath("$.name").value("Updated Document"))
+            .andExpect(jsonPath("$.document_type_id").value(documentTypeId));
+
+        deleteRequest("/api/v1/documents", documentId);
+    }
+
+    @Test
+    @DisplayName("Shouldn't update a document")
+    @SneakyThrows
+    public void updateDocument_failure() {
+        var documentId = createDocument();
+        var wrongDocumentId = documentId + 1;
+
+        var updatedDocumentRequest = DocumentRequest.builder()
+            .documentTypeId(documentTypeId)
+            .name("Updated Document")
+            .usersPermissions(List.of(new UserToDocumentRequest("user@example.com", List.of(1L))))
+            .build();
+
+        var requestContent = objectMapper.writeValueAsString(updatedDocumentRequest);
+
         mockMvc.perform(put(DOC_URI + "/" + wrongDocumentId)
-                .header("Authorization", "Bearer " + token)
+                .header("Authorization", "Bearer " + token.token())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestContent))
             .andExpect(status().isNotFound());
+
+        deleteRequest("/api/v1/documents", documentId);
     }
+
 
     @Test
     @DisplayName("Should delete a document by ID")
     @SneakyThrows
     public void deleteDocument_success() {
-        var token = login().token();
+        var documentId = createDocument();
 
         mockMvc.perform(delete(DOC_URI + "/" + documentId)
-                .header("Authorization", "Bearer " + token)
+                .header("Authorization", "Bearer " + token.token())
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isNoContent());
 
-
         mockMvc.perform(get(DOC_URI + "/" + documentId)
-                .header("Authorization", "Bearer " + token)
+                .header("Authorization", "Bearer " + token.token())
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isNotFound());
     }
+
     @Test
     @DisplayName("Shouldn't delete a document by wrong ID")
     @SneakyThrows
     public void deleteDocument_failure() {
-        var token = login().token();
-        var wrongDocumentId = documentId+1;
+        var documentId = createDocument();
+        var wrongDocumentId = documentId + 1;
+
         mockMvc.perform(delete(DOC_URI + "/" + wrongDocumentId)
-                .header("Authorization", "Bearer " + token)
+                .header("Authorization", "Bearer " + token.token())
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isNotFound());
+
+        deleteRequest("/api/v1/documents", documentId);
     }
-
-    private DocumentRequest createDocumentRequest() {
-        return DocumentRequest.builder()
-            .documentTypeId(documentTypeId)
-            .name("testDocument")
-            .usersPermissions(List.of(new UserToDocumentRequest("user@example.com", List.of(1L))))
-            .build();
-    }
-
-
 }
