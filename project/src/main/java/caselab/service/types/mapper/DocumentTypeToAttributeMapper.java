@@ -17,4 +17,3 @@ public interface DocumentTypeToAttributeMapper {
         DocumentTypeToAttribute documentTypeToAttribute
     );
 }
-

@@ -1,5 +1,6 @@
 package caselab.controller;
 
+import caselab.exception.ConflictException;
 import caselab.exception.NotificationException;
 import caselab.exception.SubscriptionAlreadyExistException;
 import caselab.exception.SubscriptionNotFoundException;
@@ -115,6 +116,16 @@ public class ControllerExceptionHandler {
             HttpStatus.INTERNAL_SERVER_ERROR,
             exception.getMessage(),
             new Object[0],
+            locale
+        );
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ProblemDetail> conflictException(ConflictException exception, Locale locale) {
+        return createProblemDetailResponse(
+            HttpStatus.CONFLICT,
+            "document.type.in.use.error",
+            new Object[] {exception.getMessage()},
             locale
         );
     }
