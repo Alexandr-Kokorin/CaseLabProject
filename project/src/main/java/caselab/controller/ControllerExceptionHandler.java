@@ -1,6 +1,8 @@
 package caselab.controller;
 
 import caselab.exception.NotificationException;
+import caselab.exception.SubscriptionAlreadyExistException;
+import caselab.exception.SubscriptionNotFoundException;
 import caselab.exception.UserExistsException;
 import caselab.exception.entity.EntityNotFoundException;
 import java.util.Locale;
@@ -40,6 +42,30 @@ public class ControllerExceptionHandler {
             HttpStatus.CONFLICT,
             exception.getMessage(),
             new Object[] {exception.getEmail()},
+            locale
+        );
+    }
+
+    @ExceptionHandler(SubscriptionAlreadyExistException.class)
+    public ResponseEntity<ProblemDetail> userSubscriptionAlreadyExistException(
+        SubscriptionAlreadyExistException exception, Locale locale
+    ) {
+        return createProblemDetailResponse(
+            HttpStatus.CONFLICT,
+            exception.getMessage(),
+            new Object[] {exception.getDocumentVersionId()},
+            locale
+        );
+    }
+
+    @ExceptionHandler(SubscriptionNotFoundException.class)
+    public ResponseEntity<ProblemDetail> userSubscriptionNotFoundException(
+        SubscriptionNotFoundException exception, Locale locale
+    ) {
+        return createProblemDetailResponse(
+            HttpStatus.NOT_FOUND,
+            exception.getMessage(),
+            new Object[] {exception.getDocumentVersionId()},
             locale
         );
     }
