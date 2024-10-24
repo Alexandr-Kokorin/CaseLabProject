@@ -34,23 +34,32 @@ public class StorageConfig {
 
     @Bean
     public MinioClient minioClient() {
-        return MinioClient.builder()
-            .endpoint(url)
-            .credentials(accessKey, secretKey)
-            .build();
+        try {
+            return MinioClient.builder()
+                .endpoint(url)
+                .credentials(accessKey, secretKey)
+                .build();
+        } catch (Exception exc) {
+            log.error("Creating MinIO client failed");
+            throw new InitStorageException(exc.getMessage(), exc.getCause());
+        }
     }
 
     @Bean
     public boolean bucketsInit() {
         for (String bucket : buckets) {
-            bucketInit(bucket);
+            try {
+                bucketInit(bucket);
+            } catch (InitStorageException exc) {
+                return false;
+            }
         }
         return true;
     }
 
     private void bucketInit(String bucketName) {
-        boolean found = bucketExists(bucketName);
-        if (!found) {
+        boolean bucketExist = bucketExists(bucketName);
+        if (!bucketExist) {
             crateBucket(bucketName);
         } else {
             log.debug(bucketName + " bucket already exists");
