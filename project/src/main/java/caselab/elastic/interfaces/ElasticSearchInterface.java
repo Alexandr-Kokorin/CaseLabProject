@@ -1,4 +1,4 @@
-package caselab.elastic;
+package caselab.elastic.interfaces;
 
 import org.springframework.data.domain.Page;
 
