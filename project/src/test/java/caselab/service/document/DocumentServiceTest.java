@@ -7,7 +7,7 @@ import caselab.domain.IntegrationTest;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.DocumentType;
 import caselab.domain.repository.ApplicationUserRepository;
-import caselab.domain.repository.DocumentTypeRepository;
+import caselab.domain.repository.DocumentTypesRepository;
 import caselab.exception.entity.DocumentNotFoundException;
 import java.util.Arrays;
 import java.util.List;
@@ -31,7 +31,7 @@ public class DocumentServiceTest extends IntegrationTest {
     @Autowired
     private DocumentService documentService;
     @Autowired
-    private DocumentTypeRepository documentTypeRepository;
+    private DocumentTypesRepository documentTypeRepository;
     @Autowired
     private ApplicationUserRepository applicationUserRepository;
 

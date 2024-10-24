@@ -11,8 +11,8 @@ import caselab.domain.entity.document.type.to.attribute.DocumentTypeToAttribute;
 import caselab.domain.entity.document.type.to.attribute.DocumentTypeToAttributeId;
 import caselab.domain.repository.AttributeRepository;
 import caselab.domain.repository.DocumentRepository;
-import caselab.domain.repository.DocumentTypeRepository;
 import caselab.domain.repository.DocumentTypeToAttributeRepository;
+import caselab.domain.repository.DocumentTypesRepository;
 import caselab.exception.ConflictException;
 import caselab.exception.entity.DocumentTypeNotFoundException;
 import caselab.service.types.mapper.DocumentTypeMapper;
@@ -38,7 +38,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class DocumentTypeServiceTest {
+class DocumentTypesServiceTest {
 
     private static final String ATTRIBUTE1_NAME = "Аттрибут";
     private static final Long ATTRIBUTE_ID_1 = 1L;
@@ -55,7 +55,7 @@ class DocumentTypeServiceTest {
     @Mock
     private DocumentRepository documentRepository;
     @Mock
-    private DocumentTypeRepository documentTypeRepository;
+    private DocumentTypesRepository documentTypeRepository;
     @Mock
     private AttributeRepository attributeRepository;
     @Mock
