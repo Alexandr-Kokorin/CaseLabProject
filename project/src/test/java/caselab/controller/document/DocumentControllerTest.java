@@ -31,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @Slf4j
 public class DocumentControllerTest extends BaseControllerTest {
-  
+
     private static AuthenticationResponse token;
     private static final String DOC_URI = "/api/v1/documents";
     private static final String DOCUMENT_TYPES_URI = "/api/v1/document_types";
@@ -107,6 +107,7 @@ public class DocumentControllerTest extends BaseControllerTest {
         );
     }
 
+
     @AfterEach
     public void deleteEntity() {
         deleteRequest("/api/v1/document_types", documentTypeId);
@@ -166,6 +167,8 @@ public class DocumentControllerTest extends BaseControllerTest {
             .andExpect(jsonPath("$.user_permissions").isNotEmpty())
             .andReturn();
 
+
+
         var documentId = readValue(response, DocumentResponse.class).id();
         deleteRequest("/api/v1/documents", documentId);
     }
@@ -175,7 +178,6 @@ public class DocumentControllerTest extends BaseControllerTest {
     @DisplayName("Should return 404 and error message when send request non-existent document type id")
     @SneakyThrows
     public void createDocument_failure(){
-
         var nonExistingDocumentTypeId = documentTypeId+1;
 
         var documentRequest = DocumentRequest.builder()
@@ -227,33 +229,6 @@ public class DocumentControllerTest extends BaseControllerTest {
 
         deleteRequest("/api/v1/documents", documentId);
     }
-    @Test
-    @DisplayName("Should return a list of all documents")
-    @SneakyThrows
-    public void getAllDocuments_success() {
-        var token = login().token();
-
-        mockMvc.perform(get(DOC_URI)
-                .header("Authorization", "Bearer " + token)
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$").isArray())
-            .andExpect(jsonPath("$", hasSize(1)))
-            .andExpect(jsonPath("$[0].id").value(documentId))
-            .andExpect(jsonPath("$[0].name").value("testDocument"))
-            .andExpect(jsonPath("$[0].document_type_id").value(documentTypeId));
-    }
-    @Test
-    @DisplayName("Should update a document")
-    @SneakyThrows
-    public void updateDocument_success() {
-        var token = login().token();
-
-        var updatedDocumentRequest = DocumentRequest.builder()
-            .documentTypeId(documentTypeId)
-            .name("Updated Document")
-            .usersPermissions(List.of(new UserToDocumentRequest("user@example.com", List.of(1L))))
-            .build();
 
     @Test
     @DisplayName("Should return a list of all documents")
