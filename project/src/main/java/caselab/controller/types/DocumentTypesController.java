@@ -60,7 +60,7 @@ public class DocumentTypesController {
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @GetMapping("/{id}")
-    public DocumentTypeResponse findDocumentTypeById(@PathVariable Long id) {
+    public DocumentTypeResponse getDocumentTypeById(@PathVariable Long id) {
         return documentTypesService.getDocumentTypeById(id);
     }
 
@@ -74,7 +74,7 @@ public class DocumentTypesController {
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @GetMapping
-    public List<DocumentTypeResponse> findAllDocumentTypes() {
+    public List<DocumentTypeResponse> getAllDocumentTypes() {
         return documentTypesService.getAllDocumentTypes();
     }
 

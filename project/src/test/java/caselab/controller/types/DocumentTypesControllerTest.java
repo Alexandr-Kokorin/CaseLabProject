@@ -182,7 +182,7 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
     @Test
     @SneakyThrows
     @DisplayName("Should find a document type by ID successfully")
-    public void findDocumentTypeById_success() {
+    public void getDocumentTypeById_success() {
         var mvcResponse = mockMvc.perform(get(URL + "/" + documentTypeId)
                 .header("Authorization", "Bearer " + token))
             .andExpect(status().isOk())
@@ -202,7 +202,7 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
     @Test
     @SneakyThrows
     @DisplayName("Should return 404 when finding non-existing document type by ID")
-    public void findDocumentTypeById_notFound() {
+    public void getDocumentTypeById_notFound() {
         mockMvc.perform(get(URL + "/9999")
                 .header("Authorization", "Bearer " + token))
             .andExpect(status().isNotFound());
