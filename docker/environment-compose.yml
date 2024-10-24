@@ -39,6 +39,44 @@ services:
     networks:
       - backend
 
+  kafka:
+    image: &kafka-image bitnami/kafka
+    container_name: kafka
+    ports:
+      - '9094:9094'
+    environment:
+      KAFKA_CFG_NODE_ID: 1
+      KAFKA_CFG_PROCESS_ROLES: controller,broker
+      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CFG_NUM_PARTITIONS: 1
+    healthcheck:
+      test: [ "CMD", "kafka-topics.sh", "--bootstrap-server=localhost:9092", "--list" ]
+      start_period: 15s
+      interval: 10s
+    networks:
+      - backend
+
+  init-kafka:
+    image: *kafka-image
+    container_name: init-kafka
+    working_dir: /opt/bitnami/kafka/bin
+    entrypoint: /bin/bash
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - backend
+    command: |
+      -c "
+      kafka-topics.sh --create --if-not-exists --topic event-topic --bootstrap-server kafka:9092
+      kafka-topics.sh --describe --bootstrap-server kafka:9092
+      "
+
 volumes:
   postgresql: { }
 
