@@ -21,6 +21,7 @@ import caselab.domain.repository.AttributeValueRepository;
 import caselab.domain.repository.DocumentRepository;
 import caselab.domain.repository.DocumentVersionRepository;
 import caselab.domain.repository.UserToDocumentRepository;
+import caselab.domain.storage.FileStorage;
 import caselab.exception.document.version.MissingAttributesException;
 import caselab.exception.document.version.MissingDocumentPermissionException;
 import caselab.exception.entity.AttributeNotFoundException;
@@ -68,6 +69,8 @@ public class DocumentVersionServiceTest {
     private DocumentVersionMapper documentVersionMapper;
     @Mock
     private DocumentVersionUpdater documentVersionUpdater;
+    @Mock
+    private FileStorage documentVersionStorage;
 
     private DocumentType documentType;
     private Document document;
