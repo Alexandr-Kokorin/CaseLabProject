@@ -27,7 +27,7 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
         }
 
         var request = AuthenticationRequest.builder()
-            .email("user@example.com")
+            .email("auth@example.com")
             .password("password")
             .build();
 
@@ -72,7 +72,7 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
     @DisplayName("Should find user by email")
     public void shouldFindUserByEmail() {
         var token = login().token();
-        String email = "user@example.com";
+        String email = "auth@example.com";
 
         mockMvc.perform(get(URL)
                 .header("Authorization", "Bearer " + token)
@@ -103,7 +103,7 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
     @SneakyThrows
     @DisplayName("Should return 403 for unauthorized access to find user by email")
     public void shouldReturn403ForUnauthorizedAccessToFindUserByEmail() {
-        String email = "user@example.com";
+        String email = "auth@example.com";
         mockMvc.perform(get(URL)
                 .param("email", email)
                 .contentType(MediaType.APPLICATION_JSON))

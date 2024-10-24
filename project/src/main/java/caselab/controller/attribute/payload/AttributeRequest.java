@@ -9,12 +9,12 @@ import lombok.Builder;
 @Builder
 public record AttributeRequest(
     @JsonProperty("name")
-    @NotBlank(message = "${attribute.request.name.is_blank}")
-    @Size(min = 3, max = 25, message = "${attribute.request.name.invalid_size}")
+    @NotBlank(message = "${attributes.request.name.is_blank}")
+    @Size(min = 3, max = 25, message = "${attributes.request.name.invalid_size}")
     @Schema(description = "Имя атрибута", example = "Дата создания")
     String name,
     @JsonProperty("type")
-    @NotBlank(message = "${attribute.request.type.is_blank}")
+    @NotBlank(message = "${attributes.request.type.is_blank}")
     @Schema(description = "Тип атрибута", example = "Дата")
     String type
 ) {
