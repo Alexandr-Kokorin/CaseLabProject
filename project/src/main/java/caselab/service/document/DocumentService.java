@@ -3,10 +3,12 @@ package caselab.service.document;
 import caselab.controller.document.payload.DocumentRequest;
 import caselab.controller.document.payload.DocumentResponse;
 import caselab.controller.document.payload.UserToDocumentRequest;
+import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.Document;
 import caselab.domain.entity.DocumentPermission;
 import caselab.domain.entity.DocumentType;
 import caselab.domain.entity.UserToDocument;
+import caselab.domain.entity.enums.DocumentPermissionName;
 import caselab.domain.repository.ApplicationUserRepository;
 import caselab.domain.repository.DocumentPermissionRepository;
 import caselab.domain.repository.DocumentRepository;
@@ -16,6 +18,7 @@ import caselab.exception.entity.DocumentNotFoundException;
 import caselab.exception.entity.DocumentPermissionNotFoundException;
 import caselab.exception.entity.DocumentTypeNotFoundException;
 import caselab.service.document.mapper.DocumentMapper;
+import caselab.service.util.DocumentPermissionUtilService;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +38,8 @@ public class DocumentService {
     private final DocumentPermissionRepository documentPermissionRepository;
     private final DocumentMapper documentMapper;
 
+    private final DocumentPermissionUtilService docPermissionService;
+
     public DocumentResponse createDocument(DocumentRequest documentRequest) {
         var document = documentMapper.requestToEntity(documentRequest);
 
@@ -47,9 +52,20 @@ public class DocumentService {
         return documentMapper.entityToResponse(document);
     }
 
+    private Document getDocumentEntityById(Long id) {
+        return documentRepository.findById(id)
+            .orElseThrow(() -> new DocumentNotFoundException(id));
+    }
+
     public DocumentResponse getDocumentById(Long id) {
-        return documentMapper.entityToResponse(documentRepository.findById(id)
-            .orElseThrow(() -> new DocumentNotFoundException(id)));
+        return documentMapper.entityToResponse(getDocumentEntityById(id));
+    }
+
+    public DocumentResponse getDocumentById(Long id, ApplicationUser user) {
+        var document = getDocumentEntityById(id);
+
+        docPermissionService.assertHasPermission(user, document, DocumentPermissionName::any, "Any");
+        return documentMapper.entityToResponse(document);
     }
 
     public List<DocumentResponse> getAllDocuments() {

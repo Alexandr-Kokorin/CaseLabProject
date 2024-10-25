@@ -8,6 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -40,6 +41,7 @@ public class Document {
     private String name;
 
     @OneToMany(mappedBy = "document")
+    @OrderBy("createdAt desc")
     private List<DocumentVersion> documentVersions;
 
     @OneToMany(mappedBy = "document")

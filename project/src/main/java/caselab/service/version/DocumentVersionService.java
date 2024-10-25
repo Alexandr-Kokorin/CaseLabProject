@@ -152,7 +152,10 @@ public class DocumentVersionService {
 
     public DocumentVersionResponse getDocumentVersionById(Long id, Authentication auth) {
         ApplicationUser user = userService.findUserByAuthentication(auth);
+        return getDocumentVersionById(id, user);
+    }
 
+    public DocumentVersionResponse getDocumentVersionById(Long id, ApplicationUser user) {
         DocumentVersion documentVersion = documentVersionRepository.findById(id).orElseThrow(
             () -> new DocumentVersionNotFoundException(id)
         );

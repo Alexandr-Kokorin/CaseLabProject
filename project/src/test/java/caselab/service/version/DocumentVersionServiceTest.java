@@ -43,6 +43,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.Authentication;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -190,7 +191,7 @@ public class DocumentVersionServiceTest {
     }
 
     @Test
-    public void createDocumentVersion_missingAttributes() throws IOException {
+    public void createDocumentVersion_missingAttributes() {
         Mockito.when(userService.findUserByAuthentication(Mockito.any())).thenReturn(creator);
         Mockito.when(documentRepository.findById(Mockito.any())).thenReturn(Optional.of(document));
         Mockito.when(userToDocumentRepository.findByApplicationUserIdAndDocumentId(Mockito.any(), Mockito.any()))
@@ -209,7 +210,7 @@ public class DocumentVersionServiceTest {
     }
 
     @Test
-    public void createDocumentVersion_unknownAttribute() throws IOException {
+    public void createDocumentVersion_unknownAttribute() {
         Mockito.when(userService.findUserByAuthentication(Mockito.any())).thenReturn(creator);
         Mockito.when(documentRepository.findById(Mockito.any())).thenReturn(Optional.of(document));
         Mockito.when(userToDocumentRepository.findByApplicationUserIdAndDocumentId(Mockito.any(), Mockito.any()))
@@ -234,7 +235,7 @@ public class DocumentVersionServiceTest {
     }
 
     @Test
-    public void createDocumentVersion_success() throws IOException {
+    public void createDocumentVersion_success() {
         Mockito.when(userService.findUserByAuthentication(Mockito.any())).thenReturn(creator);
         Mockito.when(documentRepository.findById(Mockito.any())).thenReturn(Optional.of(document));
         Mockito.when(userToDocumentRepository.findByApplicationUserIdAndDocumentId(Mockito.any(), Mockito.any()))
@@ -268,7 +269,7 @@ public class DocumentVersionServiceTest {
     public void getDocumentVersionById_unknownDocumentVersion() {
         Mockito.when(userService.findUserByAuthentication(Mockito.any())).thenReturn(creator);
         Mockito.when(documentVersionRepository.findById(Mockito.any())).thenReturn(Optional.empty());
-        assertThrows(DocumentVersionNotFoundException.class, () -> service.getDocumentVersionById(1L, null));
+        assertThrows(DocumentVersionNotFoundException.class, () -> service.getDocumentVersionById(1L, (Authentication) null));
     }
 
     @Test
@@ -278,7 +279,9 @@ public class DocumentVersionServiceTest {
         Mockito.when(userToDocumentRepository.findByApplicationUserIdAndDocumentId(Mockito.any(), Mockito.any()))
             .thenReturn(Optional.empty());
 
-        assertThrows(MissingDocumentPermissionException.class, () -> service.getDocumentVersionById(1L, null));
+        assertThrows(MissingDocumentPermissionException.class, () -> service.getDocumentVersionById(1L,
+            (Authentication) null
+        ));
     }
 
     @Test
@@ -293,7 +296,7 @@ public class DocumentVersionServiceTest {
         response.setContentName("/smth");
 
         Mockito.when(documentVersionMapper.map(documentVersion)).thenReturn(response);
-        assertEquals(response, service.getDocumentVersionById(1L, null));
+        assertEquals(response, service.getDocumentVersionById(1L, (Authentication) null));
     }
 
     @Test
@@ -308,7 +311,7 @@ public class DocumentVersionServiceTest {
         response.setContentName("/smth");
 
         Mockito.when(documentVersionMapper.map(documentVersion)).thenReturn(response);
-        var result = service.getDocumentVersionById(1L, null);
+        var result = service.getDocumentVersionById(1L, (Authentication) null);
         assertNull(result.getAttributes());
         assertNull(result.getContentName());
     }
