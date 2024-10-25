@@ -14,7 +14,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class GetDocumentResponse {
+public class DocumentFacadeResponse {
     @JsonProperty("document")
     DocumentResponse documentResponse;
     @JsonProperty("latest_version")

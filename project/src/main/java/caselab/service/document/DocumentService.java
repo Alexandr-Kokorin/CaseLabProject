@@ -40,6 +40,26 @@ public class DocumentService {
 
     private final DocumentPermissionUtilService docPermissionService;
 
+    public DocumentResponse createDocument(DocumentRequest documentRequest, ApplicationUser creator) {
+        var document = documentMapper.requestToEntity(documentRequest);
+
+        document.setDocumentType(getDocumentTypeById(documentRequest.documentTypeId()));
+        document.setDocumentVersions(List.of());
+        documentRepository.save(document);
+
+        var creatorPermission = new UserToDocument();
+        creatorPermission.setApplicationUser(creator);
+        creatorPermission.setDocument(document);
+        creatorPermission.setDocumentPermissions(List.of(
+            documentPermissionRepository.findDocumentPermissionByName(DocumentPermissionName.CREATOR)
+        ));
+
+        creatorPermission = userToDocumentRepository.save(creatorPermission);
+        document.setUsersToDocuments(List.of(creatorPermission));
+
+        return documentMapper.entityToResponse(document);
+    }
+
     public DocumentResponse createDocument(DocumentRequest documentRequest) {
         var document = documentMapper.requestToEntity(documentRequest);
 

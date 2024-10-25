@@ -109,6 +109,14 @@ public class DocumentVersionService {
         Authentication auth
     ) {
         ApplicationUser user = userService.findUserByAuthentication(auth);
+        return createDocumentVersion(body, file, user);
+    }
+
+    public DocumentVersionResponse createDocumentVersion(
+        CreateDocumentVersionRequest body,
+        MultipartFile file,
+        ApplicationUser user
+    ) {
 
         Document document = documentRepository
             .findById(body.documentId())

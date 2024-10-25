@@ -29,7 +29,6 @@ import caselab.exception.entity.DocumentVersionNotFoundException;
 import caselab.service.users.ApplicationUserService;
 import caselab.service.version.mapper.DocumentVersionMapper;
 import caselab.service.version.mapper.DocumentVersionUpdater;
-import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -186,7 +185,7 @@ public class DocumentVersionServiceTest {
                 1L,
                 "",
                 List.of()
-            ), null, null)
+            ), null, (Authentication) null)
         );
     }
 
@@ -206,7 +205,9 @@ public class DocumentVersionServiceTest {
             )
         );
 
-        assertThrows(MissingAttributesException.class, () -> service.createDocumentVersion(request, null, null));
+        assertThrows(MissingAttributesException.class, () -> service.createDocumentVersion(request, null,
+            (Authentication) null
+        ));
     }
 
     @Test
@@ -231,7 +232,9 @@ public class DocumentVersionServiceTest {
             )
         );
 
-        assertThrows(AttributeNotFoundException.class, () -> service.createDocumentVersion(request, null, null));
+        assertThrows(AttributeNotFoundException.class, () -> service.createDocumentVersion(request, null,
+            (Authentication) null
+        ));
     }
 
     @Test
@@ -262,7 +265,7 @@ public class DocumentVersionServiceTest {
             )
         );
 
-        assertDoesNotThrow(() -> service.createDocumentVersion(request, null, null));
+        assertDoesNotThrow(() -> service.createDocumentVersion(request, null, (Authentication) null));
     }
 
     @Test
