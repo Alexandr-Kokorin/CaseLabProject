@@ -18,6 +18,7 @@ import caselab.domain.repository.AttributeValueRepository;
 import caselab.domain.repository.DocumentRepository;
 import caselab.domain.repository.DocumentVersionRepository;
 import caselab.domain.repository.UserToDocumentRepository;
+import caselab.domain.storage.FileStorage;
 import caselab.exception.document.version.MissingAttributesException;
 import caselab.exception.document.version.MissingDocumentPermissionException;
 import caselab.exception.entity.AttributeNotFoundException;
@@ -27,6 +28,7 @@ import caselab.service.users.ApplicationUserService;
 import caselab.service.version.mapper.DocumentVersionMapper;
 import caselab.service.version.mapper.DocumentVersionUpdater;
 import jakarta.transaction.Transactional;
+import java.io.InputStream;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -37,6 +39,7 @@ import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -50,6 +53,7 @@ public class DocumentVersionService {
     private final AttributeValueRepository attributeValueRepository;
     private final DocumentVersionMapper documentVersionMapper;
     private final DocumentVersionUpdater documentVersionUpdater;
+    private final FileStorage documentVersionStorage;
 
     private boolean checkLacksPermission(
         ApplicationUser user,
@@ -74,7 +78,7 @@ public class DocumentVersionService {
     ) {
         if (checkLacksPermission(user, document, DocumentPermissionName::canRead)) {
             response.setAttributes(null);
-            response.setContentUrl(null);
+            response.setContentName(null);
         }
 
         return response;
@@ -99,7 +103,11 @@ public class DocumentVersionService {
         }
     }
 
-    public DocumentVersionResponse createDocumentVersion(CreateDocumentVersionRequest body, Authentication auth) {
+    public DocumentVersionResponse createDocumentVersion(
+        CreateDocumentVersionRequest body,
+        MultipartFile file,
+        Authentication auth
+    ) {
         ApplicationUser user = userService.findUserByAuthentication(auth);
 
         Document document = documentRepository
@@ -114,7 +122,9 @@ public class DocumentVersionService {
         DocumentVersion documentVersion = new DocumentVersion();
         documentVersion.setName(body.name());
         documentVersion.setCreatedAt(OffsetDateTime.now());
-        documentVersion.setContentUrl(body.content());  // TODO: заменить на вызов MinIO
+        documentVersion.setContentName(
+            documentVersionStorage.put(file)
+        );
         documentVersion.setDocument(document);
 
         var attributeValues = body
@@ -179,6 +189,20 @@ public class DocumentVersionService {
             .toList();
     }
 
+    public InputStream getDocumentVersionContent(Long id, Authentication auth) {
+        ApplicationUser user = userService.findUserByAuthentication(auth);
+
+        DocumentVersion documentVersion = documentVersionRepository.findById(id).orElseThrow(
+            () -> new DocumentVersionNotFoundException(id)
+        );
+
+        if (checkLacksPermission(user, documentVersion.getDocument(), DocumentPermissionName::canRead)) {
+            throw new MissingDocumentPermissionException(DocumentPermissionName.READ.name());
+        }
+
+        return documentVersionStorage.get(documentVersion.getContentName());
+    }
+
     public DocumentVersionResponse updateDocumentVersion(
         Long id,
         UpdateDocumentVersionRequest body,
@@ -209,6 +233,9 @@ public class DocumentVersionService {
         if (checkLacksPermission(user, documentVersion.getDocument(), DocumentPermissionName::canEdit)) {
             throw new MissingDocumentPermissionException(DocumentPermissionName.EDIT.name());
         }
+
+        documentVersionStorage.delete(documentVersion.getContentName());
+
         documentVersionRepository.delete(documentVersion);
     }
 }

@@ -39,6 +39,27 @@ services:
     networks:
       - backend
 
+  minio:
+    image: minio/minio:latest
+    command: server --console-address ":9090" /data/
+    ports:
+      - "9000:9000"
+      - "9090:9090"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio-storage:/data:rw
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      backend:
+        aliases:
+          - minio
+
   kafka:
     image: &kafka-image bitnami/kafka
     container_name: kafka
@@ -79,6 +100,7 @@ services:
 
 volumes:
   postgresql: { }
+  minio-storage:
 
 networks:
   backend: { }

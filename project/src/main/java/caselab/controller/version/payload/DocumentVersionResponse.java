@@ -21,5 +21,5 @@ public class DocumentVersionResponse {
     Long documentId;
     List<Long> signatureIds;
     List<Long> votingProcessesId;
-    String contentUrl;
+    String contentName;
 }

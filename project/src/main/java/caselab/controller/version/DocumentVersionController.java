@@ -7,6 +7,10 @@ import caselab.service.version.DocumentVersionService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,7 +19,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/v1/versions")
@@ -26,10 +32,11 @@ public class DocumentVersionController {
 
     @PostMapping
     public DocumentVersionResponse createDocumentVersion(
-        @RequestBody CreateDocumentVersionRequest body,
+        @RequestPart("version") CreateDocumentVersionRequest body,
+        @RequestPart(value = "content", required = false) MultipartFile file,
         Authentication auth
     ) {
-        return documentVersionService.createDocumentVersion(body, auth);
+        return documentVersionService.createDocumentVersion(body, file, auth);
     }
 
     @GetMapping("/{id}")
@@ -40,6 +47,12 @@ public class DocumentVersionController {
     @GetMapping
     public List<DocumentVersionResponse> getDocumentVersions(Authentication auth) {
         return documentVersionService.getDocumentVersions(auth);
+    }
+
+    @GetMapping("/content/{id}")
+    public ResponseEntity<Resource> getDocumentVersionContent(@PathVariable Long id, Authentication auth) {
+        var resource = new InputStreamResource(documentVersionService.getDocumentVersionContent(id, auth));
+        return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
