@@ -31,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @Slf4j
 public class DocumentControllerTest extends BaseControllerTest {
+
     private static AuthenticationResponse token;
     private static final String DOC_URI = "/api/v1/documents";
     private static final String DOCUMENT_TYPES_URI = "/api/v1/document_types";
@@ -68,7 +69,6 @@ public class DocumentControllerTest extends BaseControllerTest {
     }
     @SneakyThrows
     private DocumentRequest createDocumentRequest() {
-
         return DocumentRequest.builder()
             .name("testDocument")
             .documentTypeId(documentTypeId)
@@ -110,7 +110,6 @@ public class DocumentControllerTest extends BaseControllerTest {
 
     @AfterEach
     public void deleteEntity() {
-
         deleteRequest("/api/v1/document_types", documentTypeId);
         deleteRequest("/api/v1/attributes", attributeId);
     }
@@ -179,7 +178,6 @@ public class DocumentControllerTest extends BaseControllerTest {
     @DisplayName("Should return 404 and error message when send request non-existent document type id")
     @SneakyThrows
     public void createDocument_failure(){
-
         var nonExistingDocumentTypeId = documentTypeId+1;
 
         var documentRequest = DocumentRequest.builder()
@@ -332,6 +330,4 @@ public class DocumentControllerTest extends BaseControllerTest {
 
         deleteRequest("/api/v1/documents", documentId);
     }
-
-
 }
