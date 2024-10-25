@@ -4,6 +4,7 @@ import caselab.controller.document.facade.payload.CreateDocumentRequest;
 import caselab.controller.document.facade.payload.DocumentFacadeResponse;
 import caselab.service.document.facade.DocumentFacadeService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,4 +35,10 @@ public class DocumentFacadeController {
     ) {
         return documentFacadeService.createDocument(body, file, authentication);
     }
+
+    @GetMapping("/")
+    List<DocumentFacadeResponse> getAllDocuments(Authentication authentication) {
+        return documentFacadeService.getAllDocuments(authentication);
+    }
+
 }

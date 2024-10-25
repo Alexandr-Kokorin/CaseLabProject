@@ -22,6 +22,7 @@ import caselab.service.util.DocumentPermissionUtilService;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -88,11 +89,20 @@ public class DocumentService {
         return documentMapper.entityToResponse(document);
     }
 
+    private Stream<Document> availableDocuments(ApplicationUser user) {
+        return user.getUsersToDocuments().stream().map(UserToDocument::getDocument);
+    }
+
+    private List<DocumentResponse> toDocumentResponse(Stream<Document> documents) {
+        return documents.map(documentMapper::entityToResponse).toList();
+    }
+
+    public List<DocumentResponse> getAllDocuments(ApplicationUser user) {
+        return toDocumentResponse(availableDocuments(user));
+    }
+
     public List<DocumentResponse> getAllDocuments() {
-        var documentResponses = documentRepository.findAll();
-        return documentResponses.stream()
-            .map(documentMapper::entityToResponse)
-            .toList();
+        return toDocumentResponse(documentRepository.findAll().stream());
     }
 
     public DocumentResponse updateDocument(Long id, DocumentRequest documentRequest) {

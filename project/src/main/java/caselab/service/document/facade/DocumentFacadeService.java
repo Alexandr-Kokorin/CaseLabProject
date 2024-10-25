@@ -3,10 +3,13 @@ package caselab.service.document.facade;
 import caselab.controller.document.facade.payload.CreateDocumentRequest;
 import caselab.controller.document.facade.payload.DocumentFacadeResponse;
 import caselab.controller.document.payload.DocumentRequest;
+import caselab.controller.document.payload.DocumentResponse;
 import caselab.controller.version.payload.CreateDocumentVersionRequest;
+import caselab.domain.entity.ApplicationUser;
 import caselab.service.document.DocumentService;
 import caselab.service.util.UserFromAuthenticationUtilService;
 import caselab.service.version.DocumentVersionService;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -20,14 +23,21 @@ public class DocumentFacadeService {
 
     private final UserFromAuthenticationUtilService authToUserService;
 
-    public DocumentFacadeResponse getDocumentById(Long id, Authentication auth) {
-        var user = authToUserService.findUserByAuthentication(auth);
-        var documentResponse = documentService.getDocumentById(id, user);
+    private DocumentFacadeResponse enrichResponse(
+        DocumentResponse documentResponse,
+        ApplicationUser user
+    ) {
         var latestVersion = documentVersionService.getDocumentVersionById(
             documentResponse.documentVersionIds().getFirst(), user
         );
 
         return new DocumentFacadeResponse(documentResponse, latestVersion);
+    }
+
+    public DocumentFacadeResponse getDocumentById(Long id, Authentication auth) {
+        var user = authToUserService.findUserByAuthentication(auth);
+        var documentResponse = documentService.getDocumentById(id, user);
+        return enrichResponse(documentResponse, user);
     }
 
     public DocumentFacadeResponse createDocument(CreateDocumentRequest body, MultipartFile file, Authentication auth) {
@@ -47,5 +57,14 @@ public class DocumentFacadeService {
         documentResponse.documentVersionIds().add(latestVersion.getId());
         return new DocumentFacadeResponse(documentResponse, latestVersion);
 
+    }
+
+    public List<DocumentFacadeResponse> getAllDocuments(Authentication auth) {
+        var user = authToUserService.findUserByAuthentication(auth);
+
+        return documentService.getAllDocuments(user).stream()
+            .map(
+                d -> enrichResponse(d, user)
+            ).toList();
     }
 }
