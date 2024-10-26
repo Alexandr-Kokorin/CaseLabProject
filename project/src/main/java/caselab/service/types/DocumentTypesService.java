@@ -38,6 +38,9 @@ public class DocumentTypesService {
 
     public DocumentTypeResponse createDocumentType(DocumentTypeRequest request) {
         var documentType = documentTypeMapper.requestToEntity(request);
+
+        validateAttributesExistence(request);
+
         documentTypesRepository.save(documentType); // Сохраняем документ, чтобы получить ID
         documentType.setDocumentTypesToAttributes(linkAttributesToDocument(request, documentType));
         return documentTypeMapper.entityToResponse(documentType);
@@ -57,6 +60,8 @@ public class DocumentTypesService {
     public DocumentTypeResponse updateDocumentType(Long id, DocumentTypeRequest request) {
         var documentType = findDocumentTypeById(id);
         var updatedDocumentType = documentTypeMapper.requestToEntity(request);
+
+        validateAttributesExistence(request);
 
         updatedDocumentType.setId(documentType.getId());
         updatedDocumentType.setDocuments(new ArrayList<>(documentType.getDocuments()));
@@ -85,9 +90,10 @@ public class DocumentTypesService {
         DocumentType documentType
     ) {
         List<DocumentTypeToAttribute> links = new ArrayList<>();
-        for (DocumentTypeToAttributeRequest attributeRequest : request.attributeRequests()) {
-            links.add(createAttributeLink(attributeRequest, documentType));
-        }
+
+        request.attributeRequests()
+            .forEach(attributeRequest -> links.add(createAttributeLink(attributeRequest, documentType)));
+
         return documentTypeToAttributeRepository.saveAll(links);
     }
 
@@ -113,6 +119,10 @@ public class DocumentTypesService {
             .documentType(documentType)
             .isOptional(isOptional)
             .build();
+    }
+
+    private void validateAttributesExistence(DocumentTypeRequest request) {
+        request.attributeRequests().forEach(attributeRequest -> findAttributeById(attributeRequest.attributeId()));
     }
 
     private DocumentType findDocumentTypeById(Long id) {

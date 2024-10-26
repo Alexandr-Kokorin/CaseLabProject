@@ -8,7 +8,6 @@ import caselab.controller.secutiry.payload.AuthenticationResponse;
 import caselab.controller.types.payload.DocumentTypeRequest;
 import caselab.controller.types.payload.DocumentTypeResponse;
 import caselab.controller.types.payload.DocumentTypeToAttributeRequest;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Objects;
 import lombok.SneakyThrows;
@@ -16,7 +15,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,9 +29,6 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
 
     private String token;
     private final String URL = "/api/v1/document_types";
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     private final String VALID_DOCUMENT_TYPE_NAME = "DocumentTypeName";
     private Long attributeId;
@@ -61,11 +56,6 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
 
     @BeforeEach
     public void setUp() {
-        token = login();
-    }
-
-    @BeforeEach
-    public void createEntity() {
         token = login();
         attributeId = createAttribute();
         documentTypeId = createDocumentType();
@@ -145,6 +135,8 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
             () -> assertThat(response.attributeResponses().size()).isEqualTo(1),
             () -> assertThat(response.attributeResponses().getFirst().attributeId()).isEqualTo(attributeId)
         );
+
+        deleteRequest(URL, response.id());
     }
 
     @Test
@@ -217,8 +209,7 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
             .andExpect(status().isOk())
             .andReturn();
 
-        var response =
-            objectMapper.readValue(mvcResponse.getResponse().getContentAsString(), DocumentTypeResponse[].class);
+        var response = readValue(mvcResponse, DocumentTypeResponse[].class);
 
         assertAll(
             "Grouped assertions for all document types",

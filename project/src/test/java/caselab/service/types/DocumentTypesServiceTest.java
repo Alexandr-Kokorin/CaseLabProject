@@ -194,16 +194,9 @@ class DocumentTypesServiceTest {
         return DocumentTypeRequest.builder()
             .name(name)
             .attributeRequests(List.of(
-                createDocumentTypeToAttributeRequest(ATTRIBUTE_ID_1, true),
-                createDocumentTypeToAttributeRequest(ATTRIBUTE_ID_2, false)
+                new DocumentTypeToAttributeRequest(ATTRIBUTE_ID_1, true),
+                new DocumentTypeToAttributeRequest(ATTRIBUTE_ID_2, false)
             ))
-            .build();
-    }
-
-    private DocumentTypeToAttributeRequest createDocumentTypeToAttributeRequest(Long attributeId, boolean isOptional) {
-        return DocumentTypeToAttributeRequest.builder()
-            .attributeId(attributeId)
-            .isOptional(isOptional)
             .build();
     }
 
@@ -212,19 +205,9 @@ class DocumentTypesServiceTest {
             .id(id)
             .name(name)
             .attributeResponses(List.of(
-                createDocumentTypeToAttributeResponse(ATTRIBUTE_ID_1, true),
-                createDocumentTypeToAttributeResponse(ATTRIBUTE_ID_2, false)
+                new DocumentTypeToAttributeResponse(ATTRIBUTE_ID_1, true),
+                new DocumentTypeToAttributeResponse(ATTRIBUTE_ID_2, false)
             ))
-            .build();
-    }
-
-    private DocumentTypeToAttributeResponse createDocumentTypeToAttributeResponse(
-        Long attributeId,
-        boolean isOptional
-    ) {
-        return DocumentTypeToAttributeResponse.builder()
-            .attributeId(attributeId)
-            .isOptional(isOptional)
             .build();
     }
 
