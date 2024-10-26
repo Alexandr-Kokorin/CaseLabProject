@@ -8,6 +8,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,8 +34,8 @@ public class DocumentType {
     private String name;
 
     @OneToMany(mappedBy = "documentType")
-    private List<Document> documents;
+    private List<Document> documents = new ArrayList<>();
 
     @OneToMany(mappedBy = "documentType")
-    private List<DocumentTypeToAttribute> documentTypesToAttributes;
+    private List<DocumentTypeToAttribute> documentTypesToAttributes = new ArrayList<>();
 }

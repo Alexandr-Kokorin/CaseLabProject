@@ -1,13 +1,7 @@
 package caselab.controller;
 
-import caselab.exception.NotificationException;
-import caselab.exception.SubscriptionAlreadyExistException;
-import caselab.exception.SubscriptionNotFoundException;
-import caselab.exception.UserExistsException;
 import caselab.exception.document.version.DocumentPermissionAlreadyGrantedException;
-import caselab.exception.document.version.MissingAttributesException;
-import caselab.exception.document.version.MissingDocumentPermissionException;
-import caselab.exception.entity.EntityNotFoundException;
+import caselab.exception.base.ApplicationRuntimeException;
 import java.util.Locale;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
@@ -16,72 +10,23 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-@SuppressWarnings("MultipleStringLiterals")
 @RestControllerAdvice
 @RequiredArgsConstructor
 public class ControllerExceptionHandler {
 
     private final MessageSource messageSource;
 
-    @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<ProblemDetail> notFoundException(EntityNotFoundException exception, Locale locale) {
+    @ExceptionHandler(ApplicationRuntimeException.class)
+    public ResponseEntity<ProblemDetail> appRuntimeException(ApplicationRuntimeException exception, Locale locale) {
         return createProblemDetailResponse(
-            HttpStatus.NOT_FOUND,
+            exception.getHttpStatus(),
             exception.getMessage(),
-            new Object[] {exception.getId()},
-            locale
-        );
-    }
-
-    @ExceptionHandler(UserExistsException.class)
-    public ResponseEntity<ProblemDetail> userExistsException(UserExistsException exception, Locale locale) {
-        return createProblemDetailResponse(
-            HttpStatus.CONFLICT,
-            exception.getMessage(),
-            new Object[] {exception.getEmail()},
-            locale
-        );
-    }
-
-    @ExceptionHandler(SubscriptionAlreadyExistException.class)
-    public ResponseEntity<ProblemDetail> userSubscriptionAlreadyExistException(
-        SubscriptionAlreadyExistException exception, Locale locale
-    ) {
-        return createProblemDetailResponse(
-            HttpStatus.CONFLICT,
-            exception.getMessage(),
-            new Object[] {exception.getDocumentVersionId()},
-            locale
-        );
-    }
-
-    @ExceptionHandler(SubscriptionNotFoundException.class)
-    public ResponseEntity<ProblemDetail> userSubscriptionNotFoundException(
-        SubscriptionNotFoundException exception, Locale locale
-    ) {
-        return createProblemDetailResponse(
-            HttpStatus.NOT_FOUND,
-            exception.getMessage(),
-            new Object[] {exception.getDocumentVersionId()},
-            locale
-        );
-    }
-
-    @ExceptionHandler(UsernameNotFoundException.class)
-    public ResponseEntity<ProblemDetail> userUsernameNotFoundException(
-        UsernameNotFoundException exception,
-        Locale locale
-    ) {
-        return createProblemDetailResponse(
-            HttpStatus.NOT_FOUND,
-            "user.email.not_found",
-            new Object[] {exception.getMessage()},
+            exception.getArgs(),
             locale
         );
     }
@@ -108,39 +53,6 @@ public class ControllerExceptionHandler {
             HttpStatus.UNAUTHORIZED,
             "user.unauthorized",
             new Object[] {e.getMessage()},
-            locale
-        );
-    }
-
-    @ExceptionHandler(NotificationException.class)
-    public ResponseEntity<ProblemDetail> notificationException(NotificationException exception, Locale locale) {
-        return createProblemDetailResponse(
-            HttpStatus.INTERNAL_SERVER_ERROR,
-            exception.getMessage(),
-            new Object[0],
-            locale
-        );
-    }
-
-    @ExceptionHandler(MissingAttributesException.class)
-    public ResponseEntity<ProblemDetail> missingAttributes(MissingAttributesException exception, Locale locale) {
-        return createProblemDetailResponse(
-            HttpStatus.BAD_REQUEST,
-            exception.getMessage(),
-            new Object[] {},
-            locale
-        );
-    }
-
-    @ExceptionHandler(MissingDocumentPermissionException.class)
-    public ResponseEntity<ProblemDetail> missingDocumentPermission(
-        MissingDocumentPermissionException exception,
-        Locale locale
-    ) {
-        return createProblemDetailResponse(
-            HttpStatus.FORBIDDEN,
-            exception.getMessage(),
-            new Object[] {exception.getPermissionName()},
             locale
         );
     }
