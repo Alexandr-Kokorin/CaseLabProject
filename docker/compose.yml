@@ -1,6 +1,6 @@
 #file: noinspection ComposeUnknownKeys
 include:
-  - environment-compose.yml
+  - elastic-compose.yml
 
 services:
   app:
