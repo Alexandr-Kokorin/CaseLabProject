@@ -48,6 +48,8 @@ public class DocumentServiceTest {
     @Mock
     private DocumentPermissionRepository documentPermissionRepository;
     @Mock
+    private UserToDocumentRepository userToDocumentRepository;
+    @Mock
     private DocumentMapper documentMapper;
     @InjectMocks
     private DocumentService documentService;

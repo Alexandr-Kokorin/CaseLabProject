@@ -12,7 +12,6 @@ import caselab.controller.types.payload.DocumentTypeRequest;
 import caselab.controller.types.payload.DocumentTypeResponse;
 import caselab.controller.types.payload.DocumentTypeToAttributeRequest;
 import groovy.util.logging.Slf4j;
-import java.util.List;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,6 +19,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
+import java.util.List;
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -30,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @Slf4j
 public class DocumentControllerTest extends BaseControllerTest {
+
     private static AuthenticationResponse token;
     private static final String DOC_URI = "/api/v1/documents";
     private static final String DOCUMENT_TYPES_URI = "/api/v1/document_types";
@@ -43,7 +45,6 @@ public class DocumentControllerTest extends BaseControllerTest {
         attributeId = createAttribute();
         documentTypeId = createDocumentType();
     }
-
     @SneakyThrows
     private long createAttribute() {
         var request = AttributeRequest.builder()
@@ -55,7 +56,6 @@ public class DocumentControllerTest extends BaseControllerTest {
 
         return readValue(mvcResponse, AttributeResponse.class).id();
     }
-
     @SneakyThrows
     private long createDocumentType() {
         var request = DocumentTypeRequest.builder()
@@ -67,10 +67,8 @@ public class DocumentControllerTest extends BaseControllerTest {
 
         return readValue(mvcResponse, DocumentTypeResponse.class).id();
     }
-
     @SneakyThrows
     private DocumentRequest createDocumentRequest() {
-
         return DocumentRequest.builder()
             .name("testDocument")
             .documentTypeId(documentTypeId)
@@ -78,9 +76,8 @@ public class DocumentControllerTest extends BaseControllerTest {
             .build();
 
     }
-
     @SneakyThrows
-    private long createDocument() {
+    private long createDocument(){
         var request = DocumentRequest.builder()
             .name("name")
             .documentTypeId(documentTypeId)
@@ -110,9 +107,9 @@ public class DocumentControllerTest extends BaseControllerTest {
         );
     }
 
+
     @AfterEach
     public void deleteEntity() {
-
         deleteRequest("/api/v1/document_types", documentTypeId);
         deleteRequest("/api/v1/attributes", attributeId);
     }
@@ -170,16 +167,18 @@ public class DocumentControllerTest extends BaseControllerTest {
             .andExpect(jsonPath("$.user_permissions").isNotEmpty())
             .andReturn();
 
+
+
         var documentId = readValue(response, DocumentResponse.class).id();
         deleteRequest("/api/v1/documents", documentId);
     }
 
+
     @Test
     @DisplayName("Should return 404 and error message when send request non-existent document type id")
     @SneakyThrows
-    public void createDocument_failure() {
-
-        var nonExistingDocumentTypeId = documentTypeId + 1;
+    public void createDocument_failure(){
+        var nonExistingDocumentTypeId = documentTypeId+1;
 
         var documentRequest = DocumentRequest.builder()
             .documentTypeId(nonExistingDocumentTypeId)
@@ -214,6 +213,7 @@ public class DocumentControllerTest extends BaseControllerTest {
 
         deleteRequest("/api/v1/documents", documentId);
     }
+
 
     @Test
     @DisplayName("Shouldn't return a document by wrong ID")
@@ -298,6 +298,7 @@ public class DocumentControllerTest extends BaseControllerTest {
         deleteRequest("/api/v1/documents", documentId);
     }
 
+
     @Test
     @DisplayName("Should delete a document by ID")
     @SneakyThrows
@@ -329,5 +330,4 @@ public class DocumentControllerTest extends BaseControllerTest {
 
         deleteRequest("/api/v1/documents", documentId);
     }
-
 }

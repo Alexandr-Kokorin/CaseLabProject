@@ -23,11 +23,20 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         enable_lazy_load_no_trans: true
+  kafka:
+    bootstrap-servers: localhost:9094
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
   cache:
     cache-names:
       - rate-limit-buckets-project
     caffeine:
       spec: maximumSize=100000,expireAfterAccess=3600s
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 120MB
   mail:
     host: ${MAIL_HOST:postbox.cloud.yandex.net}
     port: ${MAIL_PORT:587}
@@ -51,12 +60,12 @@ bucket4j:
       url: /.*
       http-response-body: "{ \"status\": 429, \"error\": \"Too Many Requests\", \"message\": \"You have exhausted your API Request Quota\" }"
       rate-limits:
-        cache-key: "getRemoteAddr()"
-        bandwidths:
-          - capacity: 1000
-            time: 1
-            unit: minutes
-            refill-speed: interval
+          cache-key: "getRemoteAddr()"
+          bandwidths:
+            - capacity: 1000
+              time: 1
+              unit: minutes
+              refill-speed: interval
 
 server:
   port: 8080
@@ -64,11 +73,19 @@ server:
 
 logging:
   config: classpath:log4j2-plain.xml
+  level:
+    org.apache.kafka: warn
 
 spring-doc:
   swagger-ui:
     path: /swagger-ui
   default-produces-media-type: application/json
+
+minio:
+  buckets: document-version
+  url: ${MINIO_URL:http://127.0.0.1:9000}
+  accessKey: ${MINIO_ACCESS_KEY:minioadmin}
+  secretkey: ${MINIO_SECRET_KEY:minioadmin}
 
 management:
   endpoint:
