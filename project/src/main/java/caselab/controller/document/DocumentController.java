@@ -1,6 +1,5 @@
 package caselab.controller.document;
 
-import caselab.controller.attribute.payload.AttributeResponse;
 import caselab.controller.document.payload.DocumentRequest;
 import caselab.controller.document.payload.DocumentResponse;
 import caselab.elastic.service.DocumentElasticService;

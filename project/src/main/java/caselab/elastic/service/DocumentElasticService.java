@@ -1,22 +1,20 @@
 package caselab.elastic.service;
 
-import caselab.controller.attribute.payload.AttributeResponse;
 import caselab.controller.document.payload.DocumentResponse;
-import caselab.domain.entity.Attribute;
 import caselab.domain.entity.Document;
 import caselab.domain.repository.DocumentRepository;
 import caselab.elastic.interfaces.ElasticSearchInterface;
 import caselab.elastic.repository.DocumentElasticRepository;
 import caselab.service.document.mapper.DocumentMapper;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import static java.util.Comparator.comparingInt;
 
 @Service
@@ -25,6 +23,7 @@ public class DocumentElasticService implements ElasticSearchInterface<DocumentRe
     private final DocumentElasticRepository documentElasticRepository;
     private final DocumentRepository documentRepository;
     private final DocumentMapper documentMapper;
+
     @Override
     public Page<DocumentResponse> searchValuesElastic(String searchText, int page, int size) {
         var pageable = PageRequest.of(page, size);
