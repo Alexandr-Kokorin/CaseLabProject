@@ -9,6 +9,7 @@ import caselab.controller.version.payload.CreateDocumentVersionRequest;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.repository.ApplicationUserRepository;
 import caselab.service.document.DocumentService;
+import caselab.service.signature.SignatureService;
 import caselab.service.util.UserFromAuthenticationUtilService;
 import caselab.service.version.DocumentVersionService;
 import java.util.List;
@@ -23,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class DocumentFacadeService {
     private final DocumentService documentService;
     private final DocumentVersionService documentVersionService;
+    private final SignatureService signatureService;
 
     private final UserFromAuthenticationUtilService authToUserService;
 
@@ -32,11 +34,16 @@ public class DocumentFacadeService {
         DocumentResponse documentResponse,
         ApplicationUser user
     ) {
-        var latestVersion = documentVersionService.getDocumentVersionById(
+        var latestVersionResponse = documentVersionService.getDocumentVersionById(
             documentResponse.documentVersionIds().getFirst(), user
         );
 
-        return new DocumentFacadeResponse(documentResponse, latestVersion);
+        var signature = signatureService.findSignatureByUserAndDocumentVersion(
+            user.getId(),
+            latestVersionResponse.getId()
+        );
+
+        return new DocumentFacadeResponse(documentResponse, latestVersionResponse, signature.orElse(null));
     }
 
     public DocumentFacadeResponse getDocumentById(Long id, Authentication auth) {
@@ -60,7 +67,7 @@ public class DocumentFacadeService {
             .build();
         var latestVersion = documentVersionService.createDocumentVersion(documentVersionRequest, file, user);
         documentResponse.documentVersionIds().add(latestVersion.getId());
-        return new DocumentFacadeResponse(documentResponse, latestVersion);
+        return new DocumentFacadeResponse(documentResponse, latestVersion, null);
 
     }
 

@@ -14,6 +14,7 @@ import jakarta.transaction.Transactional;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -83,5 +84,24 @@ public class SignatureService {
             .stream()
             .map(signatureMapper::entityToResponse)
             .toList();
+    }
+
+    public Optional<SignatureResponse> findSignatureByUserAndDocumentVersion(
+        Long userId,
+        Long documentVersionId
+    ) {
+        var user = userRepository.findById(userId);
+        var documentVersion = documentVersionRepository.findById(documentVersionId);
+
+        if (user.isEmpty()) {
+            return Optional.empty();
+        }
+
+        if (documentVersion.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return signatureRepository.findByApplicationUserAndDocumentVersion(user.get(), documentVersion.get())
+            .map(signatureMapper::entityToResponse);
     }
 }
