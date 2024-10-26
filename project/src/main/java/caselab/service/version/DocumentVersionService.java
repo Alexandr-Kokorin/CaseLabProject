@@ -234,19 +234,4 @@ public class DocumentVersionService {
             saved.getDocument()
         );
     }
-
-    public void deleteDocumentVersion(Long id, Authentication auth) {
-        ApplicationUser user = userService.findUserByAuthentication(auth);
-        DocumentVersion documentVersion = documentVersionRepository.findById(id).orElseThrow(
-            () -> new DocumentVersionNotFoundException(id)
-        );
-
-        if (checkLacksPermission(user, documentVersion.getDocument(), DocumentPermissionName::canEdit)) {
-            throw new MissingDocumentPermissionException(DocumentPermissionName.EDIT.name());
-        }
-
-        documentVersionStorage.delete(documentVersion.getContentName());
-
-        documentVersionRepository.delete(documentVersion);
-    }
 }

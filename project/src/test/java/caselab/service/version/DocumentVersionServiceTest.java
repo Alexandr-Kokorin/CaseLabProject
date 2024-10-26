@@ -272,7 +272,10 @@ public class DocumentVersionServiceTest {
     public void getDocumentVersionById_unknownDocumentVersion() {
         Mockito.when(userService.findUserByAuthentication(Mockito.any())).thenReturn(creator);
         Mockito.when(documentVersionRepository.findById(Mockito.any())).thenReturn(Optional.empty());
-        assertThrows(DocumentVersionNotFoundException.class, () -> service.getDocumentVersionById(1L, (Authentication) null));
+        assertThrows(
+            DocumentVersionNotFoundException.class,
+            () -> service.getDocumentVersionById(1L, (Authentication) null)
+        );
     }
 
     @Test
@@ -282,7 +285,8 @@ public class DocumentVersionServiceTest {
         Mockito.when(userToDocumentRepository.findByApplicationUserIdAndDocumentId(Mockito.any(), Mockito.any()))
             .thenReturn(Optional.empty());
 
-        assertThrows(MissingDocumentPermissionException.class, () -> service.getDocumentVersionById(1L,
+        assertThrows(MissingDocumentPermissionException.class, () -> service.getDocumentVersionById(
+            1L,
             (Authentication) null
         ));
     }
@@ -367,40 +371,6 @@ public class DocumentVersionServiceTest {
 
         assertDoesNotThrow(
             () -> service.updateDocumentVersion(1L, new UpdateDocumentVersionRequest("2"), null)
-        );
-    }
-
-    @Test
-    public void deleteDocumentVersion_unknownDocumentVersion() {
-        Mockito.when(userService.findUserByAuthentication(Mockito.any())).thenReturn(creator);
-        Mockito.when(documentVersionRepository.findById(Mockito.any())).thenReturn(Optional.empty());
-        assertThrows(
-            DocumentVersionNotFoundException.class,
-            () -> service.deleteDocumentVersion(1L, null)
-        );
-    }
-
-    @Test
-    public void deleteDocumentVersion_unauthorized() {
-        Mockito.when(userService.findUserByAuthentication(Mockito.any())).thenReturn(reader);
-        Mockito.when(documentVersionRepository.findById(Mockito.any())).thenReturn(Optional.of(documentVersion));
-        Mockito.when(userToDocumentRepository.findByApplicationUserIdAndDocumentId(Mockito.any(), Mockito.any()))
-            .thenReturn(Optional.of(reader.getUsersToDocuments().getFirst()));
-        assertThrows(
-            MissingDocumentPermissionException.class,
-            () -> service.deleteDocumentVersion(1L, null)
-        );
-    }
-
-    @Test
-    public void deleteDocumentVersion_success() {
-        Mockito.when(userService.findUserByAuthentication(Mockito.any())).thenReturn(creator);
-        Mockito.when(documentVersionRepository.findById(Mockito.any())).thenReturn(Optional.of(documentVersion));
-        Mockito.when(userToDocumentRepository.findByApplicationUserIdAndDocumentId(Mockito.any(), Mockito.any()))
-            .thenReturn(Optional.of(creator.getUsersToDocuments().getFirst()));
-
-        assertDoesNotThrow(
-            () -> service.deleteDocumentVersion(1L, null)
         );
     }
 }
