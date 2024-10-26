@@ -100,7 +100,7 @@ class DocumentTypesServiceTest {
 
         assertThat(result).isEqualTo(response);
         verify(documentTypeRepository).save(documentType);
-        verify(attributeRepository, times(2)).findById(anyLong());
+        verify(attributeRepository, times(4)).findById(anyLong());
         verify(documentTypeMapper).entityToResponse(documentType);
     }
 
@@ -158,7 +158,7 @@ class DocumentTypesServiceTest {
         assertThat(result).isEqualTo(updatedResponse);
         verify(documentTypeRepository).findById(1L);
         verify(documentTypeRepository).save(updatedDocumentType);
-        verify(attributeRepository, times(2)).findById(anyLong());
+        verify(attributeRepository, times(4)).findById(anyLong());
         verify(documentTypeMapper).entityToResponse(updatedDocumentType);
     }
 
