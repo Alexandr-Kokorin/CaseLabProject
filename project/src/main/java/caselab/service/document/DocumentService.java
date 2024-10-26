@@ -1,5 +1,6 @@
 package caselab.service.document;
 
+import caselab.controller.document.facade.payload.UpdateDocumentRequest;
 import caselab.controller.document.payload.DocumentRequest;
 import caselab.controller.document.payload.DocumentResponse;
 import caselab.controller.document.payload.UserToDocumentRequest;
@@ -103,6 +104,15 @@ public class DocumentService {
 
     public List<DocumentResponse> getAllDocuments() {
         return toDocumentResponse(documentRepository.findAll().stream());
+    }
+
+    public DocumentResponse updateDocument(Long id, UpdateDocumentRequest updateDocumentRequest, ApplicationUser user) {
+        var document = documentRepository.findById(id)
+            .orElseThrow(() -> new DocumentNotFoundException(id));
+
+        docPermissionService.assertHasPermission(user, document, DocumentPermissionName::canEdit, "Edit");
+        document.setName(updateDocumentRequest.getName());
+        return documentMapper.entityToResponse(documentRepository.save(document));
     }
 
     public DocumentResponse updateDocument(Long id, DocumentRequest documentRequest) {

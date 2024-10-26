@@ -2,6 +2,7 @@ package caselab.service.document.facade;
 
 import caselab.controller.document.facade.payload.CreateDocumentRequest;
 import caselab.controller.document.facade.payload.DocumentFacadeResponse;
+import caselab.controller.document.facade.payload.UpdateDocumentRequest;
 import caselab.controller.document.payload.DocumentRequest;
 import caselab.controller.document.payload.DocumentResponse;
 import caselab.controller.version.payload.CreateDocumentVersionRequest;
@@ -66,5 +67,11 @@ public class DocumentFacadeService {
             .map(
                 d -> enrichResponse(d, user)
             ).toList();
+    }
+
+    public DocumentFacadeResponse updateDocument(Long id, UpdateDocumentRequest body, Authentication auth) {
+        var user = authToUserService.findUserByAuthentication(auth);
+        var documentResponse = documentService.updateDocument(id, body, user);
+        return enrichResponse(documentResponse, user);
     }
 }
