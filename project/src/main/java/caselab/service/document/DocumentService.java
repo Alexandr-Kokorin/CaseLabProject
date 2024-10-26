@@ -16,9 +16,10 @@ import caselab.domain.repository.DocumentRepository;
 import caselab.domain.repository.DocumentTypesRepository;
 import caselab.domain.repository.UserToDocumentRepository;
 import caselab.exception.document.version.DocumentPermissionAlreadyGrantedException;
-import caselab.exception.entity.DocumentNotFoundException;
-import caselab.exception.entity.DocumentPermissionNotFoundException;
-import caselab.exception.entity.DocumentTypeNotFoundException;
+import caselab.exception.entity.not_found.DocumentNotFoundException;
+import caselab.exception.entity.not_found.DocumentPermissionNotFoundException;
+import caselab.exception.entity.not_found.DocumentTypeNotFoundException;
+import caselab.exception.entity.not_found.UserNotFoundException;
 import caselab.service.document.mapper.DocumentMapper;
 import caselab.service.util.DocumentPermissionUtilService;
 import jakarta.transaction.Transactional;
@@ -26,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -167,7 +167,7 @@ public class DocumentService {
     private void validatePermissions(DocumentRequest documentRequest) {
         for (UserToDocumentRequest userToDocumentRequest : documentRequest.usersPermissions()) {
             applicationUserRepository.findByEmail(userToDocumentRequest.email())
-                .orElseThrow(() -> new UsernameNotFoundException(userToDocumentRequest.email()));
+                .orElseThrow(() -> new UserNotFoundException(userToDocumentRequest.email()));
             for (Long id : userToDocumentRequest.documentPermissionIds()) {
                 documentPermissionRepository.findById(id)
                     .orElseThrow(() -> new DocumentPermissionNotFoundException(id));

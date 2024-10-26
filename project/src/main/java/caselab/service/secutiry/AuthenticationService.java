@@ -7,7 +7,8 @@ import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.ApplicationUserRepository;
 import caselab.domain.repository.GlobalPermissionRepository;
-import caselab.exception.UserExistsException;
+import caselab.exception.entity.already_exists.UserAlreadyExistsException;
+import jakarta.transaction.Transactional;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class AuthenticationService {
 
@@ -60,7 +62,7 @@ public class AuthenticationService {
     private void checkEmail(String email) {
         var applicationUser = appUserRepository.findByEmail(email);
         if (applicationUser.isPresent()) {
-            throw new UserExistsException(email);
+            throw new UserAlreadyExistsException(email);
         }
     }
 }

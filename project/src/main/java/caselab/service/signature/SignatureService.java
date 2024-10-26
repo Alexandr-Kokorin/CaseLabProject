@@ -7,8 +7,9 @@ import caselab.domain.entity.enums.SignatureStatus;
 import caselab.domain.repository.ApplicationUserRepository;
 import caselab.domain.repository.DocumentVersionRepository;
 import caselab.domain.repository.SignatureRepository;
-import caselab.exception.entity.DocumentVersionNotFoundException;
-import caselab.exception.entity.SignatureNotFoundException;
+import caselab.exception.entity.not_found.DocumentVersionNotFoundException;
+import caselab.exception.entity.not_found.SignatureNotFoundException;
+import caselab.exception.entity.not_found.UserNotFoundException;
 import caselab.service.signature.mapper.SignatureMapper;
 import jakarta.transaction.Transactional;
 import java.time.OffsetDateTime;
@@ -16,12 +17,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
 @Transactional
+@RequiredArgsConstructor
 public class SignatureService {
 
     private final SignatureRepository signatureRepository;
@@ -63,7 +63,7 @@ public class SignatureService {
 
         var userForSign = userRepository
             .findByEmail(signRequest.email())
-            .orElseThrow(() -> new UsernameNotFoundException(signRequest.email()));
+            .orElseThrow(() -> new UserNotFoundException(signRequest.email()));
 
         signature.setApplicationUser(userForSign);
         signature.setDocumentVersion(documentVersionForSign);
@@ -78,7 +78,7 @@ public class SignatureService {
     public List<SignatureResponse> findAllSignaturesByEmail(String email) {
         var user = userRepository
             .findByEmail(email)
-            .orElseThrow(() -> new UsernameNotFoundException(email));
+            .orElseThrow(() -> new UserNotFoundException(email));
 
         return user.getSignatures()
             .stream()

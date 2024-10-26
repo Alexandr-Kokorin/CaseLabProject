@@ -1,266 +1,280 @@
 package caselab.controller.types;
 
 import caselab.controller.BaseControllerTest;
+import caselab.controller.attribute.payload.AttributeRequest;
+import caselab.controller.attribute.payload.AttributeResponse;
+import caselab.controller.secutiry.payload.AuthenticationRequest;
+import caselab.controller.secutiry.payload.AuthenticationResponse;
 import caselab.controller.types.payload.DocumentTypeRequest;
 import caselab.controller.types.payload.DocumentTypeResponse;
 import caselab.controller.types.payload.DocumentTypeToAttributeRequest;
-import caselab.exception.entity.DocumentTypeNotFoundException;
-import caselab.service.types.DocumentTypesService;
 import java.util.List;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
+import java.util.Objects;
 import lombok.SneakyThrows;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.test.web.servlet.MvcResult;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class DocumentTypesControllerTest extends BaseControllerTest {
 
-    private static final String DOCUMENT_TYPES_URI = "/api/v1/document_types";
+    private String token;
+    private final String URL = "/api/v1/document_types";
 
-    // Предоставляем источник с некорректными запросами
-    private static final Supplier<Stream<Arguments>> invalidDocumentTypeRequest = () -> Stream.of(
-        Arguments.of(new DocumentTypeRequest(null, List.of())),
-        Arguments.of(new DocumentTypeRequest("te", List.of())),
-        Arguments.of(new DocumentTypeRequest("testtesttesttesttesttesttesttest", List.of()))
-    );
+    private final String VALID_DOCUMENT_TYPE_NAME = "DocumentTypeName";
+    private Long attributeId;
+    private Long documentTypeId;
 
-    @MockBean
-    private DocumentTypesService documentTypesService;
-    @MockBean
-    private SecurityFilterChain securityFilterChain;
-
-    @Nested
-    @Tag("Create")
-    @DisplayName("Create document type")
-    class CreateDocumentTypeTest {
-
-        public static Stream<Arguments> provideInvalidDocumentTypeRequest() {
-            return invalidDocumentTypeRequest.get();
+    @SneakyThrows
+    private String login() {
+        if (Objects.nonNull(token)) {
+            return token;
         }
 
-        @SneakyThrows
-        @Test
-        @DisplayName("Should create document type with valid payload")
-        public void createDocumentType_success() {
-            // Arrange
-            var attributeRequests = List.of(
-                new DocumentTypeToAttributeRequest(1L, true),
-                new DocumentTypeToAttributeRequest(2L, false)
-            );
-            var payload = DocumentTypeRequest.builder()
-                .name("test")
-                .attributeRequests(attributeRequests)
-                .build();
+        var request = AuthenticationRequest.builder()
+            .email("user@example.com")
+            .password("password")
+            .build();
 
-            var response = DocumentTypeResponse
-                .builder()
-                .name(payload.name())
-                .id(1L)
-                .build();
+        var mvcResponse = mockMvc.perform(post("/api/v1/auth/authenticate")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andReturn();
 
-            when(documentTypesService.createDocumentType(payload)).thenReturn(response);
-
-            var mvcResponse = mockMvc.perform(post(DOCUMENT_TYPES_URI)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(payload)))
-                .andExpectAll(
-                    status().is2xxSuccessful(),
-                    content().contentType(MediaType.APPLICATION_JSON)
-                )
-                .andReturn()
-                .getResponse();
-
-            var actualDocumentType =
-                objectMapper.readValue(mvcResponse.getContentAsString(), DocumentTypeResponse.class);
-
-            // Assert
-            assertAll(
-                "Grouped assertions for created document type",
-                () -> assertEquals(actualDocumentType.id(), response.id()),
-                () -> assertEquals(actualDocumentType.name(), payload.name())
-            );
-        }
-
-        @SneakyThrows
-        @ParameterizedTest
-        @DisplayName("Should return 400 when request is invalid")
-        @MethodSource("provideInvalidDocumentTypeRequest")
-        public void createCategory_badRequest(DocumentTypeRequest documentTypeRequest) {
-            mockMvc.perform(post(DOCUMENT_TYPES_URI)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(documentTypeRequest)))
-                .andExpect(
-                    status().isBadRequest());
-        }
+        return readValue(mvcResponse, AuthenticationResponse.class).token();
     }
 
-    @Nested
-    @Tag("GetById")
-    @DisplayName("Get document type by id")
-    class GetDocumentTypeByIdTest {
-
-        @SneakyThrows
-        @Test
-        @DisplayName("Should return document type when it exists")
-        public void getCategoryById_success() {
-            var createdDocumentType = DocumentTypeResponse
-                .builder()
-                .id(1L)
-                .name("Test Document Type")
-                .build();
-
-            when(documentTypesService.findDocumentTypeById(createdDocumentType.id())).thenReturn(createdDocumentType);
-
-            var mvcResponse = mockMvc.perform(get(DOCUMENT_TYPES_URI + "/" + createdDocumentType.id()))
-                .andExpectAll(
-                    status().isOk(),
-                    content().contentType(MediaType.APPLICATION_JSON)
-                )
-                .andReturn()
-                .getResponse();
-
-            var actualDocumentType =
-                objectMapper.readValue(mvcResponse.getContentAsString(), DocumentTypeResponse.class);
-
-            assertEquals(actualDocumentType, createdDocumentType);
-        }
-
-        @SneakyThrows
-        @Test
-        @DisplayName("Should return 404 and error message when document type doesn't exist")
-        public void getDocumentTypeById_notFound() {
-            Long id = 1L;
-
-            when(documentTypesService.findDocumentTypeById(id)).thenThrow(new DocumentTypeNotFoundException(id));
-
-            mockMvc.perform(get(DOCUMENT_TYPES_URI + "/" + id))
-                .andExpectAll(
-                    status().isNotFound(),
-                    content().contentType(MediaType.APPLICATION_PROBLEM_JSON)
-                );
-        }
+    @BeforeEach
+    public void setUp() {
+        token = login();
+        attributeId = createAttribute();
+        documentTypeId = createDocumentType();
     }
 
-    @Nested
-    @Tag("Update")
-    @DisplayName("Update document type")
-    class UpdateCategoryTest {
+    @SneakyThrows
+    private Long createAttribute() {
+        var request = AttributeRequest.builder()
+            .name("name")
+            .type("type")
+            .build();
 
-        public static Stream<Arguments> provideInvalidDocumentTypeRequest() {
-            return invalidDocumentTypeRequest.get();
-        }
+        var mvcResponse = createRequest("/api/v1/attributes", objectMapper.writeValueAsString(request));
 
-        @SneakyThrows
-        @Test
-        @DisplayName("Should update document type when it exists")
-        public void updateCategory_success() {
-            var createdDocumentType = DocumentTypeResponse
-                .builder()
-                .id(1L)
-                .name("Old Name")
-                .build();
-
-            var attributeRequests = List.of(
-                new DocumentTypeToAttributeRequest(1L, true)
-            );
-
-            var payload = DocumentTypeRequest
-                .builder()
-                .name("New Name")
-                .attributeRequests(attributeRequests)
-                .build();
-
-            when(documentTypesService.updateDocumentType(createdDocumentType.id(), payload))
-                .thenReturn(DocumentTypeResponse.builder().id(createdDocumentType.id()).name(payload.name()).build());
-
-            var mvcResponse = mockMvc.perform(put(DOCUMENT_TYPES_URI + "/" + createdDocumentType.id())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(payload)))
-                .andExpectAll(
-                    status().isOk(),
-                    content().contentType(MediaType.APPLICATION_JSON)
-                )
-                .andReturn()
-                .getResponse();
-
-            var updatedDocumentType =
-                objectMapper.readValue(mvcResponse.getContentAsString(), DocumentTypeResponse.class);
-
-            assertAll(
-                "Grouped assertions for updated document type",
-                () -> assertEquals(updatedDocumentType.id(), createdDocumentType.id()),
-                () -> assertEquals(updatedDocumentType.name(), payload.name())
-            );
-        }
-
-        @SneakyThrows
-        @Test
-        @DisplayName("Should return 404 and error message when updating non-existent document type")
-        public void updateDocumentType_notFound() {
-            Long id = 1L;
-            var payload = new DocumentTypeRequest("New Name", List.of());
-
-            when(documentTypesService.updateDocumentType(id, payload)).thenThrow(new DocumentTypeNotFoundException(id));
-
-            mockMvc.perform(put(DOCUMENT_TYPES_URI + "/" + id)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(payload)))
-                .andExpectAll(
-                    status().isBadRequest(),
-                    content().contentType(MediaType.APPLICATION_PROBLEM_JSON)
-                );
-        }
-
-        @SneakyThrows
-        @ParameterizedTest
-        @DisplayName("Should return 400 when request is invalid")
-        @MethodSource("provideInvalidDocumentTypeRequest")
-        public void createCategory_badRequest(DocumentTypeRequest documentTypeRequest) {
-            mockMvc.perform(put(DOCUMENT_TYPES_URI + "/1")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(documentTypeRequest)))
-                .andExpectAll(
-                    status().isBadRequest());
-        }
+        return readValue(mvcResponse, AttributeResponse.class).id();
     }
 
-    @Nested
-    @Tag("Delete")
-    @DisplayName("Delete document type")
-    class DeleteDocumentTypeTest {
+    @SneakyThrows
+    private Long createDocumentType() {
+        var request = DocumentTypeRequest.builder()
+            .name(VALID_DOCUMENT_TYPE_NAME)
+            .attributeRequests(List.of(new DocumentTypeToAttributeRequest(attributeId, true)))
+            .build();
 
-        @SneakyThrows
-        @Test
-        @DisplayName("Should delete document type when it exists")
-        public void deleteDocumentType_success() {
-            var createdDocumentType = DocumentTypeResponse
-                .builder()
-                .id(1L)
-                .name("Test Document Type")
-                .build();
+        var mvcResponse = createRequest("/api/v1/document_types", objectMapper.writeValueAsString(request));
 
-            var result = mockMvc.perform(delete(DOCUMENT_TYPES_URI + "/" + createdDocumentType.id())).andReturn();
-
-            assertEquals(HttpStatus.NO_CONTENT.value(), result.getResponse().getStatus());
-        }
+        return readValue(mvcResponse, DocumentTypeResponse.class).id();
     }
 
+    @SneakyThrows
+    private MvcResult createRequest(String url, String request) {
+        return mockMvc.perform(post(url)
+                .header("Authorization", "Bearer " + token)
+                .content(request)
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andReturn();
+    }
+
+    @SneakyThrows
+    private <T> T readValue(MvcResult mvcResponse, Class<T> valueType) {
+        return objectMapper.readValue(
+            mvcResponse.getResponse().getContentAsString(),
+            valueType
+        );
+    }
+
+    @AfterEach
+    public void deleteEntity() {
+        deleteRequest("/api/v1/document_types", documentTypeId);
+        deleteRequest("/api/v1/attributes", attributeId);
+    }
+
+    @SneakyThrows
+    private void deleteRequest(String url, Long id) {
+        mockMvc.perform(delete(url + "/" + id)
+                .header("Authorization", "Bearer " + token))
+            .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Should create a document type successfully")
+    public void createDocumentType_success() {
+        var request = DocumentTypeRequest.builder()
+            .name("Test Document Type")
+            .attributeRequests(List.of(new DocumentTypeToAttributeRequest(attributeId, true)))
+            .build();
+
+        var mvcResponse = createRequest(URL, objectMapper.writeValueAsString(request));
+
+        var response = readValue(mvcResponse, DocumentTypeResponse.class);
+
+        assertAll(
+            "Grouped assertions for document type creation",
+            () -> assertThat(response.name()).isEqualTo("Test Document Type"),
+            () -> assertThat(response.attributeResponses().size()).isEqualTo(1),
+            () -> assertThat(response.attributeResponses().getFirst().attributeId()).isEqualTo(attributeId)
+        );
+
+        deleteRequest(URL, response.id());
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Should return 404 when creating document type with non-existing attribute ID")
+    public void createDocumentType_withNonExistingAttributeId_notFound() {
+        var request = DocumentTypeRequest.builder()
+            .name("Test Document Type")
+            .attributeRequests(List.of(new DocumentTypeToAttributeRequest(9999L, true)))  // non-existing attribute ID
+            .build();
+
+        mockMvc.perform(post(URL)
+                .header("Authorization", "Bearer " + token)
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Should return 400 for invalid document type creation request")
+    public void createInvalidDocumentType_badRequest() {
+        var request = DocumentTypeRequest.builder()
+            .name("")
+            .attributeRequests(List.of())
+            .build();
+
+        mockMvc.perform(post(URL)
+                .header("Authorization", "Bearer " + token)
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Should find a document type by ID successfully")
+    public void getDocumentTypeById_success() {
+        var mvcResponse = mockMvc.perform(get(URL + "/" + documentTypeId)
+                .header("Authorization", "Bearer " + token))
+            .andExpect(status().isOk())
+            .andReturn();
+
+        var response = readValue(mvcResponse, DocumentTypeResponse.class);
+
+        assertAll(
+            "Grouped assertions for find document type by ID",
+            () -> assertThat(response.id()).isEqualTo(documentTypeId),
+            () -> assertThat(response.name()).isEqualTo(VALID_DOCUMENT_TYPE_NAME),
+            () -> assertThat(response.attributeResponses().size()).isEqualTo(1),
+            () -> assertThat(response.attributeResponses().getFirst().attributeId()).isEqualTo(attributeId)
+        );
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Should return 404 when finding non-existing document type by ID")
+    public void getDocumentTypeById_notFound() {
+        mockMvc.perform(get(URL + "/9999")
+                .header("Authorization", "Bearer " + token))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Should return all document types successfully")
+    public void findAllDocumentTypes_success() {
+        var mvcResponse = mockMvc.perform(get(URL)
+                .header("Authorization", "Bearer " + token))
+            .andExpect(status().isOk())
+            .andReturn();
+
+        var response = readValue(mvcResponse, DocumentTypeResponse[].class);
+
+        assertAll(
+            "Grouped assertions for all document types",
+            () -> assertThat(response.length).isGreaterThan(0),
+            () -> assertThat(response[0].id()).isEqualTo(documentTypeId),
+            () -> assertThat(response[0].name()).isEqualTo(VALID_DOCUMENT_TYPE_NAME)
+        );
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Should update a document type successfully")
+    public void updateDocumentType_success() {
+        var request = DocumentTypeRequest.builder()
+            .name("Updated Document Type")
+            .attributeRequests(List.of(new DocumentTypeToAttributeRequest(attributeId, true)))
+            .build();
+
+        var mvcResponse = mockMvc.perform(put(URL + "/" + documentTypeId)
+                .header("Authorization", "Bearer " + token)
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andReturn();
+
+        var response = readValue(mvcResponse, DocumentTypeResponse.class);
+
+        assertAll(
+            "Grouped assertions for document type update",
+            () -> assertThat(response.id()).isEqualTo(documentTypeId),
+            () -> assertThat(response.name()).isEqualTo("Updated Document Type"),
+            () -> assertThat(response.attributeResponses().getFirst().attributeId()).isEqualTo(attributeId)
+        );
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Should return 404 when updating non-existing document type")
+    public void updateDocumentType_notFound() {
+        var request = DocumentTypeRequest.builder()
+            .name("name")
+            .attributeRequests(List.of(new DocumentTypeToAttributeRequest(attributeId, true)))
+            .build();
+
+        mockMvc.perform(put(URL + "/9999")
+                .header("Authorization", "Bearer " + token)
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Should delete a document type successfully")
+    public void deleteDocumentTypeById_success() {
+        Long response = createDocumentType();
+        deleteRequest(URL, response);
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Should return 404 for deleting non-existing document type")
+    public void deleteDocumentTypeById_notFound() {
+        mockMvc.perform(delete(URL + "/9999")
+                .header("Authorization", "Bearer " + token))
+            .andExpect(status().isNotFound());
+    }
 }

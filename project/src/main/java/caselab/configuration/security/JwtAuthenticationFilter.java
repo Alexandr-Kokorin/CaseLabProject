@@ -1,5 +1,6 @@
 package caselab.configuration.security;
 
+import caselab.exception.entity.not_found.UserNotFoundException;
 import caselab.service.secutiry.ClaimsExtractorService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -22,7 +23,6 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -63,7 +63,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             addProblemDetailToResponse(request, response, "token.expired", null);
         } catch (IllegalArgumentException e) {
             addProblemDetailToResponse(request, response, "token.login_field_not_found", null);
-        } catch (UsernameNotFoundException e) {
+        } catch (UserNotFoundException e) {
             addProblemDetailToResponse(request, response, "user.email.not_found", new Object[] {e.getMessage()});
         } catch (SignatureException e) {
             addProblemDetailToResponse(request, response, "token.signature_invalid", null);

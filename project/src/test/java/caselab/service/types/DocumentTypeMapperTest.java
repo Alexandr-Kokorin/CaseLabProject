@@ -1,8 +1,6 @@
 package caselab.service.types;
 
-import caselab.controller.types.payload.DocumentTypeRequest;
 import caselab.controller.types.payload.DocumentTypeResponse;
-import caselab.controller.types.payload.DocumentTypeToAttributeRequest;
 import caselab.controller.types.payload.DocumentTypeToAttributeResponse;
 import caselab.domain.entity.Attribute;
 import caselab.domain.entity.DocumentType;

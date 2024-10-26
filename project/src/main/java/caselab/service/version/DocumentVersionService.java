@@ -21,9 +21,9 @@ import caselab.domain.repository.UserToDocumentRepository;
 import caselab.domain.storage.FileStorage;
 import caselab.exception.document.version.MissingAttributesException;
 import caselab.exception.document.version.MissingDocumentPermissionException;
-import caselab.exception.entity.AttributeNotFoundException;
-import caselab.exception.entity.DocumentNotFoundException;
-import caselab.exception.entity.DocumentVersionNotFoundException;
+import caselab.exception.entity.not_found.AttributeNotFoundException;
+import caselab.exception.entity.not_found.DocumentNotFoundException;
+import caselab.exception.entity.not_found.DocumentVersionNotFoundException;
 import caselab.service.users.ApplicationUserService;
 import caselab.service.version.mapper.DocumentVersionMapper;
 import caselab.service.version.mapper.DocumentVersionUpdater;
@@ -42,8 +42,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
-@RequiredArgsConstructor
 @Transactional
+@RequiredArgsConstructor
 public class DocumentVersionService {
     private final DocumentVersionRepository documentVersionRepository;
     private final ApplicationUserService userService;
