@@ -12,15 +12,14 @@ import caselab.domain.repository.AttributeRepository;
 import caselab.domain.repository.DocumentRepository;
 import caselab.domain.repository.DocumentTypeToAttributeRepository;
 import caselab.domain.repository.DocumentTypesRepository;
+import caselab.exception.DocumentTypeInUseException;
 import caselab.exception.entity.not_found.AttributeNotFoundException;
 import caselab.exception.entity.not_found.DocumentTypeNotFoundException;
 import caselab.service.types.mapper.DocumentTypeMapper;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -33,7 +32,6 @@ public class DocumentTypesService {
     private final DocumentTypesRepository documentTypesRepository;
     private final AttributeRepository attributeRepository;
     private final DocumentTypeToAttributeRepository documentTypeToAttributeRepository;
-    private final MessageSource messageSource;
 
     public DocumentTypeResponse createDocumentType(DocumentTypeRequest request) {
         var documentType = documentTypeMapper.requestToEntity(request);
@@ -75,9 +73,7 @@ public class DocumentTypesService {
 
         List<Document> relatedDocuments = documentRepository.findByDocumentType(documentType);
         if (!relatedDocuments.isEmpty()) {
-            throw new ConflictException(messageSource.getMessage("document.type.in.use.error",
-                new Object[] {id}, Locale.getDefault()
-            ));
+            throw new DocumentTypeInUseException(id);
         }
 
         documentTypesRepository.delete(documentType);

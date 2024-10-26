@@ -13,11 +13,11 @@ import caselab.domain.repository.AttributeRepository;
 import caselab.domain.repository.DocumentRepository;
 import caselab.domain.repository.DocumentTypeToAttributeRepository;
 import caselab.domain.repository.DocumentTypesRepository;
+import caselab.exception.DocumentTypeInUseException;
 import caselab.service.types.mapper.DocumentTypeMapper;
 import caselab.exception.entity.not_found.DocumentTypeNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,13 +25,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.MessageSource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -59,8 +56,6 @@ class DocumentTypesServiceTest {
     private AttributeRepository attributeRepository;
     @Mock
     private DocumentTypeToAttributeRepository documentTypeToAttributeRepository;
-    @Mock
-    private MessageSource messageSource;
 
     private DocumentTypeRequest request;
     private DocumentType documentType;
@@ -176,9 +171,7 @@ class DocumentTypesServiceTest {
         when(documentTypeRepository.findById(DOCUMENT_TYPE_ID)).thenReturn(Optional.of(documentType));
         when(documentRepository.findByDocumentType(documentType)).thenReturn(List.of(new Document()));
 
-        when(messageSource.getMessage(anyString(), any(), any(Locale.class))).thenReturn("Document type in use");
-
-        assertThrows(ConflictException.class, () -> documentTypesService.deleteDocumentType(DOCUMENT_TYPE_ID));
+        assertThrows(DocumentTypeInUseException.class, () -> documentTypesService.deleteDocumentType(DOCUMENT_TYPE_ID));
     }
 
     private DocumentType createDocumentType(Long id, String name) {
