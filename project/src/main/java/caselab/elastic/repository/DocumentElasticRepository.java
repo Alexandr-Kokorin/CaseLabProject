@@ -26,5 +26,5 @@ public interface DocumentElasticRepository extends ElasticsearchRepository<Docum
          }
        }
        """)
-    Page<AttributeDoc> searchByQuery(String query, Pageable pageable);
+    Page<DocumentDoc> searchByQuery(String query, Pageable pageable);
 }
