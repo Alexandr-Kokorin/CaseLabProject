@@ -21,4 +21,6 @@ public class DocumentDoc {
     private Long id;
     @Field(type = FieldType.Text)
     private String name;
+    @Field(type = FieldType.Text)
+    private String documentTypeName;
 }

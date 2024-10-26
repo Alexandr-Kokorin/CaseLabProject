@@ -19,15 +19,12 @@ public class DocumentEventListener {
             .builder()
             .id(document.getId())
             .name(document.getName())
+            .documentTypeName(document.getDocumentType().getName())
             .build());
     }
 
     @PostRemove
     public void deleteEntity(Document document) {
-        documentElasticRepository.delete(DocumentDoc
-            .builder()
-            .id(document.getId())
-            .name(document.getName())
-            .build());
+        documentElasticRepository.deleteById(document.getId());
     }
 }
