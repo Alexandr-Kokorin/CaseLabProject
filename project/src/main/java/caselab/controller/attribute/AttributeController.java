@@ -2,7 +2,6 @@ package caselab.controller.attribute;
 
 import caselab.controller.attribute.payload.AttributeRequest;
 import caselab.controller.attribute.payload.AttributeResponse;
-import caselab.elastic.service.AttributeElasticService;
 import caselab.service.attribute.AttributeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -15,7 +14,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -25,7 +23,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -35,7 +32,6 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Атрибуты", description = "API взаимодействия с атрибутами типов документов")
 public class AttributeController {
     private final AttributeService attributeService;
-    private final AttributeElasticService attributeElasticService;
 
     @Operation(summary = "Добавить атрибут",
                description = "Добавляет атрибут в базу данных")
@@ -115,14 +111,5 @@ public class AttributeController {
     public ResponseEntity<Void> deleteAttribute(@PathVariable Long id) {
         attributeService.deleteAttribute(id);
         return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/search")
-    public Page<AttributeResponse> search(
-        @RequestParam("query") String query,
-        @RequestParam(name = "page", defaultValue = "0") int page,
-        @RequestParam(name = "size", defaultValue = "10") int size
-    ) {
-        return attributeElasticService.searchValuesElastic(query, page, size);
     }
 }

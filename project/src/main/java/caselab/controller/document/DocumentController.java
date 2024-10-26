@@ -1,11 +1,11 @@
 package caselab.controller.document;
 
-import caselab.controller.attribute.payload.AttributeResponse;
 import caselab.controller.document.payload.DocumentRequest;
 import caselab.controller.document.payload.DocumentResponse;
 import caselab.elastic.service.DocumentElasticService;
 import caselab.service.document.DocumentService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -120,11 +120,22 @@ public class DocumentController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Найти документы по совпадениям",
+               description = "Ищет совпадения в аттрибутах документов "
+                   + "и возвращает все совпадения в отсортированном виде")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Успешный поиск"),
+        @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
     @GetMapping("/search")
     public Page<DocumentResponse> search(
+        @Parameter(description = "Слово или фраза по которой будет осуществляться поиск", example = "Приказ")
         @RequestParam("query") String query,
-        @RequestParam(name = "page", defaultValue = "0") int page,
-        @RequestParam(name = "size", defaultValue = "10") int size
+        @Parameter(description = "Номер страницы для выдачи из всех найденных", example = "1")
+        @RequestParam(name = "page", defaultValue = "1") Integer page,
+        @Parameter(description = "Количество страниц в выдаче", example = "9")
+        @RequestParam(name = "size", defaultValue = "10") Integer size
     ) {
         return documentElasticService.searchValuesElastic(query, page, size);
     }

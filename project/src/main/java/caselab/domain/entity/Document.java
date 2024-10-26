@@ -1,6 +1,5 @@
 package caselab.domain.entity;
 
-import caselab.elastic.listener.AttributeListener;
 import caselab.elastic.listener.DocumentEventListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

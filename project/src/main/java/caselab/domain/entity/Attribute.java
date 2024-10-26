@@ -2,10 +2,8 @@ package caselab.domain.entity;
 
 import caselab.domain.entity.attribute.value.AttributeValue;
 import caselab.domain.entity.document.type.to.attribute.DocumentTypeToAttribute;
-import caselab.elastic.listener.AttributeListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -25,7 +23,6 @@ import lombok.Setter;
 @AllArgsConstructor
 @Entity
 @Table(name = "attribute")
-@EntityListeners(AttributeListener.class)
 public class Attribute {
 
     @Id
