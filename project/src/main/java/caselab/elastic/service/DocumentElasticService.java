@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -33,9 +34,8 @@ public class DocumentElasticService implements ElasticSearchInterface<DocumentRe
 
         var documentDocs = searchResults.getContent();
 
-        for (int i = 0; i < documentDocs.size(); i++) {
-            idsMap.put(documentDocs.get(i).getId(), i);
-        }
+        IntStream.range(0, documentDocs.size())
+            .forEach(i -> idsMap.put(documentDocs.get(i).getId(), i));
 
         Set<Long> ids = idsMap.keySet();
 
