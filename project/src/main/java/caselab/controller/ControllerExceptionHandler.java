@@ -1,6 +1,5 @@
 package caselab.controller;
 
-import caselab.exception.document.version.DocumentPermissionAlreadyGrantedException;
 import caselab.exception.base.ApplicationRuntimeException;
 import java.util.Locale;
 import java.util.Objects;
@@ -53,19 +52,6 @@ public class ControllerExceptionHandler {
             HttpStatus.UNAUTHORIZED,
             "user.unauthorized",
             new Object[] {e.getMessage()},
-            locale
-        );
-    }
-
-    @ExceptionHandler(DocumentPermissionAlreadyGrantedException.class)
-    public ResponseEntity<ProblemDetail> documentPermissionAlreadyGrantedException(
-        MissingDocumentPermissionException exception,
-        Locale locale
-    ) {
-        return createProblemDetailResponse(
-            HttpStatus.BAD_REQUEST,
-            exception.getMessage(),
-            new Object[] {exception.getPermissionName()},
             locale
         );
     }
