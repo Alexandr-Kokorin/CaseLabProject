@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -60,5 +61,10 @@ public class DocumentFacadeController {
         Authentication authentication
     ) {
         return documentFacadeService.grantPermission(id, email, authentication);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteDocument(@PathVariable Long id, Authentication authentication) {
+        documentFacadeService.documentToArchive(id, authentication);
     }
 }

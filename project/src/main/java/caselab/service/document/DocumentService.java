@@ -10,6 +10,7 @@ import caselab.domain.entity.DocumentPermission;
 import caselab.domain.entity.DocumentType;
 import caselab.domain.entity.UserToDocument;
 import caselab.domain.entity.enums.DocumentPermissionName;
+import caselab.domain.entity.enums.DocumentStatus;
 import caselab.domain.repository.ApplicationUserRepository;
 import caselab.domain.repository.DocumentPermissionRepository;
 import caselab.domain.repository.DocumentRepository;
@@ -138,7 +139,7 @@ public class DocumentService {
     ) {
         var document = documentRepository.findById(id)
             .orElseThrow(() -> new DocumentNotFoundException(id));
-        docPermissionService.assertHasPermission(by, document, (x) -> x == DocumentPermissionName.CREATOR, "Creator");
+        docPermissionService.assertHasPermission(by, document, DocumentPermissionName::isCreator, "Creator");
         if (!docPermissionService.checkLacksPermission(user, document, DocumentPermissionName::canRead)) {
             throw new DocumentPermissionAlreadyGrantedException("Read");
         }
@@ -157,6 +158,14 @@ public class DocumentService {
             throw new DocumentNotFoundException(id);
         }
         documentRepository.deleteById(id);
+    }
+
+    public void documentToArchive(Long documentId, ApplicationUser user) {
+        var document =
+            documentRepository.findById(documentId).orElseThrow(() -> new DocumentNotFoundException(documentId));
+        docPermissionService.assertHasPermission(user, document, DocumentPermissionName::isCreator, "Archive");
+        document.setStatus(DocumentStatus.ARCHIVED);
+        documentRepository.save(document);
     }
 
     private DocumentType getDocumentTypeById(Long id) {

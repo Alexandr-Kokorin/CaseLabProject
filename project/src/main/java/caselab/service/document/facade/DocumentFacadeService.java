@@ -92,4 +92,9 @@ public class DocumentFacadeService {
         var documentResponse = documentService.grantReadDocumentPermission(id, grantTo, user);
         return enrichResponse(documentResponse, user);
     }
+
+    public void documentToArchive(Long id, Authentication auth) {
+        var user = authToUserService.findUserByAuthentication(auth);
+        documentService.documentToArchive(id, user);
+    }
 }

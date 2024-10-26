@@ -22,4 +22,8 @@ public enum DocumentPermissionName {
     public boolean any() {
         return true;
     }
+
+    public boolean isCreator() {
+        return this == CREATOR;
+    }
 }
