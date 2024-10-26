@@ -4,16 +4,18 @@ import caselab.controller.users.payload.UserResponse;
 import caselab.controller.users.payload.UserUpdateRequest;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.repository.ApplicationUserRepository;
+import caselab.exception.entity.not_found.UserNotFoundException;
 import caselab.service.secutiry.AuthenticationService;
 import caselab.service.users.mapper.UserMapper;
+import jakarta.transaction.Transactional;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class ApplicationUserService {
 
@@ -30,7 +32,7 @@ public class ApplicationUserService {
 
     public UserResponse findUser(String email) {
         var user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new UsernameNotFoundException(email));
+            .orElseThrow(() -> new UserNotFoundException(email));
         return mapper.entityToResponse(user);
     }
 
@@ -50,6 +52,6 @@ public class ApplicationUserService {
     public ApplicationUser findUserByAuthentication(Authentication authentication) {
         var userDetails = (UserDetails) authentication.getPrincipal();
         return userRepository.findByEmail(userDetails.getUsername())
-            .orElseThrow(() -> new UsernameNotFoundException(userDetails.getUsername()));
+            .orElseThrow(() -> new UserNotFoundException(userDetails.getUsername()));
     }
 }

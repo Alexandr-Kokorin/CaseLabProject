@@ -4,7 +4,7 @@ import caselab.controller.attribute.payload.AttributeRequest;
 import caselab.controller.attribute.payload.AttributeResponse;
 import caselab.domain.entity.Attribute;
 import caselab.domain.repository.AttributeRepository;
-import caselab.exception.entity.AttributeNotFoundException;
+import caselab.exception.entity.not_found.AttributeNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;

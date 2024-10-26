@@ -8,6 +8,8 @@ import caselab.controller.secutiry.payload.AuthenticationResponse;
 import caselab.controller.types.payload.DocumentTypeRequest;
 import caselab.controller.types.payload.DocumentTypeResponse;
 import caselab.controller.types.payload.DocumentTypeToAttributeRequest;
+import caselab.exception.entity.not_found.DocumentTypeNotFoundException;
+import caselab.service.types.DocumentTypesService;
 import java.util.List;
 import java.util.Objects;
 import lombok.SneakyThrows;

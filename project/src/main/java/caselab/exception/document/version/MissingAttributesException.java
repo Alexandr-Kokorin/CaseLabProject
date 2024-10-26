@@ -1,9 +1,12 @@
 package caselab.exception.document.version;
 
-import caselab.exception.ApplicationRuntimeException;
+import caselab.exception.base.ApplicationBadRequestException;
+import lombok.EqualsAndHashCode;
 
-public class MissingAttributesException extends ApplicationRuntimeException {
+@EqualsAndHashCode(callSuper = true)
+public final class MissingAttributesException extends ApplicationBadRequestException {
+
     public MissingAttributesException() {
-        super("version.missing_attributes");
+        super("version.missing_attributes", new Object[]{});
     }
 }

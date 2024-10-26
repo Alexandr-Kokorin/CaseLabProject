@@ -1,14 +1,12 @@
 package caselab.exception.document.version;
 
-import caselab.exception.ApplicationRuntimeException;
-import lombok.Getter;
+import caselab.exception.base.ApplicationForbiddenException;
+import lombok.EqualsAndHashCode;
 
-@Getter
-public class MissingDocumentPermissionException extends ApplicationRuntimeException {
-    private final String permissionName;
+@EqualsAndHashCode(callSuper = true)
+public final class MissingDocumentPermissionException extends ApplicationForbiddenException {
 
     public MissingDocumentPermissionException(String permissionName) {
-        super("version.missing_permission");
-        this.permissionName = permissionName;
+        super("version.missing_permission", new Object[]{permissionName});
     }
 }

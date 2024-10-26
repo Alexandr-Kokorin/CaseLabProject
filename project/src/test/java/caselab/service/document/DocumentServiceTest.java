@@ -13,9 +13,10 @@ import caselab.domain.repository.DocumentPermissionRepository;
 import caselab.domain.repository.DocumentRepository;
 import caselab.domain.repository.DocumentTypesRepository;
 import caselab.domain.repository.UserToDocumentRepository;
-import caselab.exception.entity.DocumentNotFoundException;
-import caselab.exception.entity.DocumentPermissionNotFoundException;
-import caselab.exception.entity.DocumentTypeNotFoundException;
+import caselab.exception.entity.not_found.DocumentNotFoundException;
+import caselab.exception.entity.not_found.DocumentPermissionNotFoundException;
+import caselab.exception.entity.not_found.DocumentTypeNotFoundException;
+import caselab.exception.entity.not_found.UserNotFoundException;
 import caselab.service.document.mapper.DocumentMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -25,7 +26,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -36,9 +36,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-
 @ExtendWith(MockitoExtension.class)
 public class DocumentServiceTest {
+
     @Mock
     private DocumentRepository documentRepository;
     @Mock
@@ -126,9 +126,9 @@ public class DocumentServiceTest {
         when(documentTypeRepository.findById(documentRequest.documentTypeId()))
             .thenReturn(Optional.of(documentType));
         when(applicationUserRepository.findByEmail(documentRequest.usersPermissions().get(0).email()))
-            .thenThrow(new UsernameNotFoundException(documentRequest.usersPermissions().get(0).email()));
+            .thenThrow(new UserNotFoundException(documentRequest.usersPermissions().get(0).email()));
 
-        assertThrows(UsernameNotFoundException.class, () -> documentService.createDocument(documentRequest));
+        assertThrows(UserNotFoundException.class, () -> documentService.createDocument(documentRequest));
     }
 
     @Test
