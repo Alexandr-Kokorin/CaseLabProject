@@ -52,4 +52,13 @@ public class DocumentFacadeController {
     ) {
         return documentFacadeService.updateDocument(id, documentRequest, authentication);
     }
+
+    @PutMapping("/{id}/grant-access-to/{email}")
+    public DocumentFacadeResponse grantAccess(
+        @PathVariable Long id,
+        @PathVariable String email,
+        Authentication authentication
+    ) {
+        return documentFacadeService.grantPermission(id, email, authentication);
+    }
 }

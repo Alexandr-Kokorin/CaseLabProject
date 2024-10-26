@@ -4,6 +4,7 @@ import caselab.exception.NotificationException;
 import caselab.exception.SubscriptionAlreadyExistException;
 import caselab.exception.SubscriptionNotFoundException;
 import caselab.exception.UserExistsException;
+import caselab.exception.document.version.DocumentPermissionAlreadyGrantedException;
 import caselab.exception.document.version.MissingAttributesException;
 import caselab.exception.document.version.MissingDocumentPermissionException;
 import caselab.exception.entity.EntityNotFoundException;
@@ -138,6 +139,19 @@ public class ControllerExceptionHandler {
     ) {
         return createProblemDetailResponse(
             HttpStatus.FORBIDDEN,
+            exception.getMessage(),
+            new Object[] {exception.getPermissionName()},
+            locale
+        );
+    }
+
+    @ExceptionHandler(DocumentPermissionAlreadyGrantedException.class)
+    public ResponseEntity<ProblemDetail> documentPermissionAlreadyGrantedException(
+        MissingDocumentPermissionException exception,
+        Locale locale
+    ) {
+        return createProblemDetailResponse(
+            HttpStatus.BAD_REQUEST,
             exception.getMessage(),
             new Object[] {exception.getPermissionName()},
             locale

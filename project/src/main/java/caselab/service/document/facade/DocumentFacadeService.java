@@ -7,12 +7,14 @@ import caselab.controller.document.payload.DocumentRequest;
 import caselab.controller.document.payload.DocumentResponse;
 import caselab.controller.version.payload.CreateDocumentVersionRequest;
 import caselab.domain.entity.ApplicationUser;
+import caselab.domain.repository.ApplicationUserRepository;
 import caselab.service.document.DocumentService;
 import caselab.service.util.UserFromAuthenticationUtilService;
 import caselab.service.version.DocumentVersionService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -23,6 +25,8 @@ public class DocumentFacadeService {
     private final DocumentVersionService documentVersionService;
 
     private final UserFromAuthenticationUtilService authToUserService;
+
+    private final ApplicationUserRepository userRepository;
 
     private DocumentFacadeResponse enrichResponse(
         DocumentResponse documentResponse,
@@ -72,6 +76,13 @@ public class DocumentFacadeService {
     public DocumentFacadeResponse updateDocument(Long id, UpdateDocumentRequest body, Authentication auth) {
         var user = authToUserService.findUserByAuthentication(auth);
         var documentResponse = documentService.updateDocument(id, body, user);
+        return enrichResponse(documentResponse, user);
+    }
+
+    public DocumentFacadeResponse grantPermission(Long id, String email, Authentication auth) {
+        var user = authToUserService.findUserByAuthentication(auth);
+        var grantTo = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException(email));
+        var documentResponse = documentService.grantReadDocumentPermission(id, grantTo, user);
         return enrichResponse(documentResponse, user);
     }
 }

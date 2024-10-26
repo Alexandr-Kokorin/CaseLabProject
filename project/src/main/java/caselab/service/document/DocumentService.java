@@ -15,6 +15,7 @@ import caselab.domain.repository.DocumentPermissionRepository;
 import caselab.domain.repository.DocumentRepository;
 import caselab.domain.repository.DocumentTypesRepository;
 import caselab.domain.repository.UserToDocumentRepository;
+import caselab.exception.document.version.DocumentPermissionAlreadyGrantedException;
 import caselab.exception.entity.DocumentNotFoundException;
 import caselab.exception.entity.DocumentPermissionNotFoundException;
 import caselab.exception.entity.DocumentTypeNotFoundException;
@@ -128,6 +129,27 @@ public class DocumentService {
         updateDocument.setUsersToDocuments(saveUserToDocuments(documentRequest, updateDocument));
 
         return documentMapper.entityToResponse(updateDocument);
+    }
+
+    public DocumentResponse grantReadDocumentPermission(
+        Long id,
+        ApplicationUser user,
+        ApplicationUser by
+    ) {
+        var document = documentRepository.findById(id)
+            .orElseThrow(() -> new DocumentNotFoundException(id));
+        docPermissionService.assertHasPermission(by, document, (x) -> x == DocumentPermissionName.CREATOR, "Creator");
+        if (!docPermissionService.checkLacksPermission(user, document, DocumentPermissionName::canRead)) {
+            throw new DocumentPermissionAlreadyGrantedException("Read");
+        }
+        var permission = documentPermissionRepository.findDocumentPermissionByName(DocumentPermissionName.READ);
+        var userToDocument = new UserToDocument();
+        userToDocument.setApplicationUser(user);
+        userToDocument.setDocument(document);
+        userToDocument.setDocumentPermissions(List.of(permission));
+        userToDocumentRepository.save(userToDocument);
+        document.getUsersToDocuments().add(userToDocument);
+        return documentMapper.entityToResponse(document);
     }
 
     public void deleteDocument(Long id) {
