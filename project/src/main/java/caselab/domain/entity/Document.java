@@ -1,7 +1,10 @@
 package caselab.domain.entity;
 
+import caselab.domain.entity.enums.DocumentStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -39,6 +42,10 @@ public class Document {
 
     @Column(nullable = false)
     private String name;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private DocumentStatus status = DocumentStatus.DRAFT;
 
     @OneToMany(mappedBy = "document")
     @OrderBy("createdAt desc")

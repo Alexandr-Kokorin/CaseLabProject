@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS document
     id                       BIGSERIAL        NOT NULL,
     document_type_id         BIGINT           NOT NULL REFERENCES document_type(id),
     name                     TEXT             NOT NULL,
+    status                   TEXT             NOT NULL,
 
     PRIMARY KEY (id)
 );
