@@ -46,7 +46,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class DocumentVersionService {
     private final DocumentVersionRepository documentVersionRepository;
-    private final ApplicationUserService userService;
+    private final ApplicationUserService userService;  // TODO: сменить на UserFromAuthenticationUtilService
     private final DocumentRepository documentRepository;
     private final UserToDocumentRepository userToDocumentRepository;
     private final AttributeRepository attributeRepository;
@@ -55,7 +55,7 @@ public class DocumentVersionService {
     private final DocumentVersionUpdater documentVersionUpdater;
     private final FileStorage documentVersionStorage;
 
-    private boolean checkLacksPermission(
+    private boolean checkLacksPermission(// TODO: сменить на DocumentPermissionUtilService
         ApplicationUser user,
         Document document,
         Predicate<DocumentPermissionName> permission
@@ -82,6 +82,32 @@ public class DocumentVersionService {
         }
 
         return response;
+    }
+
+    // На данный момент (на данной версии приложения) разрешение READ имеют лишь те пользователи,
+    // которым этот документ был отослан на подпись.
+    // Эти пользователи могут видеть документ и все его версии до тех пор, пока не будет создан новый черновик -
+    // в этом случае доступ READ теряется.
+    // Данный метод отнимает у всех таких пользователей право на чтение
+    private void clearReaders(Document document) {
+        document
+            .getUsersToDocuments()
+            .stream()
+            .map(UserToDocument::getApplicationUser)
+            .filter(
+                user -> !checkLacksPermission(user, document, x -> x == DocumentPermissionName.READ)
+            )
+            .map(user -> userToDocumentRepository.findByApplicationUserIdAndDocumentId(user.getId(), document.getId()))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .filter(
+                utd -> utd.getDocumentPermissions().stream().anyMatch(
+                    per -> per.getName() == DocumentPermissionName.READ
+                )
+            )
+            .forEach(
+                userToDocumentRepository::delete
+            );
     }
 
     private void checkMandatoryAttributesPresent(CreateDocumentVersionRequest body, Document document) {
@@ -155,6 +181,7 @@ public class DocumentVersionService {
         var saved = documentVersionRepository.save(documentVersion);
         attributeValueRepository.saveAll(attributeValues);
 
+        clearReaders(document);  // TODO: проверить в тесте контроллера, что это работает
         return documentVersionMapper.map(saved);
     }
 
