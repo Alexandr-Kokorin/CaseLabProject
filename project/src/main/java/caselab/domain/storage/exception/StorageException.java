@@ -1,8 +1,6 @@
 package caselab.domain.storage.exception;
 
-import caselab.exception.ApplicationRuntimeException;
-
-abstract class StorageException extends ApplicationRuntimeException {
+abstract class StorageException extends RuntimeException {
 
     StorageException(String message) {
         super(message);

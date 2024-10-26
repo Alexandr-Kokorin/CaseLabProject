@@ -5,9 +5,9 @@ import caselab.domain.entity.Subscription;
 import caselab.domain.entity.enums.EventType;
 import caselab.domain.repository.DocumentVersionRepository;
 import caselab.domain.repository.SubscriptionRepository;
-import caselab.exception.SubscriptionAlreadyExistException;
-import caselab.exception.SubscriptionNotFoundException;
-import caselab.exception.entity.DocumentVersionNotFoundException;
+import caselab.exception.entity.already_exists.SubscriptionAlreadyExistsException;
+import caselab.exception.entity.not_found.DocumentVersionNotFoundException;
+import caselab.exception.entity.not_found.SubscriptionNotFoundException;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -17,8 +17,8 @@ import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 @Transactional
+@RequiredArgsConstructor
 public class SubscriptionService {
 
     private final SubscriptionRepository repository;
@@ -60,7 +60,7 @@ public class SubscriptionService {
         }
 
         if (repository.existsByDocumentVersionIdAndUserEmail(documentVersionId, userEmail)) {
-            throw new SubscriptionAlreadyExistException(documentVersionId);
+            throw new SubscriptionAlreadyExistsException(documentVersionId);
         }
 
         var subscription = Subscription.builder()

@@ -7,7 +7,7 @@ import caselab.controller.types.payload.DocumentTypeToAttributeRequest;
 import caselab.controller.types.payload.DocumentTypeToAttributeResponse;
 import caselab.domain.IntegrationTest;
 import caselab.domain.repository.DocumentTypesRepository;
-import caselab.exception.entity.DocumentTypeNotFoundException;
+import caselab.exception.entity.not_found.DocumentTypeNotFoundException;
 import caselab.service.attribute.AttributeService;
 import java.util.ArrayList;
 import java.util.List;

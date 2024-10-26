@@ -1,4 +1,4 @@
-package caselab.exception.entity;
+package caselab.exception.entity.not_found;
 
 import lombok.EqualsAndHashCode;
 

@@ -4,12 +4,14 @@ import caselab.controller.attribute.payload.AttributeRequest;
 import caselab.controller.attribute.payload.AttributeResponse;
 import caselab.domain.entity.Attribute;
 import caselab.domain.repository.AttributeRepository;
-import caselab.exception.entity.AttributeNotFoundException;
+import caselab.exception.entity.not_found.AttributeNotFoundException;
+import jakarta.transaction.Transactional;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class AttributeService {
 
