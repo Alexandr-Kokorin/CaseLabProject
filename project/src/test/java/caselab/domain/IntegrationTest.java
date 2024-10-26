@@ -18,7 +18,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 @Testcontainers
-public abstract class IntegrationTest {
+public abstract class IntegrationTest extends DocumentElasticTest{
 
     public static PostgreSQLContainer<?> POSTGRES;
 

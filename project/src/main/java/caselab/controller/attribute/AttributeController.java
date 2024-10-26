@@ -31,7 +31,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Tag(name = "Атрибуты", description = "API взаимодействия с атрибутами типов документов")
 public class AttributeController {
-
     private final AttributeService attributeService;
 
     @Operation(summary = "Добавить атрибут",

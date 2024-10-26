@@ -2,6 +2,7 @@ package caselab.service.version;
 
 import caselab.controller.version.payload.AttributeValuePair;
 import caselab.controller.version.payload.DocumentVersionResponse;
+import caselab.domain.DocumentElasticTest;
 import caselab.domain.entity.Attribute;
 import caselab.domain.entity.Document;
 import caselab.domain.entity.DocumentVersion;
@@ -17,7 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
-public class DocumentVersionMapperTest {
+public class DocumentVersionMapperTest extends DocumentElasticTest {
     @Autowired
     private DocumentVersionMapper documentVersionMapper;
 

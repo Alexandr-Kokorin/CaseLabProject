@@ -1,7 +1,9 @@
 package caselab.domain.entity;
 
+import caselab.elastic.listener.DocumentEventListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -24,6 +26,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @Entity
 @ToString
+@EntityListeners(DocumentEventListener.class)
 @Table(name = "document")
 public class Document {
 
