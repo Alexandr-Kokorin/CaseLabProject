@@ -9,11 +9,12 @@ import caselab.domain.entity.enums.SignatureStatus;
 import caselab.domain.repository.ApplicationUserRepository;
 import caselab.domain.repository.DocumentVersionRepository;
 import caselab.domain.repository.SignatureRepository;
-import caselab.exception.entity.DocumentVersionNotFoundException;
-import caselab.exception.entity.SignatureNotFoundException;
+import caselab.exception.entity.not_found.DocumentVersionNotFoundException;
+import caselab.exception.entity.not_found.SignatureNotFoundException;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 
+import caselab.exception.entity.not_found.UserNotFoundException;
 import caselab.service.signature.mapper.SignatureMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -23,7 +24,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import static java.time.OffsetDateTime.now;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,6 +33,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class SignatureServiceTest {
+
     @InjectMocks
     private SignatureService signatureService;
     @Mock
@@ -112,9 +113,9 @@ public class SignatureServiceTest {
         Mockito.when(documentVersionRepository.findById(request.documentVersionId()))
             .thenReturn(Optional.of(foundDocumentVersion));
         Mockito.when(userRepository.findByEmail(request.email()))
-            .thenThrow(new UsernameNotFoundException(request.email()));
+            .thenThrow(new UserNotFoundException(request.email()));
 
-        assertThrows(UsernameNotFoundException.class, () -> signatureService.createSignature(request));
+        assertThrows(UserNotFoundException.class, () -> signatureService.createSignature(request));
     }
 
     @DisplayName("Create signature for non-existent document version")

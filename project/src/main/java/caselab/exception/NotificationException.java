@@ -1,7 +1,12 @@
 package caselab.exception;
 
-public class NotificationException extends RuntimeException {
+import caselab.exception.base.ApplicationInternalServerErrorException;
+import lombok.EqualsAndHashCode;
+
+@EqualsAndHashCode(callSuper = true)
+public final class NotificationException extends ApplicationInternalServerErrorException {
+
     public NotificationException() {
-        super("email.creation.error");
+        super("email.creation.error", new Object[]{});
     }
 }

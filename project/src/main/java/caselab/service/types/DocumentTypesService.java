@@ -9,15 +9,17 @@ import caselab.domain.entity.document.type.to.attribute.DocumentTypeToAttributeI
 import caselab.domain.repository.AttributeRepository;
 import caselab.domain.repository.DocumentTypeToAttributeRepository;
 import caselab.domain.repository.DocumentTypesRepository;
-import caselab.exception.entity.AttributeNotFoundException;
-import caselab.exception.entity.DocumentTypeNotFoundException;
+import caselab.exception.entity.not_found.AttributeNotFoundException;
+import caselab.exception.entity.not_found.DocumentTypeNotFoundException;
 import caselab.service.types.mapper.DocumentTypeMapper;
+import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class DocumentTypesService {
 

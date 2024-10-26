@@ -4,6 +4,7 @@ import caselab.controller.users.payload.UserResponse;
 import caselab.controller.users.payload.UserUpdateRequest;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.repository.ApplicationUserRepository;
+import caselab.exception.entity.not_found.UserNotFoundException;
 import caselab.service.secutiry.AuthenticationService;
 import caselab.service.users.mapper.UserMapper;
 import java.util.ArrayList;
@@ -17,7 +18,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -109,7 +109,7 @@ public class ApplicationUserServiceTest {
     void findUser_shouldThrowExceptionWhenUserNotFound() {
         when(userRepository.findByEmail(userEmail)).thenReturn(Optional.empty());
 
-        assertThrows(UsernameNotFoundException.class, () -> userService.findUser(user1.getEmail()));
+        assertThrows(UserNotFoundException.class, () -> userService.findUser(user1.getEmail()));
     }
 
     @Test
@@ -145,7 +145,7 @@ public class ApplicationUserServiceTest {
         when(userDetails.getUsername()).thenReturn(userEmail);
         when(userRepository.findByEmail(any(String.class))).thenReturn(Optional.empty());
 
-        assertThrows(UsernameNotFoundException.class, () -> userService.updateUser(authentication, updateRequest));
+        assertThrows(UserNotFoundException.class, () -> userService.updateUser(authentication, updateRequest));
     }
 
     @Test
@@ -171,7 +171,7 @@ public class ApplicationUserServiceTest {
         when(userDetails.getUsername()).thenReturn(userEmail);
         when(userRepository.findByEmail(userEmail)).thenReturn(Optional.empty());
 
-        assertThrows(UsernameNotFoundException.class, () -> userService.deleteUser(authentication));
+        assertThrows(UserNotFoundException.class, () -> userService.deleteUser(authentication));
 
         verify(userRepository, times(0)).delete(any(ApplicationUser.class));
     }
