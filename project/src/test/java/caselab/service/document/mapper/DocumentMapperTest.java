@@ -4,29 +4,25 @@ import caselab.Application;
 import caselab.controller.document.payload.DocumentRequest;
 import caselab.controller.document.payload.DocumentResponse;
 import caselab.controller.document.payload.UserToDocumentRequest;
+import caselab.domain.DocumentElasticTest;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.Document;
 import caselab.domain.entity.DocumentType;
 import caselab.domain.entity.DocumentVersion;
 import caselab.domain.entity.UserToDocument;
-import caselab.domain.entity.enums.DocumentPermissionName;
-import lombok.SneakyThrows;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(classes = Application.class)
-public class DocumentMapperTest {
+public class DocumentMapperTest extends DocumentElasticTest {
     @Autowired
     private DocumentMapper documentMapper;
     @Test

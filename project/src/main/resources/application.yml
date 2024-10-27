@@ -52,6 +52,8 @@ spring:
             timeout: 5000
             write-timeout: 5000
         transport.protocol: smtp
+  elasticsearch:
+    uris: http://elasticsearch:9200
 
 bucket4j:
   enabled: true
@@ -72,7 +74,6 @@ server:
   forward-headers-strategy: NATIVE
 
 logging:
-  config: classpath:log4j2-plain.xml
   level:
     org.apache.kafka: warn
 
