@@ -24,7 +24,8 @@ import org.springframework.web.multipart.MultipartFile;
 @SecurityRequirement(name = "JWT")
 @RequiredArgsConstructor
 public class DocumentFacadeController {
-    DocumentFacadeService documentFacadeService;
+
+    private final DocumentFacadeService documentFacadeService;
 
     @GetMapping("/{id}")
     DocumentFacadeResponse getDocumentById(@PathVariable("id") Long id, Authentication authentication) {
