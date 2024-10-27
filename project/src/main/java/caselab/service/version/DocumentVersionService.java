@@ -122,9 +122,9 @@ public class DocumentVersionService {
         DocumentVersion documentVersion = new DocumentVersion();
         documentVersion.setName(body.name());
         documentVersion.setCreatedAt(OffsetDateTime.now());
-        documentVersion.setContentName(
-            documentVersionStorage.put(file)
-        );
+        if (file != null) {
+            documentVersion.setContentName(documentVersionStorage.put(file));
+        }
         documentVersion.setDocument(document);
 
         var attributeValues = body
@@ -234,7 +234,9 @@ public class DocumentVersionService {
             throw new MissingDocumentPermissionException(DocumentPermissionName.EDIT.name());
         }
 
-        documentVersionStorage.delete(documentVersion.getContentName());
+        if (documentVersion.getContentName() != null) {
+            documentVersionStorage.delete(documentVersion.getContentName());
+        }
 
         documentVersionRepository.delete(documentVersion);
     }
