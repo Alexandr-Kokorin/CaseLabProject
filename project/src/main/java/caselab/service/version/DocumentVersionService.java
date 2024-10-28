@@ -147,7 +147,15 @@ public class DocumentVersionService {
         var saved = documentVersionRepository.save(documentVersion);
         attributeValueRepository.saveAll(attributeValues);
 
-        return documentVersionMapper.map(saved);
+        DocumentVersionResponse versionResponse = null;
+
+        try {
+            versionResponse = documentVersionMapper.map(saved);
+        } catch (Exception e) {
+            documentVersionStorage.delete(documentVersion.getContentName());
+        }
+
+        return versionResponse;
     }
 
     public DocumentVersionResponse getDocumentVersionById(Long id, Authentication auth) {
@@ -234,10 +242,10 @@ public class DocumentVersionService {
             throw new MissingDocumentPermissionException(DocumentPermissionName.EDIT.name());
         }
 
+        documentVersionRepository.delete(documentVersion);
+
         if (documentVersion.getContentName() != null) {
             documentVersionStorage.delete(documentVersion.getContentName());
         }
-
-        documentVersionRepository.delete(documentVersion);
     }
 }
