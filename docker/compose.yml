@@ -21,6 +21,9 @@ services:
       JWT_SECRET: $JWT_SECRET
       MAIL_HOST: $MAIL_HOST
       MAIL_PORT: $MAIL_PORT
+      MINIO_URL: $MINIO_URL
+      MINIO_ACCESS_KEY: $MINIO_ACCESS_KEY
+      MINIO_SECRET_KEY: $MINIO_SECRET_KEY
     depends_on:
       liquibase-migrations:
         condition: service_completed_successfully
