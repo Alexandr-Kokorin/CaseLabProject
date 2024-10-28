@@ -156,9 +156,9 @@ public class DocumentVersionService {
         DocumentVersion documentVersion = new DocumentVersion();
         documentVersion.setName(body.name());
         documentVersion.setCreatedAt(OffsetDateTime.now());
-        documentVersion.setContentName(
-            documentVersionStorage.put(file)
-        );
+        if (file != null) {
+            documentVersion.setContentName(documentVersionStorage.put(file));
+        }
         documentVersion.setDocument(document);
 
         var attributeValues = body
@@ -181,8 +181,16 @@ public class DocumentVersionService {
         var saved = documentVersionRepository.save(documentVersion);
         attributeValueRepository.saveAll(attributeValues);
 
+        DocumentVersionResponse versionResponse = null;
+
+        try {
+            versionResponse = documentVersionMapper.map(saved);
+        } catch (Exception e) {
+            documentVersionStorage.delete(documentVersion.getContentName());
+        }
+
         clearReaders(document);  // TODO: проверить в тесте контроллера, что это работает
-        return documentVersionMapper.map(saved);
+        return versionResponse;
     }
 
     public DocumentVersionResponse getDocumentVersionById(Long id, Authentication auth) {
