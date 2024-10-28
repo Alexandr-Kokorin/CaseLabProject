@@ -3,7 +3,9 @@ package caselab.service.users;
 import caselab.controller.users.payload.UserResponse;
 import caselab.controller.users.payload.UserUpdateRequest;
 import caselab.domain.entity.ApplicationUser;
+import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.ApplicationUserRepository;
+import caselab.exception.PermissionDeniedException;
 import caselab.exception.entity.not_found.UserNotFoundException;
 import caselab.service.secutiry.AuthenticationService;
 import caselab.service.users.mapper.UserMapper;
@@ -46,6 +48,7 @@ public class ApplicationUserService {
     }
 
     public void deleteUser(Authentication authentication) {
+        checkAdmin(authentication);
         userRepository.delete(findUserByAuthentication(authentication));
     }
 
@@ -53,5 +56,13 @@ public class ApplicationUserService {
         var userDetails = (UserDetails) authentication.getPrincipal();
         return userRepository.findByEmail(userDetails.getUsername())
             .orElseThrow(() -> new UserNotFoundException(userDetails.getUsername()));
+    }
+
+    public void checkAdmin(Authentication authentication){
+        var applicationUser = findUserByAuthentication(authentication);
+        if (applicationUser.getAuthorities().stream()
+            .noneMatch(globalPermission -> globalPermission.getAuthority().equals(GlobalPermissionName.ADMIN.name()))) {
+            throw new PermissionDeniedException();
+        }
     }
 }

@@ -5,9 +5,11 @@ import caselab.controller.attribute.payload.AttributeResponse;
 import caselab.domain.entity.Attribute;
 import caselab.domain.repository.AttributeRepository;
 import caselab.exception.entity.not_found.AttributeNotFoundException;
+import caselab.service.users.ApplicationUserService;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -16,8 +18,11 @@ import org.springframework.stereotype.Service;
 public class AttributeService {
 
     private final AttributeRepository attributeRepository;
+    private final ApplicationUserService userService;
 
-    public AttributeResponse createAttribute(AttributeRequest attributeRequest) {
+    public AttributeResponse createAttribute(AttributeRequest attributeRequest, Authentication authentication) {
+        userService.checkAdmin(authentication);
+
         Attribute attribute = new Attribute();
         attribute.setName(attributeRequest.name());
         attribute.setType(attributeRequest.type());
@@ -38,7 +43,9 @@ public class AttributeService {
             .toList();
     }
 
-    public AttributeResponse updateAttribute(Long id, AttributeRequest attributeRequest) {
+    public AttributeResponse updateAttribute(Long id, AttributeRequest attributeRequest,Authentication authentication) {
+        userService.checkAdmin(authentication);
+
         Attribute attribute = attributeRepository.findById(id)
             .orElseThrow(() -> new AttributeNotFoundException(id));
         attribute.setName(attributeRequest.name());
@@ -47,7 +54,8 @@ public class AttributeService {
         return new AttributeResponse(attribute.getId(), attribute.getName(), attribute.getType());
     }
 
-    public void deleteAttribute(Long id) {
+    public void deleteAttribute(Long id, Authentication authentication) {
+        userService.checkAdmin(authentication);
         if (attributeRepository.existsById(id)) {
             attributeRepository.deleteById(id);
         } else {

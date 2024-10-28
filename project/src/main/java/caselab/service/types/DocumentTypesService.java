@@ -16,10 +16,12 @@ import caselab.exception.DocumentTypeInUseException;
 import caselab.exception.entity.not_found.AttributeNotFoundException;
 import caselab.exception.entity.not_found.DocumentTypeNotFoundException;
 import caselab.service.types.mapper.DocumentTypeMapper;
+import caselab.service.users.ApplicationUserService;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -32,8 +34,11 @@ public class DocumentTypesService {
     private final DocumentTypesRepository documentTypesRepository;
     private final AttributeRepository attributeRepository;
     private final DocumentTypeToAttributeRepository documentTypeToAttributeRepository;
+    private final ApplicationUserService userService;
 
-    public DocumentTypeResponse createDocumentType(DocumentTypeRequest request) {
+    public DocumentTypeResponse createDocumentType(DocumentTypeRequest request, Authentication authentication) {
+        userService.checkAdmin(authentication);
+
         var documentType = documentTypeMapper.requestToEntity(request);
 
         validateAttributesExistence(request);
@@ -54,7 +59,9 @@ public class DocumentTypesService {
             .toList();
     }
 
-    public DocumentTypeResponse updateDocumentType(Long id, DocumentTypeRequest request) {
+    public DocumentTypeResponse updateDocumentType(Long id, DocumentTypeRequest request,Authentication authentication) {
+        userService.checkAdmin(authentication);
+
         var documentType = findDocumentTypeById(id);
         var updatedDocumentType = documentTypeMapper.requestToEntity(request);
 
@@ -68,7 +75,9 @@ public class DocumentTypesService {
         return documentTypeMapper.entityToResponse(updatedDocumentType);
     }
 
-    public void deleteDocumentType(Long id) {
+    public void deleteDocumentType(Long id, Authentication authentication) {
+        userService.checkAdmin(authentication);
+
         var documentType = findDocumentTypeById(id);
 
         List<Document> relatedDocuments = documentRepository.findByDocumentType(documentType);

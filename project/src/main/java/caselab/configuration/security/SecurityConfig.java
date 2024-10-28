@@ -26,7 +26,7 @@ public class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(matcherRegistry ->
                 matcherRegistry
-                    .requestMatchers("/api/v1/auth/**").permitAll() // запрос не требует аутентификации
+                    .requestMatchers("/api/v1/auth/authenticate").permitAll() // запрос не требует аутентификации
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                     .requestMatchers("/actuator/**").permitAll()
                     .anyRequest().authenticated()) // запрос требует аутентификацию

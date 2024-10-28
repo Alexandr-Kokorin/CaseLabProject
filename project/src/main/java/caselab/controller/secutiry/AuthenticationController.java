@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ProblemDetail;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,8 +38,8 @@ public class AuthenticationController {
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @PostMapping("/register")
-    public AuthenticationResponse register(@Valid @RequestBody RegisterRequest request) {
-        return authenticationService.register(request);
+    public AuthenticationResponse register(Authentication authentication, @Valid @RequestBody RegisterRequest request) {
+        return authenticationService.register(request, authentication);
     }
 
     @Operation(summary = "Аутентификация пользователя",
