@@ -45,8 +45,11 @@ public class AttributeController {
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @PostMapping
-    public AttributeResponse createAttribute(Authentication authentication, @Valid @RequestBody AttributeRequest attributeRequest) {
-        return attributeService.createAttribute(attributeRequest,authentication);
+    public AttributeResponse createAttribute(
+        Authentication authentication,
+        @Valid @RequestBody AttributeRequest attributeRequest
+    ) {
+        return attributeService.createAttribute(attributeRequest, authentication);
     }
 
     @Operation(summary = "Получить атрибут по id",
@@ -96,7 +99,7 @@ public class AttributeController {
         @PathVariable Long id,
         @Valid @RequestBody AttributeRequest attributeRequest
     ) {
-        return attributeService.updateAttribute(id, attributeRequest,authentication);
+        return attributeService.updateAttribute(id, attributeRequest, authentication);
     }
 
     @Operation(summary = "Удалить атрибут по id",
@@ -110,8 +113,8 @@ public class AttributeController {
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAttribute(Authentication authentication,@PathVariable Long id) {
-        attributeService.deleteAttribute(id,authentication);
+    public ResponseEntity<Void> deleteAttribute(Authentication authentication, @PathVariable Long id) {
+        attributeService.deleteAttribute(id, authentication);
         return ResponseEntity.noContent().build();
     }
 }

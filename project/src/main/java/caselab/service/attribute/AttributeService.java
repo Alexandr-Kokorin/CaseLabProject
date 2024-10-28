@@ -43,13 +43,13 @@ public class AttributeService {
             .toList();
     }
 
-    public AttributeResponse updateAttribute(Long id, AttributeRequest attributeRequest,Authentication authentication) {
+    public AttributeResponse updateAttribute(Long id, AttributeRequest request, Authentication authentication) {
         userService.checkAdmin(authentication);
 
         Attribute attribute = attributeRepository.findById(id)
             .orElseThrow(() -> new AttributeNotFoundException(id));
-        attribute.setName(attributeRequest.name());
-        attribute.setType(attributeRequest.type());
+        attribute.setName(request.name());
+        attribute.setType(request.type());
         attribute = attributeRepository.save(attribute);
         return new AttributeResponse(attribute.getId(), attribute.getName(), attribute.getType());
     }

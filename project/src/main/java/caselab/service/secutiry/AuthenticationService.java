@@ -72,13 +72,14 @@ public class AuthenticationService {
             throw new UserAlreadyExistsException(email);
         }
     }
+
     public ApplicationUser findUserByAuthentication(Authentication authentication) {
         var userDetails = (UserDetails) authentication.getPrincipal();
         return userRepository.findByEmail(userDetails.getUsername())
             .orElseThrow(() -> new UserNotFoundException(userDetails.getUsername()));
     }
 
-    public void checkAdmin(Authentication authentication){
+    public void checkAdmin(Authentication authentication) {
         var applicationUser = findUserByAuthentication(authentication);
         if (applicationUser.getAuthorities().stream()
             .noneMatch(globalPermission -> globalPermission.getAuthority().equals(GlobalPermissionName.ADMIN.name()))) {

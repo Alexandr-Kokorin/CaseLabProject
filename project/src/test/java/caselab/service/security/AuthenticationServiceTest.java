@@ -19,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
@@ -65,7 +66,7 @@ public class AuthenticationServiceTest {
         when(appUserRepository.save(any(ApplicationUser.class)))
             .thenReturn(null); // Ничего не возвращаем, просто сохраняем
 
-        AuthenticationResponse response = authenticationService.register(registerRequest);
+        AuthenticationResponse response = authenticationService.register(registerRequest, any(Authentication.class));
 
         assertAll(
             () -> assertThat(response).isNotNull(),
@@ -87,7 +88,8 @@ public class AuthenticationServiceTest {
         when(appUserRepository.findByEmail(anyString())).thenReturn(Optional.of(mockApplicationUser()));
 
         assertAll(
-            () -> assertThrows(UserAlreadyExistsException.class, () -> authenticationService.register(registerRequest)),
+            () -> assertThrows(UserAlreadyExistsException.class,
+                () -> authenticationService.register(registerRequest, any(Authentication.class))),
             () -> verify(appUserRepository).findByEmail(anyString()),
             () -> verify(appUserRepository, never()).save(any(ApplicationUser.class))
         );

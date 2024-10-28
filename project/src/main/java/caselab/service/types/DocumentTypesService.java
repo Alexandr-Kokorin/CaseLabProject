@@ -59,7 +59,10 @@ public class DocumentTypesService {
             .toList();
     }
 
-    public DocumentTypeResponse updateDocumentType(Long id, DocumentTypeRequest request,Authentication authentication) {
+    public DocumentTypeResponse updateDocumentType(
+        Long id, DocumentTypeRequest request,
+        Authentication authentication
+    ) {
         userService.checkAdmin(authentication);
 
         var documentType = findDocumentTypeById(id);

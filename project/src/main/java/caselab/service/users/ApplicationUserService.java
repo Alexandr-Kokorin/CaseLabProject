@@ -58,7 +58,7 @@ public class ApplicationUserService {
             .orElseThrow(() -> new UserNotFoundException(userDetails.getUsername()));
     }
 
-    public void checkAdmin(Authentication authentication){
+    public void checkAdmin(Authentication authentication) {
         var applicationUser = findUserByAuthentication(authentication);
         if (applicationUser.getAuthorities().stream()
             .noneMatch(globalPermission -> globalPermission.getAuthority().equals(GlobalPermissionName.ADMIN.name()))) {

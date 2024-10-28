@@ -14,10 +14,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.Authentication;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 
 @ExtendWith(MockitoExtension.class)
 public class AttributeServiceTest {
@@ -38,7 +40,8 @@ public class AttributeServiceTest {
 
         Mockito.when(attributeRepository.save(Mockito.any(Attribute.class))).thenReturn(attribute);
 
-        AttributeResponse attributeResponse = attributeService.createAttribute(attributeRequest);
+        AttributeResponse attributeResponse = attributeService
+            .createAttribute(attributeRequest, any(Authentication.class));
 
         assertAll(
             () -> assertEquals(1L, attributeResponse.id()),
@@ -114,7 +117,8 @@ public class AttributeServiceTest {
         Mockito.when(attributeRepository.findById(1L)).thenReturn(Optional.of(attribute));
         Mockito.when(attributeRepository.save(Mockito.any(Attribute.class))).thenReturn(attribute);
 
-        AttributeResponse attributeResponse = attributeService.updateAttribute(1L, attributeRequest);
+        AttributeResponse attributeResponse = attributeService
+            .updateAttribute(1L, attributeRequest, any(Authentication.class));
 
         assertAll(
             () -> assertEquals(1L, attributeResponse.id()),
@@ -129,7 +133,8 @@ public class AttributeServiceTest {
 
         Mockito.when(attributeRepository.findById(2L)).thenReturn(Optional.empty());
 
-        assertThrows(AttributeNotFoundException.class, () -> attributeService.updateAttribute(2L, attributeRequest));
+        assertThrows(AttributeNotFoundException.class,
+            () -> attributeService.updateAttribute(2L, attributeRequest, any(Authentication.class)));
     }
 
     @Test
@@ -137,7 +142,7 @@ public class AttributeServiceTest {
         Mockito.when(attributeRepository.existsById(1L)).thenReturn(true);
         Mockito.doNothing().when(attributeRepository).deleteById(1L);
 
-        attributeService.deleteAttribute(1L);
+        attributeService.deleteAttribute(1L, any(Authentication.class));
     }
 
     @Test
@@ -146,7 +151,7 @@ public class AttributeServiceTest {
 
         assertThrows(
             AttributeNotFoundException.class,
-            () -> attributeService.deleteAttribute(2L),
+            () -> attributeService.deleteAttribute(2L, any(Authentication.class)),
             "Атрибут с id=2 не найден"
         );
     }

@@ -46,8 +46,11 @@ public class DocumentTypesController {
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @PostMapping
-    public DocumentTypeResponse createDocumentType(Authentication authentication, @Valid @RequestBody DocumentTypeRequest documentTypeRequest) {
-        return documentTypesService.createDocumentType(documentTypeRequest,authentication);
+    public DocumentTypeResponse createDocumentType(
+        Authentication authentication,
+        @Valid @RequestBody DocumentTypeRequest documentTypeRequest
+    ) {
+        return documentTypesService.createDocumentType(documentTypeRequest, authentication);
     }
 
     @Operation(summary = "Получить тип документа по id",
@@ -97,7 +100,7 @@ public class DocumentTypesController {
         @PathVariable Long id,
         @Valid @RequestBody DocumentTypeRequest documentTypeRequest
     ) {
-        return documentTypesService.updateDocumentType(id, documentTypeRequest,authentication);
+        return documentTypesService.updateDocumentType(id, documentTypeRequest, authentication);
     }
 
     @Operation(summary = "Удалить тип документа по id",
@@ -111,8 +114,8 @@ public class DocumentTypesController {
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteDocumentTypeById(Authentication authentication,@PathVariable Long id) {
-        documentTypesService.deleteDocumentType(id,authentication);
+    public ResponseEntity<Void> deleteDocumentTypeById(Authentication authentication, @PathVariable Long id) {
+        documentTypesService.deleteDocumentType(id, authentication);
         return ResponseEntity.noContent().build();
     }
 }

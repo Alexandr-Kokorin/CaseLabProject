@@ -25,8 +25,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.Authentication;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.times;
@@ -90,7 +92,7 @@ class DocumentTypesServiceTest {
         ));
         when(documentTypeMapper.entityToResponse(documentType)).thenReturn(response);
 
-        DocumentTypeResponse result = documentTypesService.createDocumentType(request);
+        DocumentTypeResponse result = documentTypesService.createDocumentType(request, any(Authentication.class));
 
         assertThat(result).isEqualTo(response);
         verify(documentTypeRepository).save(documentType);
@@ -147,7 +149,8 @@ class DocumentTypesServiceTest {
         ));
         when(documentTypeMapper.entityToResponse(updatedDocumentType)).thenReturn(updatedResponse);
 
-        DocumentTypeResponse result = documentTypesService.updateDocumentType(DOCUMENT_TYPE_ID, updateRequest);
+        DocumentTypeResponse result = documentTypesService
+            .updateDocumentType(DOCUMENT_TYPE_ID, updateRequest, any(Authentication.class));
 
         assertThat(result).isEqualTo(updatedResponse);
         verify(documentTypeRepository).findById(1L);
@@ -161,7 +164,7 @@ class DocumentTypesServiceTest {
         when(documentTypeRepository.findById(DOCUMENT_TYPE_ID)).thenReturn(Optional.of(documentType));
         when(documentRepository.findByDocumentType(documentType)).thenReturn(new ArrayList<>());
 
-        documentTypesService.deleteDocumentType(DOCUMENT_TYPE_ID);
+        documentTypesService.deleteDocumentType(DOCUMENT_TYPE_ID, any(Authentication.class));
 
         verify(documentTypeRepository).delete(documentType);
     }
@@ -171,7 +174,8 @@ class DocumentTypesServiceTest {
         when(documentTypeRepository.findById(DOCUMENT_TYPE_ID)).thenReturn(Optional.of(documentType));
         when(documentRepository.findByDocumentType(documentType)).thenReturn(List.of(new Document()));
 
-        assertThrows(DocumentTypeInUseException.class, () -> documentTypesService.deleteDocumentType(DOCUMENT_TYPE_ID));
+        assertThrows(DocumentTypeInUseException.class,
+            () -> documentTypesService.deleteDocumentType(DOCUMENT_TYPE_ID, any(Authentication.class)));
     }
 
     private DocumentType createDocumentType(Long id, String name) {
