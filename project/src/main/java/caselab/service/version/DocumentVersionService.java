@@ -21,9 +21,9 @@ import caselab.domain.repository.UserToDocumentRepository;
 import caselab.domain.storage.FileStorage;
 import caselab.exception.document.version.MissingAttributesException;
 import caselab.exception.document.version.MissingDocumentPermissionException;
-import caselab.exception.entity.AttributeNotFoundException;
-import caselab.exception.entity.DocumentNotFoundException;
-import caselab.exception.entity.DocumentVersionNotFoundException;
+import caselab.exception.entity.not_found.AttributeNotFoundException;
+import caselab.exception.entity.not_found.DocumentNotFoundException;
+import caselab.exception.entity.not_found.DocumentVersionNotFoundException;
 import caselab.service.users.ApplicationUserService;
 import caselab.service.version.mapper.DocumentVersionMapper;
 import caselab.service.version.mapper.DocumentVersionUpdater;
@@ -42,11 +42,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
-@RequiredArgsConstructor
 @Transactional
+@RequiredArgsConstructor
 public class DocumentVersionService {
     private final DocumentVersionRepository documentVersionRepository;
-    private final ApplicationUserService userService;
+    private final ApplicationUserService userService;  // TODO: сменить на UserFromAuthenticationUtilService
     private final DocumentRepository documentRepository;
     private final UserToDocumentRepository userToDocumentRepository;
     private final AttributeRepository attributeRepository;
@@ -55,7 +55,7 @@ public class DocumentVersionService {
     private final DocumentVersionUpdater documentVersionUpdater;
     private final FileStorage documentVersionStorage;
 
-    private boolean checkLacksPermission(
+    private boolean checkLacksPermission(// TODO: сменить на DocumentPermissionUtilService
         ApplicationUser user,
         Document document,
         Predicate<DocumentPermissionName> permission
@@ -84,6 +84,32 @@ public class DocumentVersionService {
         return response;
     }
 
+    // На данный момент (на данной версии приложения) разрешение READ имеют лишь те пользователи,
+    // которым этот документ был отослан на подпись.
+    // Эти пользователи могут видеть документ и все его версии до тех пор, пока не будет создан новый черновик -
+    // в этом случае доступ READ теряется.
+    // Данный метод отнимает у всех таких пользователей право на чтение
+    private void clearReaders(Document document) {
+        document
+            .getUsersToDocuments()
+            .stream()
+            .map(UserToDocument::getApplicationUser)
+            .filter(
+                user -> !checkLacksPermission(user, document, x -> x == DocumentPermissionName.READ)
+            )
+            .map(user -> userToDocumentRepository.findByApplicationUserIdAndDocumentId(user.getId(), document.getId()))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .filter(
+                utd -> utd.getDocumentPermissions().stream().anyMatch(
+                    per -> per.getName() == DocumentPermissionName.READ
+                )
+            )
+            .forEach(
+                userToDocumentRepository::delete
+            );
+    }
+
     private void checkMandatoryAttributesPresent(CreateDocumentVersionRequest body, Document document) {
         Set<Long> presentAttributesIds = body
             .attributes()
@@ -109,6 +135,14 @@ public class DocumentVersionService {
         Authentication auth
     ) {
         ApplicationUser user = userService.findUserByAuthentication(auth);
+        return createDocumentVersion(body, file, user);
+    }
+
+    public DocumentVersionResponse createDocumentVersion(
+        CreateDocumentVersionRequest body,
+        MultipartFile file,
+        ApplicationUser user
+    ) {
 
         Document document = documentRepository
             .findById(body.documentId())
@@ -155,12 +189,16 @@ public class DocumentVersionService {
             documentVersionStorage.delete(documentVersion.getContentName());
         }
 
+        clearReaders(document);  // TODO: проверить в тесте контроллера, что это работает
         return versionResponse;
     }
 
     public DocumentVersionResponse getDocumentVersionById(Long id, Authentication auth) {
         ApplicationUser user = userService.findUserByAuthentication(auth);
+        return getDocumentVersionById(id, user);
+    }
 
+    public DocumentVersionResponse getDocumentVersionById(Long id, ApplicationUser user) {
         DocumentVersion documentVersion = documentVersionRepository.findById(id).orElseThrow(
             () -> new DocumentVersionNotFoundException(id)
         );
@@ -230,22 +268,5 @@ public class DocumentVersionService {
             user,
             saved.getDocument()
         );
-    }
-
-    public void deleteDocumentVersion(Long id, Authentication auth) {
-        ApplicationUser user = userService.findUserByAuthentication(auth);
-        DocumentVersion documentVersion = documentVersionRepository.findById(id).orElseThrow(
-            () -> new DocumentVersionNotFoundException(id)
-        );
-
-        if (checkLacksPermission(user, documentVersion.getDocument(), DocumentPermissionName::canEdit)) {
-            throw new MissingDocumentPermissionException(DocumentPermissionName.EDIT.name());
-        }
-
-        documentVersionRepository.delete(documentVersion);
-
-        if (documentVersion.getContentName() != null) {
-            documentVersionStorage.delete(documentVersion.getContentName());
-        }
     }
 }

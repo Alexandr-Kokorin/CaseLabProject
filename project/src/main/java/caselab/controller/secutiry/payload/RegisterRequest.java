@@ -5,7 +5,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
 
+@Builder
 @Schema(description = "Запрос на регистрацию, содержащий информацию о новом пользователе")
 public record RegisterRequest(
     @Schema(description = "Адрес электронной почты пользователя", example = "user@example.com")

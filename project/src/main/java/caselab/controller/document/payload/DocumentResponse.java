@@ -23,6 +23,8 @@ public record DocumentResponse(
     @JsonProperty("user_permissions")
     @ArraySchema(schema = @Schema(implementation = UserToDocumentResponse.class,
                                   description = "Список разрешений пользователей, имеющих доступ к документу"))
-    List<UserToDocumentResponse> usersPermissions
+    List<UserToDocumentResponse> usersPermissions,
+    @JsonProperty("status")
+    String status
 ) {
 }

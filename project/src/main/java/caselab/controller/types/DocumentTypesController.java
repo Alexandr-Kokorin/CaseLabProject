@@ -60,8 +60,8 @@ public class DocumentTypesController {
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @GetMapping("/{id}")
-    public DocumentTypeResponse findDocumentTypeById(@PathVariable Long id) {
-        return documentTypesService.findDocumentTypeById(id);
+    public DocumentTypeResponse getDocumentTypeById(@PathVariable Long id) {
+        return documentTypesService.getDocumentTypeById(id);
     }
 
     @Operation(summary = "Получить список всех типов документов",
@@ -74,8 +74,8 @@ public class DocumentTypesController {
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @GetMapping
-    public List<DocumentTypeResponse> findDocumentTypeAll() {
-        return documentTypesService.findDocumentTypeAll();
+    public List<DocumentTypeResponse> getAllDocumentTypes() {
+        return documentTypesService.getAllDocumentTypes();
     }
 
     @Operation(summary = "Обновить тип документа",
@@ -110,7 +110,7 @@ public class DocumentTypesController {
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteDocumentTypeById(@PathVariable Long id) {
-        documentTypesService.deleteDocumentTypeById(id);
+        documentTypesService.deleteDocumentType(id);
         return ResponseEntity.noContent().build();
     }
 }

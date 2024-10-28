@@ -98,6 +98,7 @@ services:
       kafka-topics.sh --describe --bootstrap-server kafka:9092
       "
 
+
 volumes:
   postgresql: { }
   minio-storage:

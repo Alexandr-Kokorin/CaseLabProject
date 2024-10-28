@@ -1,9 +1,8 @@
 package caselab.service.types;
 
-import caselab.controller.types.payload.DocumentTypeRequest;
 import caselab.controller.types.payload.DocumentTypeResponse;
-import caselab.controller.types.payload.DocumentTypeToAttributeRequest;
 import caselab.controller.types.payload.DocumentTypeToAttributeResponse;
+import caselab.domain.DocumentElasticTest;
 import caselab.domain.entity.Attribute;
 import caselab.domain.entity.DocumentType;
 import caselab.domain.entity.document.type.to.attribute.DocumentTypeToAttribute;
@@ -19,8 +18,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 @SpringBootTest
-public class DocumentTypeMapperTest {
-
+public class DocumentTypeMapperTest extends DocumentElasticTest {
     @Autowired
     private DocumentTypeMapper documentTypeMapper;
     @Autowired

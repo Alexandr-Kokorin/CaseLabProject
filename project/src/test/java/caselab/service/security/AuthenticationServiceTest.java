@@ -1,72 +1,167 @@
 package caselab.service.security;
 
 import caselab.controller.secutiry.payload.AuthenticationRequest;
+import caselab.controller.secutiry.payload.AuthenticationResponse;
 import caselab.controller.secutiry.payload.RegisterRequest;
-import caselab.domain.IntegrationTest;
+import caselab.domain.entity.ApplicationUser;
+import caselab.domain.entity.GlobalPermission;
+import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.ApplicationUserRepository;
+import caselab.domain.repository.GlobalPermissionRepository;
+import caselab.exception.entity.already_exists.UserAlreadyExistsException;
 import caselab.service.secutiry.AuthenticationService;
+import caselab.service.secutiry.JwtService;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.test.annotation.Rollback;
-import org.springframework.transaction.annotation.Transactional;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
-@SpringBootTest
-public class AuthenticationServiceTest extends IntegrationTest {
+import java.util.Optional;
 
-    @Autowired
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+public class AuthenticationServiceTest {
+
+    @Mock
+    private GlobalPermissionRepository globalPermissionRepository;
+
+    @Mock
+    private ApplicationUserRepository appUserRepository;
+
+    @Mock
+    private AuthenticationManager authenticationManager;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private JwtService jwtService;
+
+    @InjectMocks
     private AuthenticationService authenticationService;
-    @Autowired
-    private ApplicationUserRepository applicationUserRepository;
 
-    /*
     @Test
-    @Transactional
-    @Rollback
-    public void registerUser() {
-        var request = new RegisterRequest("test@mail.ru", "displayName", "password");
+    @DisplayName("Успешная регистрация пользователя")
+    void registerUser_success() {
+        RegisterRequest registerRequest = RegisterRequest.builder()
+            .email("test@mail.com")
+            .displayName("Test User")
+            .password("password123")
+            .build();
 
-        var response = authenticationService.register(request);
-        var user = applicationUserRepository.findByEmail(request.email()).orElseThrow();
+        when(globalPermissionRepository.findByName(GlobalPermissionName.USER)).thenReturn(mockGlobalPermission());
+        when(passwordEncoder.encode(anyString())).thenReturn("hashedPassword");
+        when(jwtService.generateToken(any(ApplicationUser.class))).thenReturn("mocked-jwt-token");
+        when(appUserRepository.save(any(ApplicationUser.class)))
+            .thenReturn(null); // Ничего не возвращаем, просто сохраняем
+
+        AuthenticationResponse response = authenticationService.register(registerRequest);
 
         assertAll(
-            "Grouped assertions for register user",
-            () -> assertThat(response.token()).isNotNull(),
-            () -> assertEquals(user.getDisplayName(), request.displayName())
+            () -> assertThat(response).isNotNull(),
+            () -> assertThat(response.token()).isEqualTo("mocked-jwt-token"),
+            () -> verify(appUserRepository).save(any(ApplicationUser.class)),
+            () -> verify(jwtService).generateToken(any(ApplicationUser.class))
         );
     }
 
     @Test
-    @Transactional
-    @Rollback
-    public void authenticateExistedUser() {
-        var registerRequest = new RegisterRequest("test@mail.ru", "displayName", "password");
-        var authenticationRequest = AuthenticationRequest.builder()
-            .email("test@mail.ru")
-            .password("password")
+    @DisplayName("Ошибка при повторной регистрации с тем же email")
+    void registerUser_userExists_throwsException() {
+        RegisterRequest registerRequest = RegisterRequest.builder()
+            .email("test@mail.com")
+            .displayName("Test User")
+            .password("password123")
             .build();
 
-        authenticationService.register(registerRequest);
-        var authenticationResponse = authenticationService.authenticate(authenticationRequest);
+        when(appUserRepository.findByEmail(anyString())).thenReturn(Optional.of(mockApplicationUser()));
 
-        assertThat(authenticationResponse.token()).isNotNull();
+        assertAll(
+            () -> assertThrows(UserAlreadyExistsException.class, () -> authenticationService.register(registerRequest)),
+            () -> verify(appUserRepository).findByEmail(anyString()),
+            () -> verify(appUserRepository, never()).save(any(ApplicationUser.class))
+        );
     }
 
     @Test
-    @Transactional
-    @Rollback
-    public void authenticateNotExistedUser() {
-        var authenticationRequest = AuthenticationRequest.builder()
-            .email("test@mail.ru")
-            .password("password")
+    @DisplayName("Успешная аутентификация пользователя")
+    void authenticateUser_success() {
+        AuthenticationRequest authRequest = AuthenticationRequest.builder()
+            .email("test@mail.com")
+            .password("password123")
             .build();
 
-        assertThrows(BadCredentialsException.class, () -> authenticationService.authenticate(authenticationRequest));
+        when(appUserRepository.findByEmail(anyString())).thenReturn(Optional.of(mockApplicationUser()));
+        when(jwtService.generateToken(any(ApplicationUser.class))).thenReturn("mocked-jwt-token");
+
+        AuthenticationResponse response = authenticationService.authenticate(authRequest);
+
+        assertAll(
+            () -> assertThat(response).isNotNull(),
+            () -> assertThat(response.token()).isEqualTo("mocked-jwt-token"),
+            () -> verify(authenticationManager)
+                .authenticate(any(UsernamePasswordAuthenticationToken.class)),
+            () -> verify(jwtService).generateToken(any(ApplicationUser.class))
+        );
     }
-    */
+
+    @Test
+    @DisplayName("Ошибка аутентификации - пользователь не найден")
+    void authenticateUser_userNotFound_throwsException() {
+        AuthenticationRequest authRequest = AuthenticationRequest.builder()
+            .email("test@mail.com")
+            .password("password123")
+            .build();
+
+        when(appUserRepository.findByEmail(anyString())).thenReturn(Optional.empty());
+
+        assertAll(
+            () -> assertThrows(RuntimeException.class, () -> authenticationService.authenticate(authRequest)),
+            () -> verify(authenticationManager)
+                .authenticate(any(UsernamePasswordAuthenticationToken.class)),
+            () -> verify(appUserRepository).findByEmail(anyString()),
+            () -> verify(jwtService, never()).generateToken(any(ApplicationUser.class))
+        );
+    }
+
+    @Test
+    @DisplayName("Проверка хеширования пароля")
+    void encodePassword_success() {
+        String rawPassword = "password123";
+        when(passwordEncoder.encode(anyString())).thenReturn("hashedPassword");
+
+        String hashedPassword = authenticationService.encodePassword(rawPassword);
+
+        assertAll(
+            () -> assertThat(hashedPassword).isNotNull(),
+            () -> assertThat(hashedPassword).isEqualTo("hashedPassword"),
+            () -> verify(passwordEncoder).encode(anyString())
+        );
+    }
+
+    // Вспомогательные методы для мокирования данных
+
+    private ApplicationUser mockApplicationUser() {
+        return ApplicationUser.builder()
+            .email("test@mail.com")
+            .displayName("Test User")
+            .hashedPassword("hashedPassword")
+            .build();
+    }
+
+    private GlobalPermission mockGlobalPermission() {
+        GlobalPermission permission = new GlobalPermission();
+        permission.setName(GlobalPermissionName.USER);
+        return permission;
+    }
 }

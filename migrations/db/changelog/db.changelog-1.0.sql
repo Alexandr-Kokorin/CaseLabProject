@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS document
     id                       BIGSERIAL        NOT NULL,
     document_type_id         BIGINT           NOT NULL REFERENCES document_type(id),
     name                     TEXT             NOT NULL,
+    status                   TEXT             NOT NULL,
 
     PRIMARY KEY (id)
 );
@@ -181,6 +182,14 @@ WHERE NOT EXISTS (SELECT 1 FROM document_permission WHERE name = 'CREATOR');
 -- changeset ???:17
 INSERT INTO global_permission(name)
 values ('USER');
+INSERT INTO global_permission(name)
+values ('ADMIN');
+
+INSERT INTO application_user(email, display_name, hashed_password)
+VALUES ('admin@gmail.com', 'Admin',
+        '$2a$10$WFRQhlz7Ul85HsRjMg3XNutiB//3HLloe3vTuW6GDPD9eeXeYXiJe');
+INSERT INTO global_permission_to_user(application_user_id, global_permission_id)
+VALUES (1, 2);
 
 -- changeset ghostofendless:18
 CREATE TABLE IF NOT EXISTS subscription

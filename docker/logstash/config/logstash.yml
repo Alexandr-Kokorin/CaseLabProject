@@ -1,0 +1,9 @@
+api:
+  http:
+    host: "logstash"
+path:
+  config: /usr/share/logstash/pipeline
+xpack:
+  monitoring:
+    enabled: true
+    elasticsearch.hosts: ["elasticsearch:9200"]
