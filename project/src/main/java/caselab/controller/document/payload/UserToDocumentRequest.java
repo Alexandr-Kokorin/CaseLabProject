@@ -10,6 +10,7 @@ import java.util.List;
 import lombok.Builder;
 
 @Builder
+@Schema(description = "Запрос, содержащий информацию о разрешениях на работу с документом")
 public record UserToDocumentRequest(
     @JsonProperty("email")
     @NotBlank(message = "{user.to.document.request.email.is_blank}")

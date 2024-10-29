@@ -3,6 +3,7 @@ package caselab.controller.document.facade.payload;
 import caselab.controller.version.payload.AttributeValuePair;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,6 +15,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
+@Schema(description = "Запрос на создание первой версии документа")
 public class CreateDocumentRequest {
     @JsonProperty("document_type_id")
     private Long documentTypeId;

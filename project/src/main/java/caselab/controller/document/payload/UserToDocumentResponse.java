@@ -7,6 +7,7 @@ import java.util.List;
 import lombok.Builder;
 
 @Builder
+@Schema(description = "Отывет, содержащий информацию о разрешении на работу с документом")
 public record UserToDocumentResponse(
     @JsonProperty("email")
     @Schema(description = "Email пользователя", example = "user@example.com")

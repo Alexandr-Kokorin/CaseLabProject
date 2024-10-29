@@ -7,6 +7,7 @@ import java.util.List;
 import lombok.Builder;
 
 @Builder
+@Schema(description = "Ответ, содержащий информацию о документе")
 public record DocumentResponse(
     @JsonProperty("id")
     @Schema(description = "ID документа", example = "1")
