@@ -1,6 +1,5 @@
 package caselab.controller.version;
 
-import caselab.controller.version.payload.CreateDocumentVersionRequest;
 import caselab.controller.version.payload.DocumentVersionResponse;
 import caselab.controller.version.payload.UpdateDocumentVersionRequest;
 import caselab.service.version.DocumentVersionService;
@@ -21,13 +20,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/v1/versions")
@@ -36,25 +32,6 @@ import org.springframework.web.multipart.MultipartFile;
 @Tag(name = "Версии документов", description = "API управления версиями документов")
 public class DocumentVersionController {
     private final DocumentVersionService documentVersionService;
-
-    @Operation(summary = "Создать версию документа",
-               description = "Создаёт новую версию документа")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Успешное сохранение версии документа",
-                     content = @Content(schema = @Schema(implementation = DocumentVersionResponse.class))),
-        @ApiResponse(responseCode = "400", description = "Некорректный ввод",
-                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
-        @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
-                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
-    })
-    @PostMapping
-    public DocumentVersionResponse createDocumentVersion(
-        @RequestPart("version") CreateDocumentVersionRequest body,
-        @RequestPart(value = "content", required = false) MultipartFile file,
-        Authentication auth
-    ) {
-        return documentVersionService.createDocumentVersion(body, file, auth);
-    }
 
     @Operation(summary = "Получить версию документа по id",
                description = "Возвращает версию документа по указанному id")
