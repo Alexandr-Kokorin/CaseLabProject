@@ -16,13 +16,10 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ProblemDetail;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -47,8 +44,11 @@ public class VotingProcessController {
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @PostMapping
-    public VotingProcessResponse createVotingProcess(@RequestBody @Valid VotingProcessRequest votingProcessRequest) {
-        return votingProcessService.createVotingProcess(votingProcessRequest);
+    public VotingProcessResponse createVotingProcess(
+        @RequestBody @Valid VotingProcessRequest votingProcessRequest,
+        Authentication authentication
+    ) {
+        return votingProcessService.createVotingProcess(votingProcessRequest, authentication);
     }
 
     @Operation(summary = "Получить голосование",
@@ -66,24 +66,6 @@ public class VotingProcessController {
         return votingProcessService.getVotingProcessById(id);
     }
 
-    @Operation(summary = "Обновить голосование",
-               description = "Обновляет голосование по предоставленной информации")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Голосование успешно обновлено",
-                     content = @Content(schema = @Schema(implementation = VotingProcessResponse.class))),
-        @ApiResponse(responseCode = "400", description = "Неверный ввод",
-                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
-        @ApiResponse(responseCode = "404", description = "Объект не найден",
-                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
-    })
-    @PutMapping("/{id}")
-    public VotingProcessResponse updateVotingProcess(
-        @Positive @PathVariable Long id,
-        @Valid @RequestBody VotingProcessRequest votingProcessRequest
-    ) {
-        return votingProcessService.updateVotingProcess(id, votingProcessRequest);
-    }
-
     @Operation(summary = "Проголосовать",
                description = "Изменяет состояние голоса по предоставленной информации")
     @ApiResponses(value = {
@@ -99,20 +81,5 @@ public class VotingProcessController {
     @PostMapping("/vote")
     public VoteResponse castVote(Authentication authentication, @Valid @RequestBody VoteRequest voteRequest) {
         return votingProcessService.castVote(authentication, voteRequest);
-    }
-
-    @Operation(summary = "Удалить голосование",
-               description = "Удаляет голосование по предоставленной информации")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "204", description = "Голосование успешно удалено"),
-        @ApiResponse(responseCode = "400", description = "Неверный ввод",
-                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
-        @ApiResponse(responseCode = "404", description = "Голосование не найдено",
-                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
-    })
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteVotingProcessById(@Positive @PathVariable Long id) {
-        votingProcessService.deleteVotingProcess(id);
-        return ResponseEntity.noContent().build();
     }
 }

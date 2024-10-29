@@ -20,7 +20,7 @@ public record VotingProcessRequest(
     @Schema(description = "Порог принятия", example = "0.6")
     double threshold,
     @NotNull(message = "{voting.process.request.deadline.is_null}")
-    @Schema(description = "Время до дедлайна", example = "P1DT2H10M10S")
+    @Schema(description = "Время до дедлайна", example = "P1DT2H")
     Duration deadline,
     @Positive(message = "{voting.process.request.document_version_id.not_positive}")
     @Schema(description = "ID версии документа", example = "1")

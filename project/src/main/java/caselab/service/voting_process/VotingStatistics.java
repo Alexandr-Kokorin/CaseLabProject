@@ -9,14 +9,12 @@ public class VotingStatistics {
     private int countInFavour;
     private int countAgainst;
     private int countAbstained;
-    private int countNotVoted;
     private VotingProcessStatus votingProcessStatus;
 
     public VotingStatistics() {
         countInFavour = 0;
         countAgainst = 0;
         countAbstained = 0;
-        countNotVoted = 0;
         votingProcessStatus = VotingProcessStatus.IN_PROGRESS;
     }
 
@@ -32,12 +30,8 @@ public class VotingStatistics {
         countAbstained++;
     }
 
-    public void incCountNotVoted() {
-        countNotVoted++;
-    }
-
     public void calculateStatus(double threshold) {
-        double result = countInFavour / (double) (countInFavour + countAgainst + countAbstained + countNotVoted);
+        double result = countInFavour / (double) (countInFavour + countAgainst + countAbstained);
         votingProcessStatus = result < threshold ? VotingProcessStatus.DENIED : VotingProcessStatus.ACCEPTED;
     }
 }

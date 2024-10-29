@@ -128,7 +128,7 @@ public class VotingProcessControllerTest extends BaseControllerTest {
         var documentVersion = DocumentVersion.builder()
             .name("name")
             .createdAt(OffsetDateTime.now())
-            .contentUrl("url")
+            .contentName("url")
             .document(documentRepository.findById(documentId).orElseThrow())
             .build();
 
@@ -312,89 +312,6 @@ public class VotingProcessControllerTest extends BaseControllerTest {
     @DisplayName("Should be an exception for missing voting process get")
     public void getNotExistVotingProcess_NotFound() {
         mockMvc.perform(get(URL + "/" + 100)
-                .header("Authorization", "Bearer " + token))
-            .andExpect(status().isNotFound());
-    }
-
-    //Тесты на обновление
-
-    @Test
-    @SneakyThrows
-    @DisplayName("Voting process should be updated")
-    public void updateVotingProcess_success() {
-        var votingProcessResponse = createVotingProcess();
-
-        var request = VotingProcessRequest.builder()
-            .name("update")
-            .threshold(0.7)
-            .deadline(Duration.ofHours(3))
-            .documentVersionId(documentVersionId)
-            .emails(List.of("user@example.com"))
-            .build();
-
-        var mvcResponse = mockMvc.perform(put(URL + "/" + votingProcessResponse.id())
-                .header("Authorization", "Bearer " + token)
-                .content(objectMapper.writeValueAsString(request))
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andReturn();
-
-        var response = readValue(mvcResponse, VotingProcessResponse.class);
-
-        var deadline = response.createdAt().plusHours(3);
-        var votes = List.of(
-            VoteResponse.builder()
-                .status(VoteStatus.NOT_VOTED)
-                .applicationUser(new VoteUserResponse("user@example.com", "Name Surname"))
-                .build()
-        );
-
-        assertAll(
-            "Grouped assertions for update voting process",
-            () -> assertThat(response.name()).isEqualTo("update"),
-            () -> assertThat(response.threshold()).isEqualTo(0.7),
-            () -> assertThat(response.deadline()).isEqualTo(deadline),
-            () -> assertThat(response.documentVersionId()).isEqualTo(documentVersionId),
-            () -> assertThat(response.votes()).isEqualTo(votes)
-        );
-
-        deleteRequest(URL, response.id());
-    }
-
-    @Test
-    @SneakyThrows
-    @DisplayName("Should be an exception for missing voting process update")
-    public void updateNotExistVotingProcess_NotFound() {
-        var request = VotingProcessRequest.builder()
-            .name("update")
-            .threshold(0.7)
-            .deadline(Duration.ofHours(3))
-            .documentVersionId(documentVersionId)
-            .emails(List.of("user@example.com"))
-            .build();
-
-        mockMvc.perform(put(URL + "/" + 100)
-                .header("Authorization", "Bearer " + token)
-                .content(objectMapper.writeValueAsString(request))
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isNotFound());
-    }
-
-    //Тесты на удаление
-
-    @Test
-    @SneakyThrows
-    @DisplayName("Voting process should be deleted")
-    public void deleteVotingProcess_success() {
-        var response = createVotingProcess();
-        deleteRequest(URL, response.id());
-    }
-
-    @Test
-    @SneakyThrows
-    @DisplayName("Should be an exception for missing voting process delete")
-    public void deleteNotExistVotingProcess_NotFound() {
-        mockMvc.perform(delete(URL + "/" + 100)
                 .header("Authorization", "Bearer " + token))
             .andExpect(status().isNotFound());
     }

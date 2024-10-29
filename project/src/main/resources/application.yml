@@ -1,7 +1,7 @@
 app:
   scheduler:
     enable: true
-    interval: 1800s
+    interval: 300s
     force-check-delay: 10s
   retry:
     max-attempts: 5

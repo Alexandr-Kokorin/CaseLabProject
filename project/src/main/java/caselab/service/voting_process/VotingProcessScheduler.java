@@ -2,6 +2,8 @@ package caselab.service.voting_process;
 
 import caselab.domain.entity.Vote;
 import caselab.domain.entity.VotingProcess;
+import caselab.domain.entity.enums.DocumentStatus;
+import caselab.domain.entity.enums.VoteStatus;
 import caselab.domain.entity.enums.VotingProcessStatus;
 import caselab.domain.repository.VotingProcessRepository;
 import caselab.service.notification.email.EmailNotificationDetails;
@@ -32,9 +34,13 @@ public class VotingProcessScheduler {
         var votingProcesses = votingProcessRepository.findAll();
         for (VotingProcess votingProcess : votingProcesses) {
             if (votingProcess.getStatus() == VotingProcessStatus.IN_PROGRESS
-                && votingProcess.getDeadline().isBefore(OffsetDateTime.now())) {
+                && votingProcess.getDeadline().isBefore(OffsetDateTime.now()))
+            {
                 var statistics = calculateResult(votingProcess);
                 votingProcess.setStatus(statistics.getVotingProcessStatus());
+                votingProcess.getDocumentVersion().getDocument().setStatus(
+                    statistics.getVotingProcessStatus() == VotingProcessStatus.ACCEPTED ?
+                        DocumentStatus.VOTING_ACCEPTED : DocumentStatus.VOTING_REJECTED);
                 votingProcessRepository.save(votingProcess);
                 votingProcess.getVotes().forEach((vote) -> sendMessage(vote, statistics));
             }
@@ -45,11 +51,11 @@ public class VotingProcessScheduler {
     private VotingStatistics calculateResult(VotingProcess votingProcess) {
         var statistics = new VotingStatistics();
         for (Vote vote : votingProcess.getVotes()) {
+            vote.setStatus(vote.getStatus() == VoteStatus.NOT_VOTED ? VoteStatus.ABSTAINED: vote.getStatus());
             switch (vote.getStatus()) {
                 case IN_FAVOUR -> statistics.incCountInFavour();
                 case AGAINST -> statistics.incCountAgainst();
                 case ABSTAINED -> statistics.incCountAbstained();
-                case NOT_VOTED -> statistics.incCountNotVoted();
             }
         }
         statistics.calculateStatus(votingProcess.getThreshold());
@@ -76,7 +82,6 @@ public class VotingProcessScheduler {
             + "За - " + statistics.getCountInFavour() + getDeclension(statistics.getCountInFavour())
             + "Против - " + statistics.getCountAgainst() + getDeclension(statistics.getCountAgainst())
             + "Воздержались - " + statistics.getCountAbstained() + getDeclension(statistics.getCountAbstained())
-            + "Не проголосовали - " + statistics.getCountNotVoted() + getDeclension(statistics.getCountNotVoted())
             + "\n"
             + "Итоговый результат - " + getResult(statistics.getVotingProcessStatus());
     }

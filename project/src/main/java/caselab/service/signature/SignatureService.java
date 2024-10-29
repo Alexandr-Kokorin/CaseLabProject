@@ -3,6 +3,7 @@ package caselab.service.signature;
 import caselab.controller.signature.payload.SignatureCreateRequest;
 import caselab.controller.signature.payload.SignatureResponse;
 import caselab.domain.entity.Signature;
+import caselab.domain.entity.enums.DocumentStatus;
 import caselab.domain.entity.enums.SignatureStatus;
 import caselab.domain.repository.ApplicationUserRepository;
 import caselab.domain.repository.DocumentVersionRepository;
@@ -10,6 +11,7 @@ import caselab.domain.repository.SignatureRepository;
 import caselab.exception.entity.not_found.DocumentVersionNotFoundException;
 import caselab.exception.entity.not_found.SignatureNotFoundException;
 import caselab.exception.entity.not_found.UserNotFoundException;
+import caselab.exception.entity.status.StatusShouldBeDraftException;
 import caselab.service.signature.mapper.SignatureMapper;
 import jakarta.transaction.Transactional;
 import java.time.OffsetDateTime;
@@ -61,6 +63,12 @@ public class SignatureService {
             .findById(signRequest.documentVersionId())
             .orElseThrow(() -> new DocumentVersionNotFoundException(signRequest.documentVersionId()));
 
+        var status = documentVersionForSign.getDocument().getStatus();
+        if (status != DocumentStatus.DRAFT && status != DocumentStatus.SIGNATURE_IN_PROGRESS
+            && status != DocumentStatus.SIGNATURE_ACCEPTED) {
+            throw new StatusShouldBeDraftException();//Заменить ошибку
+        }
+
         var userForSign = userRepository
             .findByEmail(signRequest.email())
             .orElseThrow(() -> new UserNotFoundException(signRequest.email()));
@@ -70,6 +78,7 @@ public class SignatureService {
         signature.setStatus(SignatureStatus.NOT_SIGNED);
         signature.setSentAt(OffsetDateTime.now());
 
+        signature.getDocumentVersion().getDocument().setStatus(DocumentStatus.SIGNATURE_IN_PROGRESS);
         var savedSignature = signatureRepository.save(signature);
 
         return signatureMapper.entityToResponse(savedSignature);
