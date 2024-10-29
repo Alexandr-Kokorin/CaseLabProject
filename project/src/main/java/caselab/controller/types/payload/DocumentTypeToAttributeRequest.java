@@ -9,12 +9,12 @@ import lombok.Builder;
 @Builder
 public record DocumentTypeToAttributeRequest(
     @JsonProperty("attribute_id")
-    @Positive(message = "{document.type.to.attribute.request.attribute.id.not.positive}")
-    @NotNull(message = "{document.type.to.attribute.request.attribute.id.is_blank}")
+    @Positive(message = "{document.type.to.attributes.request.attributes.id.not.positive}")
+    @NotNull(message = "{document.type.to.attributes.request.attributes.id.is_blank}")
     @Schema(description = "ID аттрибута", example = "1")
     Long attributeId,
     @JsonProperty("is_optional")
-    @NotNull(message = "{document.type.to.attribute.request.is.optional.is_blank}")
+    @NotNull(message = "{document.type.to.attributes.request.is.optional.is_blank}")
     @Schema(description = "Признак обязательности аттрибута", example = "true")
     Boolean isOptional) {
 }

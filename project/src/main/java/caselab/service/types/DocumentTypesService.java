@@ -3,101 +3,142 @@ package caselab.service.types;
 import caselab.controller.types.payload.DocumentTypeRequest;
 import caselab.controller.types.payload.DocumentTypeResponse;
 import caselab.controller.types.payload.DocumentTypeToAttributeRequest;
+import caselab.domain.entity.Attribute;
+import caselab.domain.entity.Document;
 import caselab.domain.entity.DocumentType;
 import caselab.domain.entity.document.type.to.attribute.DocumentTypeToAttribute;
 import caselab.domain.entity.document.type.to.attribute.DocumentTypeToAttributeId;
 import caselab.domain.repository.AttributeRepository;
+import caselab.domain.repository.DocumentRepository;
 import caselab.domain.repository.DocumentTypeToAttributeRepository;
 import caselab.domain.repository.DocumentTypesRepository;
-import caselab.exception.entity.AttributeNotFoundException;
-import caselab.exception.entity.DocumentTypeNotFoundException;
+import caselab.exception.DocumentTypeInUseException;
+import caselab.exception.entity.not_found.AttributeNotFoundException;
+import caselab.exception.entity.not_found.DocumentTypeNotFoundException;
 import caselab.service.types.mapper.DocumentTypeMapper;
+import caselab.service.users.ApplicationUserService;
+import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class DocumentTypesService {
 
     private final DocumentTypeMapper documentTypeMapper;
-    private final DocumentTypesRepository documentTypeRepository;
+    private final DocumentRepository documentRepository;
+    private final DocumentTypesRepository documentTypesRepository;
     private final AttributeRepository attributeRepository;
     private final DocumentTypeToAttributeRepository documentTypeToAttributeRepository;
+    private final ApplicationUserService userService;
 
-    public DocumentTypeResponse createDocumentType(DocumentTypeRequest documentTypeRequest) {
-        var documentType = documentTypeMapper.requestToEntity(documentTypeRequest);
+    public DocumentTypeResponse createDocumentType(DocumentTypeRequest request, Authentication authentication) {
+        userService.checkAdmin(authentication);
 
-        documentType.setDocuments(List.of());
-        documentTypeRepository.save(documentType);
-        documentType.setDocumentTypesToAttributes(saveDocumentTypesToAttributes(documentTypeRequest, documentType));
+        var documentType = documentTypeMapper.requestToEntity(request);
 
+        validateAttributesExistence(request);
+
+        documentTypesRepository.save(documentType); // Сохраняем документ, чтобы получить ID
+        documentType.setDocumentTypesToAttributes(linkAttributesToDocument(request, documentType));
         return documentTypeMapper.entityToResponse(documentType);
     }
 
-    public DocumentTypeResponse findDocumentTypeById(Long id) {
-        var documentType = documentTypeRepository.findById(id)
-            .orElseThrow(() -> new DocumentTypeNotFoundException(id));
-        return documentTypeMapper.entityToResponse(documentType);
+    public DocumentTypeResponse getDocumentTypeById(Long id) {
+        return documentTypeMapper.entityToResponse(findDocumentTypeById(id));
     }
 
-    public List<DocumentTypeResponse> findDocumentTypeAll() {
-        var documentTypeResponses = documentTypeRepository.findAll();
-        return documentTypeResponses.stream()
+    public List<DocumentTypeResponse> getAllDocumentTypes() {
+        return documentTypesRepository.findAll()
+            .stream()
             .map(documentTypeMapper::entityToResponse)
             .toList();
     }
 
-    public DocumentTypeResponse updateDocumentType(Long id, DocumentTypeRequest documentTypeRequest) {
-        var documentType = documentTypeRepository.findById(id)
-            .orElseThrow(() -> new DocumentTypeNotFoundException(id));
-        var updateDocumentType = documentTypeMapper.requestToEntity(documentTypeRequest);
+    public DocumentTypeResponse updateDocumentType(
+        Long id, DocumentTypeRequest request,
+        Authentication authentication
+    ) {
+        userService.checkAdmin(authentication);
 
-        updateDocumentType.setId(documentType.getId());
-        updateDocumentType.setDocuments(new ArrayList<>(documentType.getDocuments()));
-        documentTypeRepository.save(updateDocumentType);
-        updateDocumentType.setDocumentTypesToAttributes(saveDocumentTypesToAttributes(
-            documentTypeRequest,
-            updateDocumentType
-        ));
+        var documentType = findDocumentTypeById(id);
+        var updatedDocumentType = documentTypeMapper.requestToEntity(request);
 
-        return documentTypeMapper.entityToResponse(updateDocumentType);
+        validateAttributesExistence(request);
+
+        updatedDocumentType.setId(documentType.getId());
+        updatedDocumentType.setDocuments(new ArrayList<>(documentType.getDocuments()));
+        documentTypesRepository.save(updatedDocumentType);
+        updatedDocumentType.setDocumentTypesToAttributes(linkAttributesToDocument(request, updatedDocumentType));
+
+        return documentTypeMapper.entityToResponse(updatedDocumentType);
     }
 
-    public void deleteDocumentTypeById(Long id) {
-        if (!documentTypeRepository.existsById(id)) {
-            throw new DocumentTypeNotFoundException(id);
+    public void deleteDocumentType(Long id, Authentication authentication) {
+        userService.checkAdmin(authentication);
+
+        var documentType = findDocumentTypeById(id);
+
+        List<Document> relatedDocuments = documentRepository.findByDocumentType(documentType);
+        if (!relatedDocuments.isEmpty()) {
+            throw new DocumentTypeInUseException(id);
         }
-        documentTypeRepository.deleteById(id);
+
+        documentTypesRepository.delete(documentType);
     }
 
-    private List<DocumentTypeToAttribute> saveDocumentTypesToAttributes(
-        DocumentTypeRequest documentTypeRequest,
+    // Поиск и связывания атрибутов с документом
+    private List<DocumentTypeToAttribute> linkAttributesToDocument(
+        DocumentTypeRequest request,
         DocumentType documentType
     ) {
-        List<DocumentTypeToAttribute> documentTypesToAttributes = new ArrayList<>();
-        for (DocumentTypeToAttributeRequest documentTypeToAttributeRequest : documentTypeRequest.attributeRequests()) {
-            documentTypesToAttributes.add(createDocumentTypeToAttribute(documentTypeToAttributeRequest, documentType));
-        }
-        return documentTypeToAttributeRepository.saveAll(documentTypesToAttributes);
+        List<DocumentTypeToAttribute> links = new ArrayList<>();
+
+        request.attributeRequests()
+            .forEach(attributeRequest -> links.add(createAttributeLink(attributeRequest, documentType)));
+
+        return documentTypeToAttributeRepository.saveAll(links);
     }
 
-    private DocumentTypeToAttribute createDocumentTypeToAttribute(
-        DocumentTypeToAttributeRequest documentTypeToAttributeRequest,
+    // Создание или получение существующей связи DocumentTypeToAttribute
+    private DocumentTypeToAttribute createAttributeLink(
+        DocumentTypeToAttributeRequest attributeRequest,
         DocumentType documentType
     ) {
-        var attribute = attributeRepository.findById(documentTypeToAttributeRequest.attributeId())
-            .orElseThrow(() -> new AttributeNotFoundException(documentTypeToAttributeRequest.attributeId()));
+        var attribute = findAttributeById(attributeRequest.attributeId());
+
         return documentTypeToAttributeRepository.findByDocumentTypeIdAndAttributeId(
                 documentType.getId(),
                 attribute.getId()
             )
-            .orElse(DocumentTypeToAttribute.builder()
-                .id(new DocumentTypeToAttributeId(documentType.getId(), attribute.getId()))
-                .attribute(attribute)
-                .documentType(documentType)
-                .isOptional(documentTypeToAttributeRequest.isOptional())
-                .build());
+            .orElse(createNewLink(documentType, attribute, attributeRequest.isOptional()));
+    }
+
+    // Создание новой связи DocumentTypeToAttribute
+    private DocumentTypeToAttribute createNewLink(DocumentType documentType, Attribute attribute, boolean isOptional) {
+        return DocumentTypeToAttribute.builder()
+            .id(new DocumentTypeToAttributeId(documentType.getId(), attribute.getId()))
+            .attribute(attribute)
+            .documentType(documentType)
+            .isOptional(isOptional)
+            .build();
+    }
+
+    private void validateAttributesExistence(DocumentTypeRequest request) {
+        request.attributeRequests().forEach(attributeRequest -> findAttributeById(attributeRequest.attributeId()));
+    }
+
+    private DocumentType findDocumentTypeById(Long id) {
+        return documentTypesRepository.findById(id)
+            .orElseThrow(() -> new DocumentTypeNotFoundException(id));
+    }
+
+    private Attribute findAttributeById(Long id) {
+        return attributeRepository.findById(id)
+            .orElseThrow(() -> new AttributeNotFoundException(id));
     }
 }

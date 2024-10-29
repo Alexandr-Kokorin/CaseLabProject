@@ -1,9 +1,8 @@
 package caselab.service.types;
 
-import caselab.controller.types.payload.DocumentTypeRequest;
 import caselab.controller.types.payload.DocumentTypeResponse;
-import caselab.controller.types.payload.DocumentTypeToAttributeRequest;
 import caselab.controller.types.payload.DocumentTypeToAttributeResponse;
+import caselab.domain.DocumentElasticTest;
 import caselab.domain.entity.Attribute;
 import caselab.domain.entity.DocumentType;
 import caselab.domain.entity.document.type.to.attribute.DocumentTypeToAttribute;
@@ -19,8 +18,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 @SpringBootTest
-public class DocumentTypeMapperTest {
-
+public class DocumentTypeMapperTest extends DocumentElasticTest {
     @Autowired
     private DocumentTypeMapper documentTypeMapper;
     @Autowired
@@ -114,13 +112,13 @@ public class DocumentTypeMapperTest {
         // Проверяем атрибуты
         DocumentTypeToAttribute dtta1 = documentTypesToAttributes.get(0);
         assertAll(
-            () -> assertThat(dtta1.getAttribute().getId(), is(equalTo(dttar1.attributeId()))),
+            () -> assertThat(dtta1.getAttributes().getId(), is(equalTo(dttar1.attributeId()))),
             () -> assertThat(dtta1.getIsOptional(), is(equalTo(dttar1.isOptional())))
         );
 
         DocumentTypeToAttribute dtta2 = documentTypesToAttributes.get(1);
         assertAll(
-            () -> assertThat(dtta2.getAttribute().getId(), is(equalTo(dttar2.attributeId()))),
+            () -> assertThat(dtta2.getAttributes().getId(), is(equalTo(dttar2.attributeId()))),
             () -> assertThat(dtta2.getIsOptional(), is(equalTo(dttar2.isOptional())))
         );
     }

@@ -9,6 +9,7 @@ import caselab.domain.entity.Document;
 import caselab.domain.entity.DocumentType;
 import caselab.domain.entity.DocumentVersion;
 import caselab.domain.entity.Signature;
+import caselab.domain.entity.enums.DocumentStatus;
 import caselab.domain.entity.enums.SignatureStatus;
 import caselab.domain.repository.ApplicationUserRepository;
 import caselab.domain.repository.DocumentRepository;
@@ -68,6 +69,7 @@ public class SignatureControllerTest extends BaseControllerTest {
             .builder()
             .name("test")
             .documentType(savedDocumentType)
+            .status(DocumentStatus.DRAFT)
             .build());
 
         var savedUser = userRepository.findByEmail("user@example.com");
@@ -76,7 +78,7 @@ public class SignatureControllerTest extends BaseControllerTest {
             .builder()
             .name("test")
             .createdAt(now())
-            .contentUrl("test_url")
+            .contentName("test_url")
             .document(savedDocument)
             .build());
 

@@ -1,6 +1,6 @@
 #file: noinspection ComposeUnknownKeys
 include:
-  - environment-compose.yml
+  - elastic-compose.yml
 
 services:
   app:
@@ -21,10 +21,16 @@ services:
       JWT_SECRET: $JWT_SECRET
       MAIL_HOST: $MAIL_HOST
       MAIL_PORT: $MAIL_PORT
+      MINIO_URL: $MINIO_URL
+      MINIO_ACCESS_KEY: $MINIO_ACCESS_KEY
+      MINIO_SECRET_KEY: $MINIO_SECRET_KEY
+      ELASTIC_HOST: $ELASTIC_HOST
     depends_on:
       liquibase-migrations:
         condition: service_completed_successfully
       postgresql:
         condition: service_healthy
+      elasticsearch:
+        condition: service_started
     networks:
       - backend

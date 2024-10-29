@@ -7,6 +7,7 @@ import java.util.List;
 import lombok.Builder;
 
 @Builder
+@Schema(description = "Ответ, содержащий информацию о документе")
 public record DocumentResponse(
     @JsonProperty("id")
     @Schema(description = "ID документа", example = "1")
@@ -23,6 +24,8 @@ public record DocumentResponse(
     @JsonProperty("user_permissions")
     @ArraySchema(schema = @Schema(implementation = UserToDocumentResponse.class,
                                   description = "Список разрешений пользователей, имеющих доступ к документу"))
-    List<UserToDocumentResponse> usersPermissions
+    List<UserToDocumentResponse> usersPermissions,
+    @JsonProperty("status")
+    String status
 ) {
 }

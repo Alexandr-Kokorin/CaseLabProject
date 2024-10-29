@@ -134,6 +134,13 @@
             <artifactId>micrometer-tracing-bridge-brave</artifactId>
         </dependency>
 
+        <!-- Storage -->
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+            <version>8.5.12</version>
+        </dependency>
+
         <!-- Testing -->
         <dependency>
             <groupId>org.springframework.security</groupId>
@@ -196,8 +203,12 @@
             <artifactId>kafka</artifactId>
             <scope>test</scope>
         </dependency>
-
-        <!-- Database -->
+<!--        Elastic Search-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
+        </dependency>
+<!--         Database-->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>

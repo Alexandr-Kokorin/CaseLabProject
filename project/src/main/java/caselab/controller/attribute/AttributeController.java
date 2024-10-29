@@ -16,6 +16,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,7 +32,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Tag(name = "Атрибуты", description = "API взаимодействия с атрибутами типов документов")
 public class AttributeController {
-
     private final AttributeService attributeService;
 
     @Operation(summary = "Добавить атрибут",
@@ -45,8 +45,11 @@ public class AttributeController {
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @PostMapping
-    public AttributeResponse createAttribute(@Valid @RequestBody AttributeRequest attributeRequest) {
-        return attributeService.createAttribute(attributeRequest);
+    public AttributeResponse createAttribute(
+        Authentication authentication,
+        @Valid @RequestBody AttributeRequest attributeRequest
+    ) {
+        return attributeService.createAttribute(attributeRequest, authentication);
     }
 
     @Operation(summary = "Получить атрибут по id",
@@ -92,10 +95,11 @@ public class AttributeController {
     })
     @PutMapping("/{id}")
     public AttributeResponse updateAttribute(
+        Authentication authentication,
         @PathVariable Long id,
         @Valid @RequestBody AttributeRequest attributeRequest
     ) {
-        return attributeService.updateAttribute(id, attributeRequest);
+        return attributeService.updateAttribute(id, attributeRequest, authentication);
     }
 
     @Operation(summary = "Удалить атрибут по id",
@@ -109,8 +113,8 @@ public class AttributeController {
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAttribute(@PathVariable Long id) {
-        attributeService.deleteAttribute(id);
+    public ResponseEntity<Void> deleteAttribute(Authentication authentication, @PathVariable Long id) {
+        attributeService.deleteAttribute(id, authentication);
         return ResponseEntity.noContent().build();
     }
 }

@@ -16,6 +16,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -45,8 +46,11 @@ public class DocumentTypesController {
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @PostMapping
-    public DocumentTypeResponse createDocumentType(@Valid @RequestBody DocumentTypeRequest documentTypeRequest) {
-        return documentTypesService.createDocumentType(documentTypeRequest);
+    public DocumentTypeResponse createDocumentType(
+        Authentication authentication,
+        @Valid @RequestBody DocumentTypeRequest documentTypeRequest
+    ) {
+        return documentTypesService.createDocumentType(documentTypeRequest, authentication);
     }
 
     @Operation(summary = "Получить тип документа по id",
@@ -60,8 +64,8 @@ public class DocumentTypesController {
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @GetMapping("/{id}")
-    public DocumentTypeResponse findDocumentTypeById(@PathVariable Long id) {
-        return documentTypesService.findDocumentTypeById(id);
+    public DocumentTypeResponse getDocumentTypeById(@PathVariable Long id) {
+        return documentTypesService.getDocumentTypeById(id);
     }
 
     @Operation(summary = "Получить список всех типов документов",
@@ -74,8 +78,8 @@ public class DocumentTypesController {
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @GetMapping
-    public List<DocumentTypeResponse> findDocumentTypeAll() {
-        return documentTypesService.findDocumentTypeAll();
+    public List<DocumentTypeResponse> getAllDocumentTypes() {
+        return documentTypesService.getAllDocumentTypes();
     }
 
     @Operation(summary = "Обновить тип документа",
@@ -92,10 +96,11 @@ public class DocumentTypesController {
     })
     @PutMapping("/{id}")
     public DocumentTypeResponse updateDocumentType(
+        Authentication authentication,
         @PathVariable Long id,
         @Valid @RequestBody DocumentTypeRequest documentTypeRequest
     ) {
-        return documentTypesService.updateDocumentType(id, documentTypeRequest);
+        return documentTypesService.updateDocumentType(id, documentTypeRequest, authentication);
     }
 
     @Operation(summary = "Удалить тип документа по id",
@@ -109,8 +114,8 @@ public class DocumentTypesController {
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteDocumentTypeById(@PathVariable Long id) {
-        documentTypesService.deleteDocumentTypeById(id);
+    public ResponseEntity<Void> deleteDocumentTypeById(Authentication authentication, @PathVariable Long id) {
+        documentTypesService.deleteDocumentType(id, authentication);
         return ResponseEntity.noContent().build();
     }
 }
