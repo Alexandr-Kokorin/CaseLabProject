@@ -24,6 +24,7 @@ services:
       MINIO_URL: $MINIO_URL
       MINIO_ACCESS_KEY: $MINIO_ACCESS_KEY
       MINIO_SECRET_KEY: $MINIO_SECRET_KEY
+      ELASTIC_HOST: $ELASTIC_HOST
     depends_on:
       liquibase-migrations:
         condition: service_completed_successfully
