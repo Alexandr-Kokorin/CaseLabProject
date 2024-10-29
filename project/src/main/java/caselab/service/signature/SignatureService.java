@@ -8,6 +8,7 @@ import caselab.domain.entity.enums.SignatureStatus;
 import caselab.domain.repository.ApplicationUserRepository;
 import caselab.domain.repository.DocumentVersionRepository;
 import caselab.domain.repository.SignatureRepository;
+import caselab.exception.entity.not_found.DocumentNotFoundException;
 import caselab.exception.entity.not_found.DocumentVersionNotFoundException;
 import caselab.exception.entity.not_found.SignatureNotFoundException;
 import caselab.exception.entity.not_found.UserNotFoundException;
@@ -112,5 +113,15 @@ public class SignatureService {
 
         return signatureRepository.findByApplicationUserAndDocumentVersion(user.get(), documentVersion.get())
             .map(signatureMapper::entityToResponse);
+    }
+
+    public List<SignatureResponse> findAllSignaturesByDocumentVersionId(Long documentVersionId) {
+        var documentVersion = documentVersionRepository.findById(documentVersionId)
+            .orElseThrow(() -> new DocumentVersionNotFoundException(documentVersionId));
+
+        return documentVersion.getSignatures()
+            .stream()
+            .map(signatureMapper::entityToResponse)
+            .toList();
     }
 }
