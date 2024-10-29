@@ -101,22 +101,4 @@ public class DocumentVersionController {
         var resource = new InputStreamResource(documentVersionService.getDocumentVersionContent(id, auth));
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
-
-    @Operation(summary = "Обновить версию документа по id",
-               description = "Обновляет версию документа и возвращает её")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Успешное обновление версии документа",
-                     content = @Content(schema = @Schema(implementation = DocumentVersionResponse.class))),
-        @ApiResponse(responseCode = "404", description = "Версия документа не найдена",
-                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
-        @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
-                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
-    })
-    @PutMapping("/{id}")
-    public DocumentVersionResponse updateDocumentVersion(
-        @PathVariable("id") Long id, @RequestBody
-    UpdateDocumentVersionRequest body, Authentication auth
-    ) {
-        return documentVersionService.updateDocumentVersion(id, body, auth);
-    }
 }

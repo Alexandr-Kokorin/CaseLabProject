@@ -1,11 +1,14 @@
 package caselab.controller.document.facade.payload;
 
+import caselab.controller.version.payload.AttributeValuePair;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -14,7 +17,16 @@ import lombok.Setter;
 @Builder
 @Schema(description = "Запрос на обновление документа")
 public class UpdateDocumentRequest {
+    @JsonProperty("document_type_id")
+    private Long documentTypeId;
+
     @Schema(description = "Новое название документа",
             example = "Обновленное название")
-    private String name = null;
+    @JsonProperty("name")
+    private String name;
+
+    @JsonProperty("version_name")
+    String versionName;
+    @JsonProperty("version_attributes_attributes")
+    List<AttributeValuePair> attributes;
 }

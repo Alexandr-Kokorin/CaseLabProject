@@ -181,12 +181,13 @@ public class DocumentVersionService {
         var saved = documentVersionRepository.save(documentVersion);
         attributeValueRepository.saveAll(attributeValues);
 
-        DocumentVersionResponse versionResponse = null;
+        DocumentVersionResponse versionResponse;
 
         try {
             versionResponse = documentVersionMapper.map(saved);
         } catch (Exception e) {
             documentVersionStorage.delete(documentVersion.getContentName());
+            throw new RuntimeException(e.getMessage(), e.getCause());
         }
 
         clearReaders(document);  // TODO: проверить в тесте контроллера, что это работает

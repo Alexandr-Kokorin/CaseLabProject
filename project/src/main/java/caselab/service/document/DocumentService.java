@@ -41,6 +41,7 @@ public class DocumentService {
         var document = documentMapper.requestToEntity(documentRequest);
 
         document.setDocumentType(getDocumentTypeById(documentRequest.documentTypeId()));
+        document.setStatus(DocumentStatus.DRAFT);
         document.setDocumentVersions(List.of());
         documentRepository.save(document);
 

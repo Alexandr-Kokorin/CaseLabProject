@@ -35,7 +35,7 @@ public class DocumentFacadeService {
         ApplicationUser user
     ) {
         var latestVersionResponse = documentVersionService.getDocumentVersionById(
-            documentResponse.documentVersionIds().getFirst(), user
+            documentResponse.documentVersionIds().getLast(), user
         );
 
         var signature = signatureService.findSignatureByUserAndDocumentVersion(
@@ -80,9 +80,23 @@ public class DocumentFacadeService {
             ).toList();
     }
 
-    public DocumentFacadeResponse updateDocument(Long id, UpdateDocumentRequest body, Authentication auth) {
+    public DocumentFacadeResponse updateDocument(
+        Long id,
+        UpdateDocumentRequest body,
+        MultipartFile file,
+        Authentication auth
+    ) {
         var user = authToUserService.findUserByAuthentication(auth);
         var documentResponse = documentService.updateDocument(id, body, user);
+
+        var documentVersionRequest = CreateDocumentVersionRequest.builder()
+            .documentId(documentResponse.id())
+            .name(body.getVersionName())
+            .attributes(body.getAttributes())
+            .build();
+        var latestVersion = documentVersionService.createDocumentVersion(documentVersionRequest, file, user);
+        documentResponse.documentVersionIds().add(latestVersion.getId());
+
         return enrichResponse(documentResponse, user);
     }
 

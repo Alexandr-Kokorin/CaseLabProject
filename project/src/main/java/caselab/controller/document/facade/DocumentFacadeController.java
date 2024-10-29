@@ -102,10 +102,11 @@ public class DocumentFacadeController {
     @PutMapping("/{id}")
     public DocumentFacadeResponse updateDocument(
         @PathVariable Long id,
-        @RequestBody UpdateDocumentRequest documentRequest,
+        @RequestPart("document_params") UpdateDocumentRequest documentRequest,
+        @RequestPart(value = "content", required = false) MultipartFile file,
         Authentication authentication
     ) {
-        return documentFacadeService.updateDocument(id, documentRequest, authentication);
+        return documentFacadeService.updateDocument(id, documentRequest, file, authentication);
     }
 
     @Operation(summary = "Добавить разрешение для чтения документа для пользователя по его email",

@@ -5,6 +5,7 @@ import caselab.controller.document.payload.DocumentResponse;
 import caselab.domain.entity.Document;
 import caselab.domain.entity.DocumentVersion;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -27,7 +28,7 @@ public interface DocumentMapper {
 
     @Named("documentVersionsToDocumentVersionIds")
     static List<Long> documentVersionsToDocumentVersionIds(@NotNull List<DocumentVersion> documentVersions) {
-        return documentVersions.stream().map(DocumentVersion::getId).toList();
+        return documentVersions.stream().map(DocumentVersion::getId).sorted().collect(Collectors.toList());
     }
 
     Document requestToEntity(DocumentRequest documentRequest);
