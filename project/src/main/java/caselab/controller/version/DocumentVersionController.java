@@ -2,7 +2,6 @@ package caselab.controller.version;
 
 import caselab.controller.version.payload.CreateDocumentVersionRequest;
 import caselab.controller.version.payload.DocumentVersionResponse;
-import caselab.controller.version.payload.UpdateDocumentVersionRequest;
 import caselab.service.version.DocumentVersionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -10,8 +9,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import java.util.List;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -22,8 +21,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -74,7 +71,8 @@ public class DocumentVersionController {
     @Operation(summary = "Получить все версии документов текущего пользователя",
                description = "Возвращает все версии документа, доступные текущему пользователю")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Успешное получение версий документов для текущего пользователя",
+        @ApiResponse(responseCode = "200",
+                     description = "Успешное получение версий документов для текущего пользователя",
                      content = @Content(schema = @Schema(implementation = DocumentVersionResponse.class))),
         @ApiResponse(responseCode = "404", description = "Версия документа не найдена",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class))),

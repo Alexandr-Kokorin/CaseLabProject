@@ -1,8 +1,8 @@
 package caselab.controller.version.payload;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.List;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
 import lombok.Builder;
 
 @Builder
