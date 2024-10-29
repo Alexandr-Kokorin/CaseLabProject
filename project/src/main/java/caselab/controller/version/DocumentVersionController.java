@@ -2,6 +2,7 @@ package caselab.controller.version;
 
 import caselab.controller.version.payload.CreateDocumentVersionRequest;
 import caselab.controller.version.payload.DocumentVersionResponse;
+import caselab.controller.version.payload.UpdateDocumentVersionRequest;
 import caselab.service.version.DocumentVersionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -21,6 +22,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -98,5 +101,23 @@ public class DocumentVersionController {
     public ResponseEntity<Resource> getDocumentVersionContent(@PathVariable Long id, Authentication auth) {
         var resource = new InputStreamResource(documentVersionService.getDocumentVersionContent(id, auth));
         return new ResponseEntity<>(resource, HttpStatus.OK);
+    }
+
+    @Operation(summary = "Обновить версию документа по id",
+               description = "Обновляет версию документа и возвращает её")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Успешное обновление версии документа",
+                     content = @Content(schema = @Schema(implementation = DocumentVersionResponse.class))),
+        @ApiResponse(responseCode = "404", description = "Версия документа не найдена",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+        @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @PutMapping("/{id}")
+    public DocumentVersionResponse updateDocumentVersion(
+        @PathVariable("id") Long id, @RequestBody
+    UpdateDocumentVersionRequest body, Authentication auth
+    ) {
+        return documentVersionService.updateDocumentVersion(id, body, auth);
     }
 }
