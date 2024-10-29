@@ -180,6 +180,7 @@ public class DocumentVersionService {
 
         var saved = documentVersionRepository.save(documentVersion);
         attributeValueRepository.saveAll(attributeValues);
+        saved.setAttributeValues(attributeValues);
 
         DocumentVersionResponse versionResponse;
 
