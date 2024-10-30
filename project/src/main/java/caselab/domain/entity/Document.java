@@ -1,8 +1,10 @@
 package caselab.domain.entity;
 
 import caselab.domain.entity.enums.DocumentStatus;
+import caselab.elastic.listener.DocumentEventListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
@@ -28,6 +30,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @Entity
 @ToString
+@EntityListeners(DocumentEventListener.class)
 @Table(name = "document")
 public class Document {
 
