@@ -33,4 +33,6 @@ services:
       elasticsearch:
         condition: service_started
     networks:
-      - backend
+      backend:
+        aliases:
+          - app
