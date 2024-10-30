@@ -6,6 +6,7 @@ import caselab.controller.voting_process.payload.VotingProcessRequest;
 import caselab.controller.voting_process.payload.VotingProcessResponse;
 import caselab.domain.entity.Vote;
 import caselab.domain.entity.VotingProcess;
+import caselab.domain.entity.enums.DocumentPermissionName;
 import caselab.domain.entity.enums.DocumentStatus;
 import caselab.domain.entity.enums.VoteStatus;
 import caselab.domain.entity.enums.VotingProcessStatus;
@@ -14,14 +15,15 @@ import caselab.domain.repository.DocumentVersionRepository;
 import caselab.domain.repository.VoteRepository;
 import caselab.domain.repository.VotingProcessRepository;
 import caselab.exception.VotingProcessIsOverException;
+import caselab.exception.entity.not_found.DocumentVersionNotFoundException;
 import caselab.exception.entity.not_found.VoteNotFoundException;
 import caselab.exception.entity.not_found.VotingProcessNotFoundException;
-import caselab.exception.entity.not_found.DocumentVersionNotFoundException;
-import caselab.exception.entity.status.StatusShouldBeDraftException;
+import caselab.exception.status.StatusIncorrectForCreateVotingProcessException;
 import caselab.service.document.facade.DocumentFacadeService;
 import caselab.service.notification.email.EmailNotificationDetails;
 import caselab.service.notification.email.EmailService;
 import caselab.service.users.ApplicationUserService;
+import caselab.service.util.DocumentPermissionUtilService;
 import caselab.service.voting_process.mapper.VoteMapper;
 import caselab.service.voting_process.mapper.VotingProcessMapper;
 import jakarta.transaction.Transactional;
@@ -40,6 +42,7 @@ public class VotingProcessService {
 
     private final DocumentFacadeService documentFacadeService;
     private final ApplicationUserService applicationUserService;
+    private final DocumentPermissionUtilService documentPermissionUtilService;
 
     private final ApplicationUserRepository applicationUserRepository;
     private final DocumentVersionRepository documentVersionRepository;
@@ -55,9 +58,13 @@ public class VotingProcessService {
         var documentVersion = documentVersionRepository.findById(request.documentVersionId())
             .orElseThrow(() -> new DocumentVersionNotFoundException(request.documentVersionId()));
 
-        if (documentVersion.getDocument().getStatus() != DocumentStatus.DRAFT) {
-            throw new StatusShouldBeDraftException();
-        }
+        var user = applicationUserService.findUserByAuthentication(authentication);
+        documentPermissionUtilService.assertHasPermission(
+            user, documentVersion.getDocument(), DocumentPermissionName::isCreator, "Creator");
+
+        documentPermissionUtilService.assertHasDocumentStatus(
+            documentVersion.getDocument(), List.of(DocumentStatus.DRAFT),
+            new StatusIncorrectForCreateVotingProcessException());
 
         var votingProcess = votingProcessMapper.requestToEntity(request);
         votingProcess.setStatus(VotingProcessStatus.IN_PROGRESS);
