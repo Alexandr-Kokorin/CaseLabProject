@@ -16,6 +16,8 @@ import caselab.domain.repository.UserToDocumentRepository;
 import caselab.exception.document.version.DocumentPermissionAlreadyGrantedException;
 import caselab.exception.entity.not_found.DocumentNotFoundException;
 import caselab.exception.entity.not_found.DocumentTypeNotFoundException;
+import caselab.exception.status.StatusIncorrectForDeleteDocumentException;
+import caselab.exception.status.StatusIncorrectForUpdateDocumentException;
 import caselab.service.document.mapper.DocumentMapper;
 import caselab.service.util.DocumentPermissionUtilService;
 import jakarta.transaction.Transactional;
@@ -24,6 +26,7 @@ import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+@SuppressWarnings("MultipleStringLiterals")
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -87,7 +90,14 @@ public class DocumentService {
         var document = getDocumentEntityById(id);
 
         docPermissionService.assertHasPermission(user, document, DocumentPermissionName::canEdit, "Edit");
+        docPermissionService.assertHasDocumentStatus(
+            document,
+            List.of(DocumentStatus.DRAFT, DocumentStatus.SIGNATURE_REJECTED,
+                DocumentStatus.VOTING_REJECTED, DocumentStatus.ARCHIVED),
+            new StatusIncorrectForUpdateDocumentException());
+
         document.setName(updateDocumentRequest.getName());
+        document.setStatus(DocumentStatus.DRAFT);
         return documentMapper.entityToResponse(documentRepository.save(document));
     }
 
@@ -112,9 +122,15 @@ public class DocumentService {
     }
 
     public void documentToArchive(Long documentId, ApplicationUser user) {
-        var document =
-            documentRepository.findById(documentId).orElseThrow(() -> new DocumentNotFoundException(documentId));
-        docPermissionService.assertHasPermission(user, document, DocumentPermissionName::isCreator, "Archive");
+        var document = getDocumentEntityById(documentId);
+
+        docPermissionService.assertHasPermission(user, document, DocumentPermissionName::isCreator, "Creator");
+        docPermissionService.assertHasDocumentStatus(
+            document,
+            List.of(DocumentStatus.DRAFT, DocumentStatus.SIGNATURE_REJECTED, DocumentStatus.SIGNATURE_ACCEPTED,
+                DocumentStatus.VOTING_REJECTED, DocumentStatus.VOTING_ACCEPTED),
+            new StatusIncorrectForDeleteDocumentException());
+
         document.setStatus(DocumentStatus.ARCHIVED);
         documentRepository.save(document);
     }

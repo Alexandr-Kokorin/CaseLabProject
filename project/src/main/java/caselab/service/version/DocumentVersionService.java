@@ -13,6 +13,7 @@ import caselab.domain.entity.UserToDocument;
 import caselab.domain.entity.attribute.value.AttributeValue;
 import caselab.domain.entity.document.type.to.attribute.DocumentTypeToAttribute;
 import caselab.domain.entity.enums.DocumentPermissionName;
+import caselab.domain.entity.enums.DocumentStatus;
 import caselab.domain.repository.AttributeRepository;
 import caselab.domain.repository.AttributeValueRepository;
 import caselab.domain.repository.DocumentRepository;
@@ -24,7 +25,9 @@ import caselab.exception.document.version.MissingDocumentPermissionException;
 import caselab.exception.entity.not_found.AttributeNotFoundException;
 import caselab.exception.entity.not_found.DocumentNotFoundException;
 import caselab.exception.entity.not_found.DocumentVersionNotFoundException;
+import caselab.exception.status.StatusIncorrectForUpdateDocumentVersionException;
 import caselab.service.users.ApplicationUserService;
+import caselab.service.util.DocumentPermissionUtilService;
 import caselab.service.version.mapper.DocumentVersionMapper;
 import caselab.service.version.mapper.DocumentVersionUpdater;
 import jakarta.transaction.Transactional;
@@ -45,12 +48,16 @@ import org.springframework.web.multipart.MultipartFile;
 @Transactional
 @RequiredArgsConstructor
 public class DocumentVersionService {
-    private final DocumentVersionRepository documentVersionRepository;
+
     private final ApplicationUserService userService;  // TODO: сменить на UserFromAuthenticationUtilService
+    private final DocumentPermissionUtilService documentPermissionUtilService;
+
+    private final DocumentVersionRepository documentVersionRepository;
     private final DocumentRepository documentRepository;
     private final UserToDocumentRepository userToDocumentRepository;
     private final AttributeRepository attributeRepository;
     private final AttributeValueRepository attributeValueRepository;
+
     private final DocumentVersionMapper documentVersionMapper;
     private final DocumentVersionUpdater documentVersionUpdater;
     private final FileStorage documentVersionStorage;
@@ -144,8 +151,7 @@ public class DocumentVersionService {
         ApplicationUser user
     ) {
 
-        Document document = documentRepository
-            .findById(body.documentId())
+        Document document = documentRepository.findById(body.documentId())
             .orElseThrow(() -> new DocumentNotFoundException(body.documentId()));
 
         if (checkLacksPermission(user, document, DocumentPermissionName::canEdit)) {
@@ -201,15 +207,12 @@ public class DocumentVersionService {
     }
 
     public DocumentVersionResponse getDocumentVersionById(Long id, ApplicationUser user) {
-        DocumentVersion documentVersion = documentVersionRepository.findById(id).orElseThrow(
-            () -> new DocumentVersionNotFoundException(id)
-        );
+        DocumentVersion documentVersion = documentVersionRepository.findById(id)
+            .orElseThrow(() -> new DocumentVersionNotFoundException(id));
 
         userToDocumentRepository.findByApplicationUserIdAndDocumentId(
-            user.getId(), documentVersion.getDocument().getId()
-        ).orElseThrow(
-            () -> new MissingDocumentPermissionException("Any")
-        );
+                user.getId(), documentVersion.getDocument().getId()
+            ).orElseThrow(() -> new MissingDocumentPermissionException("Any"));
 
         return hideInaccessibleFields(
             documentVersionMapper.map(documentVersion),
@@ -240,9 +243,8 @@ public class DocumentVersionService {
     public InputStream getDocumentVersionContent(Long id, Authentication auth) {
         ApplicationUser user = userService.findUserByAuthentication(auth);
 
-        DocumentVersion documentVersion = documentVersionRepository.findById(id).orElseThrow(
-            () -> new DocumentVersionNotFoundException(id)
-        );
+        DocumentVersion documentVersion = documentVersionRepository.findById(id)
+            .orElseThrow(() -> new DocumentVersionNotFoundException(id));
 
         if (checkLacksPermission(user, documentVersion.getDocument(), DocumentPermissionName::canRead)) {
             throw new MissingDocumentPermissionException(DocumentPermissionName.READ.name());
@@ -257,12 +259,17 @@ public class DocumentVersionService {
         Authentication auth
     ) {
         ApplicationUser user = userService.findUserByAuthentication(auth);
-        DocumentVersion documentVersion = documentVersionRepository.findById(id).orElseThrow(
-            () -> new DocumentVersionNotFoundException(id)
-        );
+        DocumentVersion documentVersion = documentVersionRepository.findById(id)
+            .orElseThrow(() -> new DocumentVersionNotFoundException(id));
+
         if (checkLacksPermission(user, documentVersion.getDocument(), DocumentPermissionName::canEdit)) {
             throw new MissingDocumentPermissionException(DocumentPermissionName.EDIT.name());
         }
+        documentPermissionUtilService.assertHasDocumentStatus(
+            documentVersion.getDocument(),
+            List.of(DocumentStatus.DRAFT),
+            new StatusIncorrectForUpdateDocumentVersionException());
+
         documentVersionUpdater.update(body, documentVersion);
         var saved = documentVersionRepository.save(documentVersion);
         return hideInaccessibleFields(

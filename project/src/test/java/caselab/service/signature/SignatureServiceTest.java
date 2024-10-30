@@ -24,6 +24,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.Authentication;
 
 import static java.time.OffsetDateTime.now;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -84,7 +85,7 @@ public class SignatureServiceTest {
         Mockito.when(signatureMapper.entityToResponse(Mockito.any(Signature.class)))
             .thenReturn(createdSignatureResponse);
 
-        var resultOfCreating = signatureService.createSignature(request);
+        var resultOfCreating = signatureService.createSignature(request, any(Authentication.class));
 
         assertAll(
             "Grouped assertions for created signature",
@@ -115,7 +116,7 @@ public class SignatureServiceTest {
         Mockito.when(userRepository.findByEmail(request.email()))
             .thenThrow(new UserNotFoundException(request.email()));
 
-        assertThrows(UserNotFoundException.class, () -> signatureService.createSignature(request));
+        assertThrows(UserNotFoundException.class, () -> signatureService.createSignature(request, any(Authentication.class)));
     }
 
     @DisplayName("Create signature for non-existent document version")
@@ -130,7 +131,7 @@ public class SignatureServiceTest {
         Mockito.when(documentVersionRepository.findById(request.documentVersionId()))
             .thenThrow(new DocumentVersionNotFoundException(request.documentVersionId()));
 
-        assertThrows(DocumentVersionNotFoundException.class, () -> signatureService.createSignature(request));
+        assertThrows(DocumentVersionNotFoundException.class, () -> signatureService.createSignature(request, any(Authentication.class)));
     }
 
     @DisplayName("Sign document version")
@@ -151,7 +152,7 @@ public class SignatureServiceTest {
         when(signatureMapper.entityToResponse(signature)).thenReturn(expectedResponse);
         when(signatureRepository.findById(1L)).thenReturn(Optional.of(signature));
 
-        var actualResponse = signatureService.signatureUpdate(1L, true);
+        var actualResponse = signatureService.signatureUpdate(1L, true, any(Authentication.class));
 
         verify(signatureRepository, times(1)).findById(1L);
         verify(signatureMapper, times(1)).entityToResponse(signature);
@@ -181,7 +182,7 @@ public class SignatureServiceTest {
         when(signatureRepository.findById(1L)).thenReturn(Optional.of(signature));
         when(signatureMapper.entityToResponse(signature)).thenReturn(expectedResponse);
 
-        var actualResponse = signatureService.signatureUpdate(1L, false);
+        var actualResponse = signatureService.signatureUpdate(1L, false, any(Authentication.class));
 
         verify(signatureRepository, times(1)).findById(1L);
         verify(signatureMapper, times(1)).entityToResponse(signature);
@@ -199,7 +200,7 @@ public class SignatureServiceTest {
     public void testSignatureUpdate_NotFound() {
         when(signatureRepository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(SignatureNotFoundException.class, () -> signatureService.signatureUpdate(1L, true));
+        assertThrows(SignatureNotFoundException.class, () -> signatureService.signatureUpdate(1L, true, any(Authentication.class)));
     }
 
     private Signature getSignature(SignatureCreateRequest request) {

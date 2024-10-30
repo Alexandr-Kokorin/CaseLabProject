@@ -51,9 +51,10 @@ public class SignatureController {
         @Parameter(description = "ID подписи", required = true)
         @PathVariable("id") Long id,
         @Parameter(description = "Статус подписания (true - подписать, false - отклонить)", required = true)
-        @RequestParam("status") Boolean sign
+        @RequestParam("status") Boolean sign,
+        Authentication authentication
     ) {
-        var response = signatureService.signatureUpdate(id, sign);
+        var response = signatureService.signatureUpdate(id, sign, authentication);
         subscriptionService.sendEvent(response.documentVersionId(), EventType.valueOf(response.status().name()));
         return response;
     }
@@ -72,9 +73,10 @@ public class SignatureController {
     })
     @PostMapping("/send")
     public SignatureResponse sendDocumentVersionOnSigning(
-        @RequestBody SignatureCreateRequest signatureCreateRequest
+        @RequestBody SignatureCreateRequest signatureCreateRequest,
+        Authentication authentication
     ) {
-        var response = signatureService.createSignature(signatureCreateRequest);
+        var response = signatureService.createSignature(signatureCreateRequest, authentication);
         subscriptionService.sendEvent(response.documentVersionId(), EventType.valueOf(response.status().name()));
         return response;
     }
@@ -90,5 +92,19 @@ public class SignatureController {
     public List<SignatureResponse> getAllSignaturesForUser(Authentication authentication) {
         var userDetails = (UserDetails) authentication.getPrincipal();
         return signatureService.findAllSignaturesByEmail(userDetails.getUsername());
+    }
+
+    @Operation(summary = "Получить все подписи по версии документа",
+               description = "Возвращает список всех подписей, связанных с версией документа")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Успешное получение списка подписей"),
+        @ApiResponse(responseCode = "404", description = "Версия документа не найдена",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @GetMapping("/all/{documentVersionId}")
+    public List<SignatureResponse> getAllSignaturesByDocumentVersionId(
+        @PathVariable("documentVersionId") Long documentVersionId
+    ) {
+        return signatureService.findAllSignaturesByDocumentVersionId(documentVersionId);
     }
 }
