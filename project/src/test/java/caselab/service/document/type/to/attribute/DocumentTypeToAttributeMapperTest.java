@@ -1,7 +1,6 @@
 package caselab.service.document.type.to.attribute;
 
 import caselab.controller.types.payload.DocumentTypeToAttributeResponse;
-import caselab.domain.DocumentElasticTest;
 import caselab.domain.entity.Attribute;
 import caselab.domain.entity.document.type.to.attribute.DocumentTypeToAttribute;
 import caselab.service.types.mapper.DocumentTypeToAttributeMapper;
@@ -12,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 @SpringBootTest
-public class DocumentTypeToAttributeMapperTest extends DocumentElasticTest {
+public class DocumentTypeToAttributeMapperTest {
 
     private final DocumentTypeToAttributeMapper mapper = Mappers.getMapper(DocumentTypeToAttributeMapper.class);
 

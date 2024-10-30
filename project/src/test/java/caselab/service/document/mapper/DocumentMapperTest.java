@@ -4,7 +4,7 @@ import caselab.Application;
 import caselab.controller.document.payload.DocumentRequest;
 import caselab.controller.document.payload.DocumentResponse;
 import caselab.controller.document.payload.UserToDocumentRequest;
-import caselab.domain.DocumentElasticTest;
+import caselab.domain.IntegrationTest;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.Document;
 import caselab.domain.entity.DocumentType;
@@ -21,8 +21,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
 @SpringBootTest(classes = Application.class)
-public class DocumentMapperTest extends DocumentElasticTest {
+public class DocumentMapperTest extends IntegrationTest {
+
     @Autowired
     private DocumentMapper documentMapper;
     @Test

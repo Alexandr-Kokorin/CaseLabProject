@@ -2,7 +2,6 @@ package caselab.service.document.mapper;
 
 import caselab.Application;
 import caselab.controller.document.payload.DocumentPermissionResponse;
-import caselab.domain.DocumentElasticTest;
 import caselab.domain.entity.DocumentPermission;
 import caselab.domain.entity.enums.DocumentPermissionName;
 import org.junit.jupiter.api.DisplayName;
@@ -13,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 @SpringBootTest(classes = Application.class)
-public class DocumentPermissionMapperTest extends DocumentElasticTest {
+public class DocumentPermissionMapperTest {
     @Autowired
     private DocumentPermissionMapper documentPermissionMapper;
 
