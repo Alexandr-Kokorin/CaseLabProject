@@ -2,24 +2,22 @@ package caselab.service.document.mapper;
 
 import caselab.Application;
 import caselab.controller.document.payload.UserToDocumentResponse;
-import caselab.domain.DocumentElasticTest;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.Document;
 import caselab.domain.entity.DocumentPermission;
 import caselab.domain.entity.UserToDocument;
 import caselab.domain.entity.enums.DocumentPermissionName;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 
 @SpringBootTest(classes = Application.class)
-public class UserToDocumentMapperTest extends DocumentElasticTest {
+public class UserToDocumentMapperTest {
     @Autowired
     private UserToDocumentMapper userToDocumentMapper;
 
