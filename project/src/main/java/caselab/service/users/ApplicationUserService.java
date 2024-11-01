@@ -47,15 +47,18 @@ public class ApplicationUserService {
         return mapper.entityToResponse(userRepository.save(userToUpdate));
     }
 
-    public void deleteUser(Authentication authentication) {
+    public void deleteUser(Authentication authentication, String email) {
         checkAdmin(authentication);
-        userRepository.delete(findUserByAuthentication(authentication));
+        userRepository.delete(findUserByEmail(email));
     }
 
     public ApplicationUser findUserByAuthentication(Authentication authentication) {
         var userDetails = (UserDetails) authentication.getPrincipal();
         return userRepository.findByEmail(userDetails.getUsername())
             .orElseThrow(() -> new UserNotFoundException(userDetails.getUsername()));
+    }
+    public ApplicationUser findUserByEmail(String email) {
+        return userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException(email));
     }
 
     public void checkAdmin(Authentication authentication) {

@@ -3,21 +3,28 @@ package caselab.controller.users;
 import caselab.controller.BaseControllerTest;
 import caselab.controller.secutiry.payload.AuthenticationRequest;
 import caselab.controller.secutiry.payload.AuthenticationResponse;
+import caselab.controller.secutiry.payload.RegisterRequest;
 import caselab.controller.users.payload.UserUpdateRequest;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MvcResult;
+
+import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
 public class ApplicationUserControllerTest extends BaseControllerTest {
 
+    private final String AUTH_URI = "/api/v1/auth";
     private final String URL = "/api/v1/users";
     private static AuthenticationResponse authToken;
 
@@ -185,10 +192,20 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
     @Test
     @SneakyThrows
     @DisplayName("Should delete user successfully")
+    @WithMockUser(username = "admin@gmail.com",roles = "{ADMIN}")
     public void shouldDeleteUser() {
         var token = login().token();
 
-        mockMvc.perform(delete(URL)
+        RegisterRequest registerRequest = RegisterRequest.builder()
+            .email("test123@mail.ru")
+            .displayName("displayName")
+            .password("password")
+            .build();
+
+        // Выполняем регистрацию и проверяем токен
+        token = performRegistrationAndGetToken(registerRequest);
+
+        mockMvc.perform(delete(URL+"?email="+registerRequest.email())
                 .header("Authorization", "Bearer " + token))
             .andExpect(status().isNoContent());
     }
@@ -199,5 +216,32 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
     public void shouldReturn403ForUnauthorizedAccessToDeleteUser() {
         mockMvc.perform(delete(URL))
             .andExpect(status().isForbidden());
+    }
+
+    @SneakyThrows
+    private String performRegistrationAndGetToken(RegisterRequest request) {
+        var response = mockMvc.perform(post(AUTH_URI + "/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpectAll(
+                status().is2xxSuccessful(),
+                content().contentType(MediaType.APPLICATION_JSON),
+                jsonPath("$.token", notNullValue())
+            )
+            .andReturn();
+
+        var authenticationResponse = readValue(
+            response,
+            AuthenticationResponse.class
+        );
+        return authenticationResponse.token();
+    }
+
+    @SneakyThrows
+    private <T> T readValue(MvcResult mvcResponse, Class<T> valueType) {
+        return objectMapper.readValue(
+            mvcResponse.getResponse().getContentAsString(),
+            valueType
+        );
     }
 }
