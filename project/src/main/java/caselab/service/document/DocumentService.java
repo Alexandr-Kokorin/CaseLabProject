@@ -73,10 +73,6 @@ public class DocumentService {
         return documentMapper.entityToResponse(document);
     }
 
-    private List<DocumentResponse> toDocumentResponse(Stream<Document> documents) {
-        return documents.map(documentMapper::entityToResponse).toList();
-    }
-
     public List<DocumentResponse> getAllDocuments(ApplicationUser user) {
         return toDocumentResponse(
             user
@@ -86,6 +82,16 @@ public class DocumentService {
         );
     }
 
+    public List<DocumentResponse> getAllDocuments() {
+        return toDocumentResponse(
+            documentRepository.findAll().stream()
+        );
+    }
+
+    private List<DocumentResponse> toDocumentResponse(Stream<Document> documents) {
+        return documents.map(documentMapper::entityToResponse).toList();
+    }
+
     public DocumentResponse updateDocument(Long id, UpdateDocumentRequest updateDocumentRequest, ApplicationUser user) {
         var document = getDocumentEntityById(id);
 
@@ -93,8 +99,10 @@ public class DocumentService {
         docPermissionService.assertHasDocumentStatus(
             document,
             List.of(DocumentStatus.DRAFT, DocumentStatus.SIGNATURE_REJECTED,
-                DocumentStatus.VOTING_REJECTED, DocumentStatus.ARCHIVED),
-            new StatusIncorrectForUpdateDocumentException());
+                DocumentStatus.VOTING_REJECTED, DocumentStatus.ARCHIVED
+            ),
+            new StatusIncorrectForUpdateDocumentException()
+        );
 
         document.setName(updateDocumentRequest.getName());
         document.setStatus(DocumentStatus.DRAFT);
@@ -128,8 +136,10 @@ public class DocumentService {
         docPermissionService.assertHasDocumentStatus(
             document,
             List.of(DocumentStatus.DRAFT, DocumentStatus.SIGNATURE_REJECTED, DocumentStatus.SIGNATURE_ACCEPTED,
-                DocumentStatus.VOTING_REJECTED, DocumentStatus.VOTING_ACCEPTED),
-            new StatusIncorrectForDeleteDocumentException());
+                DocumentStatus.VOTING_REJECTED, DocumentStatus.VOTING_ACCEPTED
+            ),
+            new StatusIncorrectForDeleteDocumentException()
+        );
 
         document.setStatus(DocumentStatus.ARCHIVED);
         documentRepository.save(document);

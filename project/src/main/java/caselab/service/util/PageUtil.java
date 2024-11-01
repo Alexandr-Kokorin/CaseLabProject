@@ -24,4 +24,14 @@ public class PageUtil {
         return PageRequest.of(pageNum, pageSize, sortBy);
     }
 
+    public static PageRequest toPageable(
+        Integer pageNum,
+        Integer pageSize
+    ) {
+        pageNum = pageNum != null ? pageNum : 0;
+        pageSize = pageSize != null ? pageSize : 10;
+
+        return PageRequest.of(pageNum, pageSize);
+    }
+
 }

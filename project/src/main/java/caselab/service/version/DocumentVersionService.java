@@ -227,6 +227,13 @@ public class DocumentVersionService {
         );
     }
 
+    public DocumentVersionResponse getDocumentVersionById(Long id) {
+        DocumentVersion documentVersion = documentVersionRepository.findById(id)
+            .orElseThrow(() -> new DocumentVersionNotFoundException(id));
+
+        return documentVersionMapper.map(documentVersion);
+    }
+
     public Page<DocumentVersionResponse> getDocumentVersionsByDocumentId(
         Long id,
         Integer pageNum,

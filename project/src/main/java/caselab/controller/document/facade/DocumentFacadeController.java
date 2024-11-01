@@ -14,7 +14,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ProblemDetail;
@@ -84,8 +83,13 @@ public class DocumentFacadeController {
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @GetMapping("/")
-    List<DocumentFacadeResponse> getAllDocuments(Authentication authentication) {
-        return documentFacadeService.getAllDocuments(authentication);
+    Page<DocumentFacadeResponse> getAllDocuments(
+        @RequestParam(value = "pageNum", required = false) Integer pageNum,
+        @RequestParam(value = "pageSize", required = false) Integer pageSize,
+        @RequestParam(value = "sortStrategy", required = false) String sortStrategy,
+        Authentication authentication
+    ) {
+        return documentFacadeService.getAllDocuments(pageNum, pageSize, sortStrategy, authentication);
     }
 
     @Operation(summary = "Обновить информацию о документе",
