@@ -97,7 +97,7 @@ public class ApplicationUserController {
     })
     @DeleteMapping
     public ResponseEntity<Void> deleteUser(Authentication authentication, @RequestParam String email) {
-        userService.deleteUser(authentication,email);
+        userService.deleteUser(authentication, email);
         return ResponseEntity.noContent().build();
     }
 }

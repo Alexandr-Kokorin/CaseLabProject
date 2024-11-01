@@ -57,6 +57,7 @@ public class ApplicationUserService {
         return userRepository.findByEmail(userDetails.getUsername())
             .orElseThrow(() -> new UserNotFoundException(userDetails.getUsername()));
     }
+
     public ApplicationUser findUserByEmail(String email) {
         return userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException(email));
     }
