@@ -7,10 +7,12 @@ import caselab.controller.secutiry.payload.RegisterRequest;
 import caselab.service.secutiry.ClaimsExtractorService;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MvcResult;
 
 import static org.hamcrest.Matchers.notNullValue;
@@ -27,15 +29,17 @@ public class AuthenticationControllerTest extends BaseControllerTest {
     private ClaimsExtractorService claimsExtractorService;
 
     private String token;
-
-    @AfterEach
-    public void cleanUp() {
-        deleteTestUser(token);
-    }
+    //TODO - ИСПРАВИТЬ УДАЛЕНИЕ ПОЛЬЗОВАТЕЛЯ, ПОТОМУ ЧТО УДАЛЯЕТСЯ АДМИН А НЕ ПОЛЬЗОВАТЕЛЬ
+    //Следовательно код закомментирован
+//    @AfterEach
+//    public void cleanUp() {
+//        deleteTestUser(token);
+//    }
 
     @SneakyThrows
     @Test
     @DisplayName("Регистрация пользователя с корректными данными")
+    @WithMockUser(username = "admin@gmail.com", roles = "{ADMIN}")
     public void shouldRegisterUserSuccessfully() {
         RegisterRequest registerRequest = RegisterRequest.builder()
             .email("test@mail.ru")
@@ -52,9 +56,10 @@ public class AuthenticationControllerTest extends BaseControllerTest {
 
     @Test
     @DisplayName("Ошибка при повторной регистрации")
+    @WithMockUser(username = "admin@gmail.com", roles = "{ADMIN}")
     void shouldFailIfUserAlreadyExists() throws Exception {
         RegisterRequest registerRequest = RegisterRequest.builder()
-            .email("test@mail.ru")
+            .email("test2@mail.ru")
             .displayName("displayName")
             .password("password")
             .build();
@@ -71,11 +76,14 @@ public class AuthenticationControllerTest extends BaseControllerTest {
             );
     }
 
+    //Использовал пользователя ADMIN - так как присутсвует регистрация
     @Test
     @DisplayName("Успешная аутентификация пользователя")
+    @WithMockUser(username = "admin@gmail.com", roles = "{ADMIN}")
     void shouldAuthenticateUserSuccessfully() throws Exception {
+
         RegisterRequest registerRequest = RegisterRequest.builder()
-            .email("test@mail.ru")
+            .email("test3@mail.ru")
             .displayName("displayName")
             .password("password")
             .build();
@@ -97,9 +105,10 @@ public class AuthenticationControllerTest extends BaseControllerTest {
 
     @Test
     @DisplayName("Ошибка аутентификации - неверный пароль")
+    @WithMockUser(username = "admin@gmail.com", roles = "{ADMIN}")
     void shouldFailAuthenticationWithInvalidPassword() throws Exception {
         RegisterRequest registerRequest = RegisterRequest.builder()
-            .email("test@mail.ru")
+            .email("test4@mail.ru")
             .displayName("displayName")
             .password("password")
             .build();
