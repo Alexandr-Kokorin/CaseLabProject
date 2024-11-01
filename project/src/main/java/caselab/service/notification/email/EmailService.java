@@ -37,7 +37,7 @@ public class EmailService implements NotificationService<EmailNotificationDetail
         helper.setFrom(emailDetails.sender());
         helper.setTo(emailDetails.recipient());
         helper.setSubject(emailDetails.subject());
-        helper.setText(emailDetails.text());
+        helper.setText(emailDetails.text(), emailDetails.text());
 
         if (emailDetails.attachments() != null) {
             for (File attachment : emailDetails.attachments()) {

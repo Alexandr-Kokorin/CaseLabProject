@@ -10,6 +10,8 @@ import caselab.domain.repository.GlobalPermissionRepository;
 import caselab.exception.PermissionDeniedException;
 import caselab.exception.entity.already_exists.UserAlreadyExistsException;
 import caselab.exception.entity.not_found.UserNotFoundException;
+import caselab.service.notification.email.EmailNotificationDetails;
+import caselab.service.notification.email.EmailService;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +32,7 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final EmailService emailService;
     private final ApplicationUserRepository userRepository;
 
     public AuthenticationResponse register(RegisterRequest request, Authentication authentication) {
@@ -45,6 +48,7 @@ public class AuthenticationService {
             .hashedPassword(encodePassword(request.password()))
             .build();
         appUserRepository.save(user);
+        sendMessage(request);
         var jwtToken = jwtService.generateToken(user);
         return new AuthenticationResponse(jwtToken);
     }
@@ -85,5 +89,35 @@ public class AuthenticationService {
             .noneMatch(globalPermission -> globalPermission.getAuthority().equals(GlobalPermissionName.ADMIN.name()))) {
             throw new PermissionDeniedException();
         }
+    }
+
+    private void sendMessage(RegisterRequest request) {
+        var emailDetails = EmailNotificationDetails.builder()
+            .sender("admin@solifex.ru")
+            .recipient(request.email())
+            .subject("Уведомление о регистрации")
+            .text("""
+                <!DOCTYPE html>
+                <html lang="ru">
+                <head>
+                  <meta charset="UTF-8">
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                  <title>Добро пожаловать</title>
+                </head>
+                <body style="font-family: Arial, sans-serif; color: #333;">
+                  <div style="max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border: 1px solid #ddd;">
+                    <h2 style="color: #0078cf;">Здравствуйте, %s!</h2>
+                    <p>Вы успешно зарегистрированы на сайте <strong>[сайт]</strong>.</p>
+                    <p><strong>Ваш email:</strong> %s</p>
+                    <p><strong>Пароль:</strong> %s</p>
+                    <p>Для связи с администратором нажмите <a href="[ссылка]" style="color: #0078cf;">здесь</a>.</p>
+                  </div>
+                </body>
+                </html>
+                """.formatted(request.displayName(), request.email(), request.password()))
+            .attachments(List.of())
+            .build();
+
+        emailService.sendNotification(emailDetails);
     }
 }
