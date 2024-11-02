@@ -35,7 +35,7 @@ public abstract class IntegrationTest{
         POSTGRES.start();
 
         ELASTIC_CONTAINER =
-            new ElasticsearchContainer(DockerImageName.parse("docker.elastic.co/elasticsearch/elasticsearch")
+            new ElasticsearchContainer(DockerImageName.parse("elasticsearch")
                 .withTag("8.15.2"))
                 .withStartupTimeout(Duration.of(CONTAINER_STARTUP_TIMEOUT_MINUTES, ChronoUnit.MINUTES))
                 .withSharedMemorySize(256000000L)
