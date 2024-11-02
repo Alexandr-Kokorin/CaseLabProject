@@ -10,10 +10,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -59,9 +60,15 @@ public class DocumentVersionController {
         @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
-    @GetMapping
-    public List<DocumentVersionResponse> getDocumentVersions(Authentication auth) {
-        return documentVersionService.getDocumentVersions(auth);
+    @GetMapping("/document/{id}")
+    public Page<DocumentVersionResponse> getDocumentVersionsByDocumentId(
+        @PathVariable("id") Long id,
+        @RequestParam(value = "pageNum", required = false) Integer pageNum,
+        @RequestParam(value = "pageSize", required = false) Integer pageSize,
+        @RequestParam(value = "sortStrategy", required = false, defaultValue = "desc") String sortStrategy,
+        Authentication auth
+    ) {
+        return documentVersionService.getDocumentVersionsByDocumentId(id, pageNum, pageSize, sortStrategy, auth);
     }
 
     @Operation(summary = "Получить файл версии документа по id",

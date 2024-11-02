@@ -326,7 +326,7 @@ public class DocumentVersionServiceTest {
     @Test
     public void getDocumentVersions_notPresent() {
         Mockito.when(userService.findUserByAuthentication(Mockito.any())).thenReturn(stranger);
-        assertEquals(List.of(), service.getDocumentVersions(null));
+        assertEquals(List.of(), service.getDocumentVersionsByDocumentId(null, null, null, null, null));
     }
 
     @Test
@@ -334,7 +334,7 @@ public class DocumentVersionServiceTest {
         Mockito.when(userService.findUserByAuthentication(Mockito.any())).thenReturn(sender);
         Mockito.when(documentVersionMapper.map(documentVersion)).thenReturn(new DocumentVersionResponse());
         document.setDocumentVersions(List.of(documentVersion));
-        assertEquals(1, service.getDocumentVersions(null).size());
+        assertEquals(1, service.getDocumentVersionsByDocumentId(null, null, null, null, null).getTotalElements());
     }
 
     @Test

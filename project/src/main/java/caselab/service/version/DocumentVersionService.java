@@ -14,6 +14,7 @@ import caselab.domain.entity.attribute.value.AttributeValue;
 import caselab.domain.entity.document.type.to.attribute.DocumentTypeToAttribute;
 import caselab.domain.entity.enums.DocumentPermissionName;
 import caselab.domain.entity.enums.DocumentStatus;
+import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.AttributeRepository;
 import caselab.domain.repository.AttributeValueRepository;
 import caselab.domain.repository.DocumentRepository;
@@ -28,6 +29,8 @@ import caselab.exception.entity.not_found.DocumentVersionNotFoundException;
 import caselab.exception.status.StatusIncorrectForUpdateDocumentVersionException;
 import caselab.service.users.ApplicationUserService;
 import caselab.service.util.DocumentPermissionUtilService;
+import caselab.service.util.PageUtil;
+import caselab.service.util.UserPermissionUtil;
 import caselab.service.version.mapper.DocumentVersionMapper;
 import caselab.service.version.mapper.DocumentVersionUpdater;
 import jakarta.transaction.Transactional;
@@ -40,6 +43,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -71,11 +76,12 @@ public class DocumentVersionService {
             user.getId(),
             document.getId()
         );
-        return userToDocument.map(toDocument -> toDocument
-            .getDocumentPermissions()
-            .stream()
-            .map(DocumentPermission::getName)
-            .noneMatch(permission)).orElse(true);
+        return userToDocument
+            .filter(it -> it.getDocumentPermissions()
+                .stream()
+                .map(DocumentPermission::getName)
+                .anyMatch(permission))
+            .isPresent();
     }
 
     private DocumentVersionResponse hideInaccessibleFields(
@@ -102,7 +108,7 @@ public class DocumentVersionService {
             .stream()
             .map(UserToDocument::getApplicationUser)
             .filter(
-                user -> !checkLacksPermission(user, document, x -> x == DocumentPermissionName.READ)
+                user -> checkLacksPermission(user, document, x -> x == DocumentPermissionName.READ)
             )
             .map(user -> userToDocumentRepository.findByApplicationUserIdAndDocumentId(user.getId(), document.getId()))
             .filter(Optional::isPresent)
@@ -211,8 +217,8 @@ public class DocumentVersionService {
             .orElseThrow(() -> new DocumentVersionNotFoundException(id));
 
         userToDocumentRepository.findByApplicationUserIdAndDocumentId(
-                user.getId(), documentVersion.getDocument().getId()
-            ).orElseThrow(() -> new MissingDocumentPermissionException("Any"));
+            user.getId(), documentVersion.getDocument().getId()
+        ).orElseThrow(() -> new MissingDocumentPermissionException("Any"));
 
         return hideInaccessibleFields(
             documentVersionMapper.map(documentVersion),
@@ -221,23 +227,42 @@ public class DocumentVersionService {
         );
     }
 
-    public List<DocumentVersionResponse> getDocumentVersions(Authentication auth) {
-        ApplicationUser user = userService.findUserByAuthentication(auth);
-        Stream<DocumentVersion> documentVersions = user
-            .getUsersToDocuments()
-            .stream()
-            .map(UserToDocument::getDocument)
-            .collect(Collectors.toSet())  // Чтобы убрать повторяющиеся документы
-            .stream()
-            .flatMap(doc -> doc.getDocumentVersions().stream());
+    public DocumentVersionResponse getDocumentVersionById(Long id) {
+        DocumentVersion documentVersion = documentVersionRepository.findById(id)
+            .orElseThrow(() -> new DocumentVersionNotFoundException(id));
 
-        return documentVersions
+        return documentVersionMapper.map(documentVersion);
+    }
+
+    public Page<DocumentVersionResponse> getDocumentVersionsByDocumentId(
+        Long id,
+        Integer pageNum,
+        Integer pageSize,
+        String sortStrategy,
+        Authentication auth
+    ) {
+        ApplicationUser user = userService.findUserByAuthentication(auth);
+
+        Document document = documentRepository.findById(id)
+            .orElseThrow(() -> new DocumentNotFoundException(id));
+
+        if (!checkLacksPermission(user, document, DocumentPermissionName::isCreator)) {
+            UserPermissionUtil.checkUserGlobalPermission(user, GlobalPermissionName.ADMIN);
+        }
+
+        Page<DocumentVersion> versions = documentVersionRepository.findByDocumentId(
+            PageUtil.toPageable(pageNum, pageSize, Sort.by("createdAt"), sortStrategy),
+            id
+        );
+
+        Page<DocumentVersionResponse> responsePage = versions
             .map(docV -> hideInaccessibleFields(
                 documentVersionMapper.map(docV),
                 user,
                 docV.getDocument()
-            ))
-            .toList();
+            ));
+
+        return responsePage;
     }
 
     public InputStream getDocumentVersionContent(Long id, Authentication auth) {
@@ -268,7 +293,8 @@ public class DocumentVersionService {
         documentPermissionUtilService.assertHasDocumentStatus(
             documentVersion.getDocument(),
             List.of(DocumentStatus.DRAFT),
-            new StatusIncorrectForUpdateDocumentVersionException());
+            new StatusIncorrectForUpdateDocumentVersionException()
+        );
 
         documentVersionUpdater.update(body, documentVersion);
         var saved = documentVersionRepository.save(documentVersion);
