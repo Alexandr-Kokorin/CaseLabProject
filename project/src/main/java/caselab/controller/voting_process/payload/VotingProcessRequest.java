@@ -22,9 +22,9 @@ public record VotingProcessRequest(
     @NotNull(message = "{voting.process.request.deadline.is_null}")
     @Schema(description = "Время до дедлайна", example = "P1DT2H")
     Duration deadline,
-    @Positive(message = "{voting.process.request.document_version_id.not_positive}")
-    @Schema(description = "ID версии документа", example = "1")
-    long documentVersionId,
+    @Positive(message = "{voting.process.request.document_id.not_positive}")
+    @Schema(description = "ID документа", example = "1")
+    long documentId,
     @NotEmpty(message = "{voting.process.request.emails.is_empty}")
     @ArraySchema(schema = @Schema(implementation = String.class,
                                   description = "Email пользователя",

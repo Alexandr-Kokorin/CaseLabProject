@@ -5,8 +5,8 @@ import caselab.controller.document.facade.payload.DocumentFacadeResponse;
 import caselab.controller.document.facade.payload.UpdateDocumentRequest;
 import caselab.controller.document.payload.DocumentRequest;
 import caselab.controller.document.payload.DocumentResponse;
+import caselab.controller.document.version.payload.CreateDocumentVersionRequest;
 import caselab.controller.signature.payload.SignatureResponse;
-import caselab.controller.version.payload.CreateDocumentVersionRequest;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.GlobalPermission;
 import caselab.domain.entity.enums.GlobalPermissionName;
@@ -14,10 +14,10 @@ import caselab.domain.repository.ApplicationUserRepository;
 import caselab.domain.repository.DocumentVersionRepository;
 import caselab.domain.repository.SignatureRepository;
 import caselab.service.document.DocumentService;
+import caselab.service.document.version.DocumentVersionService;
 import caselab.service.signature.mapper.SignatureMapper;
 import caselab.service.util.PageUtil;
-import caselab.service.util.UserFromAuthenticationUtilService;
-import caselab.service.version.DocumentVersionService;
+import caselab.service.util.UserUtilService;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -37,7 +37,7 @@ public class DocumentFacadeService {
 
     private final DocumentService documentService;
     private final DocumentVersionService documentVersionService;
-    private final UserFromAuthenticationUtilService authToUserService;
+    private final UserUtilService userUtilService;
 
     private final DocumentVersionRepository documentVersionRepository;
     private final SignatureRepository signatureRepository;
@@ -86,13 +86,13 @@ public class DocumentFacadeService {
     }
 
     public DocumentFacadeResponse getDocumentById(Long id, Authentication auth) {
-        var user = authToUserService.findUserByAuthentication(auth);
+        var user = userUtilService.findUserByAuthentication(auth);
         var documentResponse = documentService.getDocumentById(id, user);
         return enrichResponse(documentResponse, user);
     }
 
     public DocumentFacadeResponse createDocument(CreateDocumentRequest body, MultipartFile file, Authentication auth) {
-        var user = authToUserService.findUserByAuthentication(auth);
+        var user = userUtilService.findUserByAuthentication(auth);
         var documentRequest = DocumentRequest.builder()
             .documentTypeId(body.getDocumentTypeId())
             .name(body.getName())
@@ -116,7 +116,7 @@ public class DocumentFacadeService {
         String sortStrategy,
         Authentication auth
     ) {
-        var user = authToUserService.findUserByAuthentication(auth);
+        var user = userUtilService.findUserByAuthentication(auth);
 
         Optional<GlobalPermissionName> adminCheck = user.getGlobalPermissions().stream()
             .map(GlobalPermission::getName)
@@ -187,7 +187,7 @@ public class DocumentFacadeService {
         MultipartFile file,
         Authentication auth
     ) {
-        var user = authToUserService.findUserByAuthentication(auth);
+        var user = userUtilService.findUserByAuthentication(auth);
         var documentResponse = documentService.updateDocument(id, body, user);
 
         var documentVersionRequest = CreateDocumentVersionRequest.builder()
@@ -202,14 +202,14 @@ public class DocumentFacadeService {
     }
 
     public DocumentFacadeResponse grantPermission(Long id, String email, Authentication auth) {
-        var user = authToUserService.findUserByAuthentication(auth);
+        var user = userUtilService.findUserByAuthentication(auth);
         var grantTo = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException(email));
         var documentResponse = documentService.grantReadDocumentPermission(id, grantTo, user);
         return enrichResponse(documentResponse, user);
     }
 
     public void documentToArchive(Long id, Authentication auth) {
-        var user = authToUserService.findUserByAuthentication(auth);
+        var user = userUtilService.findUserByAuthentication(auth);
         documentService.documentToArchive(id, user);
     }
 }

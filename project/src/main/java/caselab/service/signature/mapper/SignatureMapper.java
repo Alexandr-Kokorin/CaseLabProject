@@ -16,6 +16,6 @@ public interface SignatureMapper {
     Signature requestToEntity(SignatureCreateRequest request);
 
     @Mapping(target = "email", source = "applicationUser.email")
-    @Mapping(target = "documentVersionId", source = "documentVersion.id")
+    @Mapping(target = "documentId", source = "documentVersion.document.id")
     SignatureResponse entityToResponse(Signature signature);
 }

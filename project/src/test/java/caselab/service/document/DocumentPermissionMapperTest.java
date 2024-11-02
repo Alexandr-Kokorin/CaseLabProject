@@ -1,9 +1,10 @@
-package caselab.service.document.mapper;
+package caselab.service.document;
 
 import caselab.Application;
 import caselab.controller.document.payload.DocumentPermissionResponse;
 import caselab.domain.entity.DocumentPermission;
 import caselab.domain.entity.enums.DocumentPermissionName;
+import caselab.service.document.mapper.DocumentPermissionMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

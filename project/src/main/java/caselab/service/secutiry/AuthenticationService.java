@@ -7,18 +7,16 @@ import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.ApplicationUserRepository;
 import caselab.domain.repository.GlobalPermissionRepository;
-import caselab.exception.PermissionDeniedException;
 import caselab.exception.entity.already_exists.UserAlreadyExistsException;
-import caselab.exception.entity.not_found.UserNotFoundException;
 import caselab.service.notification.email.EmailNotificationDetails;
 import caselab.service.notification.email.EmailService;
+import caselab.service.util.UserUtilService;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -28,16 +26,19 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthenticationService {
 
-    private final GlobalPermissionRepository globalPermissionRepository;
-    private final ApplicationUserRepository appUserRepository;
-    private final AuthenticationManager authenticationManager;
-    private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final EmailService emailService;
-    private final ApplicationUserRepository userRepository;
+    private final UserUtilService userUtilService;
+
+    private final GlobalPermissionRepository globalPermissionRepository;
+    private final ApplicationUserRepository appUserRepository;
+
+    private final AuthenticationManager authenticationManager;
+    private final PasswordEncoder passwordEncoder;
 
     public AuthenticationResponse register(RegisterRequest request, Authentication authentication) {
-        checkAdmin(authentication);
+        userUtilService.checkUserGlobalPermission(
+            userUtilService.findUserByAuthentication(authentication), GlobalPermissionName.ADMIN);
 
         checkEmail(request.email());
 
@@ -75,20 +76,6 @@ public class AuthenticationService {
         var applicationUser = appUserRepository.findByEmail(email);
         if (applicationUser.isPresent()) {
             throw new UserAlreadyExistsException(email);
-        }
-    }
-
-    public ApplicationUser findUserByAuthentication(Authentication authentication) {
-        var userDetails = (UserDetails) authentication.getPrincipal();
-        return userRepository.findByEmail(userDetails.getUsername())
-            .orElseThrow(() -> new UserNotFoundException(userDetails.getUsername()));
-    }
-
-    public void checkAdmin(Authentication authentication) {
-        var applicationUser = findUserByAuthentication(authentication);
-        if (applicationUser.getAuthorities().stream()
-            .noneMatch(globalPermission -> globalPermission.getAuthority().equals(GlobalPermissionName.ADMIN.name()))) {
-            throw new PermissionDeniedException();
         }
     }
 

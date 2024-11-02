@@ -9,9 +9,9 @@ import lombok.Builder;
 
 @Builder
 public record SignatureCreateRequest(
-    @Schema(description = "ID версии документа", example = "1")
-    @NotNull(message = "{signature.document_version_id.is_null}")
-    Long documentVersionId,
+    @Schema(description = "ID документа", example = "1")
+    @NotNull(message = "{signature.document_id.is_null}")
+    Long documentId,
 
     @Schema(description = "Название подписи", example = "Подпись договора")
     @Size(min = 5, max = 20, message = "{signature.name.size_invalid}")

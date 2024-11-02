@@ -1,7 +1,7 @@
 package caselab.controller.subscription;
 
 import caselab.service.subscription.SubscriptionService;
-import caselab.service.users.ApplicationUserService;
+import caselab.service.util.UserUtilService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class SubscriptionController {
 
     private final SubscriptionService subscribeService;
-    private final ApplicationUserService userService;
+    private final UserUtilService userUtilService;
 
     @Operation(summary = "Получить все подписки",
                description = """
@@ -46,7 +46,7 @@ public class SubscriptionController {
     })
     @GetMapping("/all")
     public ResponseEntity<List<Long>> getAllSubscriptions(Authentication authentication) {
-        var user = userService.findUserByAuthentication(authentication);
+        var user = userUtilService.findUserByAuthentication(authentication);
         var documentsVersionsIds = subscribeService.getIdsOfAllSubscribed(user.getEmail());
 
         return new ResponseEntity<>(documentsVersionsIds, HttpStatus.OK);
@@ -70,7 +70,7 @@ public class SubscriptionController {
         @RequestParam(name = "documentVersionId") Long documentVersionId,
         Authentication authentication
     ) {
-        var user = userService.findUserByAuthentication(authentication);
+        var user = userUtilService.findUserByAuthentication(authentication);
         boolean isSubscribed = subscribeService.isSubscribed(user.getEmail(), documentVersionId);
 
         return new ResponseEntity<>(Map.of("isSubscribed", isSubscribed), HttpStatus.OK);
@@ -96,7 +96,7 @@ public class SubscriptionController {
         @RequestParam(name = "documentVersionId") Long documentVersionId,
         Authentication authentication
     ) {
-        var user = userService.findUserByAuthentication(authentication);
+        var user = userUtilService.findUserByAuthentication(authentication);
         subscribeService.subscribe(user.getEmail(), documentVersionId);
 
         return ResponseEntity.ok().build();
@@ -117,7 +117,7 @@ public class SubscriptionController {
         @RequestParam(name = "documentVersionId") Long documentVersionId,
         Authentication authentication
     ) {
-        var user = userService.findUserByAuthentication(authentication);
+        var user = userUtilService.findUserByAuthentication(authentication);
         subscribeService.unsubscribe(user.getEmail(), documentVersionId);
 
         return ResponseEntity.ok().build();
@@ -135,7 +135,7 @@ public class SubscriptionController {
     })
     @DeleteMapping("/all")
     public ResponseEntity<Void> unsubscribe(Authentication authentication) {
-        var user = userService.findUserByAuthentication(authentication);
+        var user = userUtilService.findUserByAuthentication(authentication);
         subscribeService.unsubscribeAll(user.getEmail());
 
         return ResponseEntity.ok().build();

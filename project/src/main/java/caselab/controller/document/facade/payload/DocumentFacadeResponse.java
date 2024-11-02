@@ -1,8 +1,8 @@
 package caselab.controller.document.facade.payload;
 
 import caselab.controller.document.payload.DocumentResponse;
+import caselab.controller.document.version.payload.DocumentVersionResponse;
 import caselab.controller.signature.payload.SignatureResponse;
-import caselab.controller.version.payload.DocumentVersionResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

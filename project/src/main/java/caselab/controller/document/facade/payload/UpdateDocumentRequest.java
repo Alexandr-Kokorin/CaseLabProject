@@ -1,6 +1,6 @@
 package caselab.controller.document.facade.payload;
 
-import caselab.controller.version.payload.AttributeValuePair;
+import caselab.controller.document.version.payload.AttributeValuePair;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;

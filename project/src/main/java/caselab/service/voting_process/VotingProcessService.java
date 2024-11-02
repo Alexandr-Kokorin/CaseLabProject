@@ -11,19 +11,20 @@ import caselab.domain.entity.enums.DocumentStatus;
 import caselab.domain.entity.enums.VoteStatus;
 import caselab.domain.entity.enums.VotingProcessStatus;
 import caselab.domain.repository.ApplicationUserRepository;
-import caselab.domain.repository.DocumentVersionRepository;
+import caselab.domain.repository.DocumentRepository;
 import caselab.domain.repository.VoteRepository;
 import caselab.domain.repository.VotingProcessRepository;
 import caselab.exception.VotingProcessIsOverException;
-import caselab.exception.entity.not_found.DocumentVersionNotFoundException;
+import caselab.exception.entity.not_found.DocumentNotFoundException;
+import caselab.exception.entity.not_found.UserNotFoundException;
 import caselab.exception.entity.not_found.VoteNotFoundException;
 import caselab.exception.entity.not_found.VotingProcessNotFoundException;
 import caselab.exception.status.StatusIncorrectForCreateVotingProcessException;
 import caselab.service.document.facade.DocumentFacadeService;
 import caselab.service.notification.email.EmailNotificationDetails;
 import caselab.service.notification.email.EmailService;
-import caselab.service.users.ApplicationUserService;
-import caselab.service.util.DocumentPermissionUtilService;
+import caselab.service.util.DocumentUtilService;
+import caselab.service.util.UserUtilService;
 import caselab.service.voting_process.mapper.VoteMapper;
 import caselab.service.voting_process.mapper.VotingProcessMapper;
 import jakarta.transaction.Transactional;
@@ -32,7 +33,6 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -41,28 +41,28 @@ import org.springframework.stereotype.Service;
 public class VotingProcessService {
 
     private final DocumentFacadeService documentFacadeService;
-    private final ApplicationUserService applicationUserService;
-    private final DocumentPermissionUtilService documentPermissionUtilService;
+    private final UserUtilService userUtilService;
+    private final DocumentUtilService documentUtilService;
+    private final EmailService emailService;
 
     private final ApplicationUserRepository applicationUserRepository;
-    private final DocumentVersionRepository documentVersionRepository;
+    private final DocumentRepository documentRepository;
     private final VotingProcessRepository votingProcessRepository;
     private final VoteRepository voteRepository;
 
     private final VotingProcessMapper votingProcessMapper;
     private final VoteMapper voteMapper;
 
-    private final EmailService emailService;
-
     public VotingProcessResponse createVotingProcess(VotingProcessRequest request, Authentication authentication) {
-        var documentVersion = documentVersionRepository.findById(request.documentVersionId())
-            .orElseThrow(() -> new DocumentVersionNotFoundException(request.documentVersionId()));
+        var documentVersion = documentRepository.findById(request.documentId())
+            .orElseThrow(() -> new DocumentNotFoundException(request.documentId()))
+            .getDocumentVersions().getFirst();
 
-        var user = applicationUserService.findUserByAuthentication(authentication);
-        documentPermissionUtilService.assertHasPermission(
+        var user = userUtilService.findUserByAuthentication(authentication);
+        documentUtilService.assertHasPermission(
             user, documentVersion.getDocument(), DocumentPermissionName::isCreator, "Creator");
 
-        documentPermissionUtilService.assertHasDocumentStatus(
+        documentUtilService.assertHasDocumentStatus(
             documentVersion.getDocument(), List.of(DocumentStatus.DRAFT),
             new StatusIncorrectForCreateVotingProcessException());
 
@@ -87,7 +87,7 @@ public class VotingProcessService {
     }
 
     public VoteResponse castVote(Authentication authentication, VoteRequest voteRequest) {
-        var user = applicationUserService.findUserByAuthentication(authentication);
+        var user = userUtilService.findUserByAuthentication(authentication);
 
         var vote = voteRepository.findByApplicationUserIdAndVotingProcessId(
                 user.getId(), voteRequest.votingProcessId())
@@ -116,7 +116,7 @@ public class VotingProcessService {
 
     private void validateEmails(List<String> emails) {
         emails.forEach(email -> applicationUserRepository.findByEmail(email)
-            .orElseThrow(() -> new UsernameNotFoundException(email)));
+            .orElseThrow(() -> new UserNotFoundException(email)));
     }
 
     private List<Vote> saveVotes(List<String> emails, VotingProcess votingProcess, Authentication authentication) {

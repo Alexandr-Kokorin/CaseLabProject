@@ -1,6 +1,6 @@
-package caselab.service.version.mapper;
+package caselab.service.document.version.mapper;
 
-import caselab.controller.version.payload.AttributeValuePair;
+import caselab.controller.document.version.payload.AttributeValuePair;
 import caselab.domain.entity.attribute.value.AttributeValue;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

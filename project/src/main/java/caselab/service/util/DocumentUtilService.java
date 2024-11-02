@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class DocumentPermissionUtilService {
+public class DocumentUtilService {
 
     private final UserToDocumentRepository userToDocumentRepository;
 

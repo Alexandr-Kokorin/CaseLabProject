@@ -55,18 +55,18 @@ public class SignatureController {
         Authentication authentication
     ) {
         var response = signatureService.signatureUpdate(id, sign, authentication);
-        subscriptionService.sendEvent(response.documentVersionId(), EventType.valueOf(response.status().name()));
+        subscriptionService.sendEvent(response.documentId(), EventType.valueOf(response.status().name()));
         return response;
     }
 
-    @Operation(summary = "Отправить версию документа на подпись",
+    @Operation(summary = "Отправить документ на подпись",
                description = """
-                   Отправляет версию документа на подписание пользователю
+                   Отправляет документ на подписание пользователю
                    и возвращает DTO с информацией о созданной подписи
                    """)
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Успешная отправка документа на подпись"),
-        @ApiResponse(responseCode = "404", description = "Версия документа не найдена",
+        @ApiResponse(responseCode = "404", description = "Документ не найден",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
         @ApiResponse(responseCode = "404", description = "Пользователь не найден",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
@@ -77,7 +77,7 @@ public class SignatureController {
         Authentication authentication
     ) {
         var response = signatureService.createSignature(signatureCreateRequest, authentication);
-        subscriptionService.sendEvent(response.documentVersionId(), EventType.valueOf(response.status().name()));
+        subscriptionService.sendEvent(response.documentId(), EventType.valueOf(response.status().name()));
         return response;
     }
 
@@ -94,17 +94,17 @@ public class SignatureController {
         return signatureService.findAllSignaturesByEmail(userDetails.getUsername());
     }
 
-    @Operation(summary = "Получить все подписи по версии документа",
-               description = "Возвращает список всех подписей, связанных с версией документа")
+    @Operation(summary = "Получить все подписи по id документа",
+               description = "Возвращает список всех подписей, связанных с документом")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Успешное получение списка подписей"),
-        @ApiResponse(responseCode = "404", description = "Версия документа не найдена",
+        @ApiResponse(responseCode = "404", description = "Документ не найден",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
-    @GetMapping("/all/{documentVersionId}")
-    public List<SignatureResponse> getAllSignaturesByDocumentVersionId(
-        @PathVariable("documentVersionId") Long documentVersionId
+    @GetMapping("/all/{documentId}")
+    public List<SignatureResponse> getAllSignaturesByDocumentId(
+        @PathVariable("documentId") Long documentId
     ) {
-        return signatureService.findAllSignaturesByDocumentVersionId(documentVersionId);
+        return signatureService.findAllSignaturesByDocumentId(documentId);
     }
 }

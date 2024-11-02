@@ -1,4 +1,4 @@
-package caselab.service.document.type.to.attribute;
+package caselab.service.types;
 
 import caselab.controller.types.payload.DocumentTypeToAttributeResponse;
 import caselab.domain.entity.Attribute;

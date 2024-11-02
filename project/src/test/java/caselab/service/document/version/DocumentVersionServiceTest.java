@@ -1,9 +1,8 @@
-package caselab.service.version;
+package caselab.service.document.version;
 
-import caselab.controller.version.payload.AttributeValuePair;
-import caselab.controller.version.payload.CreateDocumentVersionRequest;
-import caselab.controller.version.payload.DocumentVersionResponse;
-import caselab.controller.version.payload.UpdateDocumentVersionRequest;
+import caselab.controller.document.version.payload.AttributeValuePair;
+import caselab.controller.document.version.payload.CreateDocumentVersionRequest;
+import caselab.controller.document.version.payload.DocumentVersionResponse;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.Attribute;
 import caselab.domain.entity.Document;
@@ -26,15 +25,15 @@ import caselab.exception.document.version.MissingAttributesException;
 import caselab.exception.document.version.MissingDocumentPermissionException;
 import caselab.exception.entity.not_found.AttributeNotFoundException;
 import caselab.exception.entity.not_found.DocumentVersionNotFoundException;
-import caselab.service.users.ApplicationUserService;
-import caselab.service.version.mapper.DocumentVersionMapper;
-import caselab.service.version.mapper.DocumentVersionUpdater;
+import caselab.service.document.version.mapper.DocumentVersionMapper;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
+import caselab.service.util.DocumentUtilService;
+import caselab.service.util.UserUtilService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -56,7 +55,9 @@ public class DocumentVersionServiceTest {
     @Mock
     private DocumentVersionRepository documentVersionRepository;
     @Mock
-    private ApplicationUserService userService;
+    private UserUtilService userUtilService;
+    @Mock
+    private DocumentUtilService documentUtilService;
     @Mock
     private DocumentRepository documentRepository;
     @Mock
@@ -67,8 +68,6 @@ public class DocumentVersionServiceTest {
     private AttributeValueRepository attributeValueRepository;
     @Mock
     private DocumentVersionMapper documentVersionMapper;
-    @Mock
-    private DocumentVersionUpdater documentVersionUpdater;
     @Mock
     private FileStorage documentVersionStorage;
 
@@ -174,7 +173,7 @@ public class DocumentVersionServiceTest {
 
     @Test
     public void createDocumentVersion_unauthorized() {
-        Mockito.when(userService.findUserByAuthentication(Mockito.any())).thenReturn(reader);
+        Mockito.when(userUtilService.findUserByAuthentication(Mockito.any())).thenReturn(reader);
         Mockito.when(documentRepository.findById(Mockito.any())).thenReturn(Optional.of(document));
         Mockito.when(userToDocumentRepository.findByApplicationUserIdAndDocumentId(Mockito.any(), Mockito.any()))
             .thenReturn(Optional.of(reader.getUsersToDocuments().getFirst()));
@@ -191,7 +190,7 @@ public class DocumentVersionServiceTest {
 
     @Test
     public void createDocumentVersion_missingAttributes() {
-        Mockito.when(userService.findUserByAuthentication(Mockito.any())).thenReturn(creator);
+        Mockito.when(userUtilService.findUserByAuthentication(Mockito.any())).thenReturn(creator);
         Mockito.when(documentRepository.findById(Mockito.any())).thenReturn(Optional.of(document));
         Mockito.when(userToDocumentRepository.findByApplicationUserIdAndDocumentId(Mockito.any(), Mockito.any()))
             .thenReturn(Optional.of(creator.getUsersToDocuments().getFirst()));
@@ -212,7 +211,7 @@ public class DocumentVersionServiceTest {
 
     @Test
     public void createDocumentVersion_unknownAttribute() {
-        Mockito.when(userService.findUserByAuthentication(Mockito.any())).thenReturn(creator);
+        Mockito.when(userUtilService.findUserByAuthentication(Mockito.any())).thenReturn(creator);
         Mockito.when(documentRepository.findById(Mockito.any())).thenReturn(Optional.of(document));
         Mockito.when(userToDocumentRepository.findByApplicationUserIdAndDocumentId(Mockito.any(), Mockito.any()))
             .thenReturn(Optional.of(creator.getUsersToDocuments().getFirst()));
@@ -239,7 +238,7 @@ public class DocumentVersionServiceTest {
 
     @Test
     public void createDocumentVersion_success() {
-        Mockito.when(userService.findUserByAuthentication(Mockito.any())).thenReturn(creator);
+        Mockito.when(userUtilService.findUserByAuthentication(Mockito.any())).thenReturn(creator);
         Mockito.when(documentRepository.findById(Mockito.any())).thenReturn(Optional.of(document));
         Mockito.when(userToDocumentRepository.findByApplicationUserIdAndDocumentId(Mockito.any(), Mockito.any()))
             .thenReturn(Optional.of(creator.getUsersToDocuments().getFirst()));
@@ -270,7 +269,7 @@ public class DocumentVersionServiceTest {
 
     @Test
     public void getDocumentVersionById_unknownDocumentVersion() {
-        Mockito.when(userService.findUserByAuthentication(Mockito.any())).thenReturn(creator);
+        Mockito.when(userUtilService.findUserByAuthentication(Mockito.any())).thenReturn(creator);
         Mockito.when(documentVersionRepository.findById(Mockito.any())).thenReturn(Optional.empty());
         assertThrows(
             DocumentVersionNotFoundException.class,
@@ -280,7 +279,7 @@ public class DocumentVersionServiceTest {
 
     @Test
     public void getDocumentVersionById_unauthorized() {
-        Mockito.when(userService.findUserByAuthentication(Mockito.any())).thenReturn(stranger);
+        Mockito.when(userUtilService.findUserByAuthentication(Mockito.any())).thenReturn(stranger);
         Mockito.when(documentVersionRepository.findById(Mockito.any())).thenReturn(Optional.of(documentVersion));
         Mockito.when(userToDocumentRepository.findByApplicationUserIdAndDocumentId(Mockito.any(), Mockito.any()))
             .thenReturn(Optional.empty());
@@ -293,7 +292,7 @@ public class DocumentVersionServiceTest {
 
     @Test
     public void getDocumentVersionById_fullAccess() {
-        Mockito.when(userService.findUserByAuthentication(Mockito.any())).thenReturn(creator);
+        Mockito.when(userUtilService.findUserByAuthentication(Mockito.any())).thenReturn(creator);
         Mockito.when(documentVersionRepository.findById(Mockito.any())).thenReturn(Optional.of(documentVersion));
         Mockito.when(userToDocumentRepository.findByApplicationUserIdAndDocumentId(Mockito.any(), Mockito.any()))
             .thenReturn(Optional.of(creator.getUsersToDocuments().getFirst()));
@@ -308,7 +307,7 @@ public class DocumentVersionServiceTest {
 
     @Test
     public void getDocumentVersionById_partialAccess() {
-        Mockito.when(userService.findUserByAuthentication(Mockito.any())).thenReturn(sender);
+        Mockito.when(userUtilService.findUserByAuthentication(Mockito.any())).thenReturn(sender);
         Mockito.when(documentVersionRepository.findById(Mockito.any())).thenReturn(Optional.of(documentVersion));
         Mockito.when(userToDocumentRepository.findByApplicationUserIdAndDocumentId(Mockito.any(), Mockito.any()))
             .thenReturn(Optional.of(sender.getUsersToDocuments().getFirst()));
@@ -325,52 +324,15 @@ public class DocumentVersionServiceTest {
 
     @Test
     public void getDocumentVersions_notPresent() {
-        Mockito.when(userService.findUserByAuthentication(Mockito.any())).thenReturn(stranger);
+        Mockito.when(userUtilService.findUserByAuthentication(Mockito.any())).thenReturn(stranger);
         assertEquals(List.of(), service.getDocumentVersionsByDocumentId(null, null, null, null, null));
     }
 
     @Test
     public void getDocumentVersions_present() {
-        Mockito.when(userService.findUserByAuthentication(Mockito.any())).thenReturn(sender);
+        Mockito.when(userUtilService.findUserByAuthentication(Mockito.any())).thenReturn(sender);
         Mockito.when(documentVersionMapper.map(documentVersion)).thenReturn(new DocumentVersionResponse());
         document.setDocumentVersions(List.of(documentVersion));
         assertEquals(1, service.getDocumentVersionsByDocumentId(null, null, null, null, null).getTotalElements());
-    }
-
-    @Test
-    public void updateDocumentVersion_unknownDocumentVersion() {
-        Mockito.when(userService.findUserByAuthentication(Mockito.any())).thenReturn(creator);
-        Mockito.when(documentVersionRepository.findById(Mockito.any())).thenReturn(Optional.empty());
-        assertThrows(
-            DocumentVersionNotFoundException.class,
-            () -> service.updateDocumentVersion(1L, new UpdateDocumentVersionRequest("2"), null)
-        );
-    }
-
-    @Test
-    public void updateDocumentVersion_unauthorized() {
-        Mockito.when(userService.findUserByAuthentication(Mockito.any())).thenReturn(reader);
-        Mockito.when(documentVersionRepository.findById(Mockito.any())).thenReturn(Optional.of(documentVersion));
-        Mockito.when(userToDocumentRepository.findByApplicationUserIdAndDocumentId(Mockito.any(), Mockito.any()))
-            .thenReturn(Optional.of(reader.getUsersToDocuments().getFirst()));
-        assertThrows(
-            MissingDocumentPermissionException.class,
-            () -> service.updateDocumentVersion(1L, new UpdateDocumentVersionRequest("2"), null)
-        );
-    }
-
-    @Test
-    public void updateDocumentVersion_success() {
-        Mockito.when(userService.findUserByAuthentication(Mockito.any())).thenReturn(creator);
-        Mockito.when(documentVersionRepository.findById(Mockito.any())).thenReturn(Optional.of(documentVersion));
-        Mockito.when(userToDocumentRepository.findByApplicationUserIdAndDocumentId(Mockito.any(), Mockito.any()))
-            .thenReturn(Optional.of(creator.getUsersToDocuments().getFirst()));
-        Mockito.when(documentVersionRepository.save(Mockito.any(DocumentVersion.class))).thenAnswer(
-            i -> i.getArguments()[0]
-        );
-
-        assertDoesNotThrow(
-            () -> service.updateDocumentVersion(1L, new UpdateDocumentVersionRequest("2"), null)
-        );
     }
 }

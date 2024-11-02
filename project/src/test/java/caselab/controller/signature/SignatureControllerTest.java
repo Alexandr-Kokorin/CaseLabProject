@@ -55,7 +55,7 @@ public class SignatureControllerTest extends BaseControllerTest {
     private SignatureRepository signatureRepository;
     @Autowired
     private SignatureMapper signatureMapper;
-    private Long documentVersionId;
+    private Long documentId;
     private Long signatureId;
 
     @BeforeEach
@@ -92,7 +92,7 @@ public class SignatureControllerTest extends BaseControllerTest {
             .build());
 
         signatureId = savedSignature.getId();
-        documentVersionId = savedDocumentVersion.getId();
+        documentId = savedDocumentVersion.getDocument().getId();
     }
 
     @AfterEach
@@ -134,7 +134,7 @@ public class SignatureControllerTest extends BaseControllerTest {
         return SignatureResponse
             .builder()
             .email(emailForSending)
-            .documentVersionId(1L)
+            .documentId(1L)
             .name("test")
             .status(SignatureStatus.NOT_SIGNED)
             .sentAt(now())
@@ -145,7 +145,7 @@ public class SignatureControllerTest extends BaseControllerTest {
         return SignatureCreateRequest
             .builder()
             .email(emailForSending)
-            .documentVersionId(1L)
+            .documentId(1L)
             .name("test")
             .build();
     }
@@ -164,7 +164,7 @@ public class SignatureControllerTest extends BaseControllerTest {
             var token = login().token();
             var signatureCreateRequest = SignatureCreateRequest
                 .builder()
-                .documentVersionId(documentVersionId)
+                .documentId(documentId)
                 .name("test")
                 .email(emailForSending)
                 .build();
@@ -180,7 +180,7 @@ public class SignatureControllerTest extends BaseControllerTest {
                     status().isOk(),
                     jsonPath("$.id").isNotEmpty(),
                     jsonPath("$.name").value(signatureResponse.name()),
-                    jsonPath("$.documentVersionId").value(documentVersionId),
+                    jsonPath("$.documentId").value(documentId),
                     jsonPath("$.status").value(signatureResponse.status().toString())
                 );
         }
@@ -212,7 +212,7 @@ public class SignatureControllerTest extends BaseControllerTest {
 
             var signatureCreateRequest = SignatureCreateRequest
                 .builder()
-                .documentVersionId(documentVersionId)
+                .documentId(documentId)
                 .name("test")
                 .email("not_exist@gmail.com")
                 .build();
@@ -251,7 +251,7 @@ public class SignatureControllerTest extends BaseControllerTest {
                     jsonPath("$.name").value(createdSignatureResponse.name()),
                     jsonPath("$.email").value(createdSignatureResponse.email()),
                     jsonPath("$.signatureData").isNotEmpty(),
-                    jsonPath("$.documentVersionId").value(createdSignatureResponse.documentVersionId()),
+                    jsonPath("$.documentId").value(createdSignatureResponse.documentId()),
                     jsonPath("$.status").value(SignatureStatus.SIGNED.toString())
                 );
         }
@@ -273,7 +273,7 @@ public class SignatureControllerTest extends BaseControllerTest {
                     jsonPath("$.id").value(createdSignatureResponse.id()),
                     jsonPath("$.name").value(createdSignatureResponse.name()),
                     jsonPath("$.email").value(createdSignatureResponse.email()),
-                    jsonPath("$.documentVersionId").value(createdSignatureResponse.documentVersionId()),
+                    jsonPath("$.documentId").value(createdSignatureResponse.documentId()),
                     jsonPath("$.signatureData").isEmpty(),
                     jsonPath("$.status").value(SignatureStatus.REFUSED.toString())
                 );

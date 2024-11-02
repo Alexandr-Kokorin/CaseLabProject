@@ -8,6 +8,7 @@ import caselab.domain.entity.Document;
 import caselab.domain.entity.DocumentType;
 import caselab.domain.entity.document.type.to.attribute.DocumentTypeToAttribute;
 import caselab.domain.entity.document.type.to.attribute.DocumentTypeToAttributeId;
+import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.AttributeRepository;
 import caselab.domain.repository.DocumentRepository;
 import caselab.domain.repository.DocumentTypeToAttributeRepository;
@@ -16,7 +17,7 @@ import caselab.exception.DocumentTypeInUseException;
 import caselab.exception.entity.not_found.AttributeNotFoundException;
 import caselab.exception.entity.not_found.DocumentTypeNotFoundException;
 import caselab.service.types.mapper.DocumentTypeMapper;
-import caselab.service.users.ApplicationUserService;
+import caselab.service.util.UserUtilService;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,15 +30,18 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class DocumentTypesService {
 
-    private final DocumentTypeMapper documentTypeMapper;
+    private final UserUtilService userUtilService;
+
     private final DocumentRepository documentRepository;
     private final DocumentTypesRepository documentTypesRepository;
     private final AttributeRepository attributeRepository;
     private final DocumentTypeToAttributeRepository documentTypeToAttributeRepository;
-    private final ApplicationUserService userService;
+
+    private final DocumentTypeMapper documentTypeMapper;
 
     public DocumentTypeResponse createDocumentType(DocumentTypeRequest request, Authentication authentication) {
-        userService.checkAdmin(authentication);
+        userUtilService.checkUserGlobalPermission(
+            userUtilService.findUserByAuthentication(authentication), GlobalPermissionName.ADMIN);
 
         var documentType = documentTypeMapper.requestToEntity(request);
 
@@ -63,7 +67,8 @@ public class DocumentTypesService {
         Long id, DocumentTypeRequest request,
         Authentication authentication
     ) {
-        userService.checkAdmin(authentication);
+        userUtilService.checkUserGlobalPermission(
+            userUtilService.findUserByAuthentication(authentication), GlobalPermissionName.ADMIN);
 
         var documentType = findDocumentTypeById(id);
         var updatedDocumentType = documentTypeMapper.requestToEntity(request);
@@ -79,7 +84,8 @@ public class DocumentTypesService {
     }
 
     public void deleteDocumentType(Long id, Authentication authentication) {
-        userService.checkAdmin(authentication);
+        userUtilService.checkUserGlobalPermission(
+            userUtilService.findUserByAuthentication(authentication), GlobalPermissionName.ADMIN);
 
         var documentType = findDocumentTypeById(id);
 

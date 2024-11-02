@@ -9,8 +9,10 @@ import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.ApplicationUserRepository;
 import caselab.domain.repository.GlobalPermissionRepository;
 import caselab.exception.entity.already_exists.UserAlreadyExistsException;
+import caselab.service.notification.email.EmailService;
 import caselab.service.secutiry.AuthenticationService;
 import caselab.service.secutiry.JwtService;
+import caselab.service.util.UserUtilService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,6 +46,10 @@ public class AuthenticationServiceTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+    @Mock
+    private UserUtilService userUtilService;
+    @Mock
+    private EmailService emailService;
 
     @Mock
     private JwtService jwtService;

@@ -1,8 +1,7 @@
-package caselab.controller.version;
+package caselab.controller.document.version;
 
-import caselab.controller.version.payload.DocumentVersionResponse;
-import caselab.controller.version.payload.UpdateDocumentVersionRequest;
-import caselab.service.version.DocumentVersionService;
+import caselab.controller.document.version.payload.DocumentVersionResponse;
+import caselab.service.document.version.DocumentVersionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -20,8 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Tag(name = "Версии документов", description = "API управления версиями документов")
 public class DocumentVersionController {
+
     private final DocumentVersionService documentVersionService;
 
     @Operation(summary = "Получить версию документа по id",
@@ -49,11 +47,11 @@ public class DocumentVersionController {
         return documentVersionService.getDocumentVersionById(id, auth);
     }
 
-    @Operation(summary = "Получить все версии документов текущего пользователя",
-               description = "Возвращает все версии документа, доступные текущему пользователю")
+    @Operation(summary = "Получить все версии документов по id документа",
+               description = "Возвращает все версии документа по id документа")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200",
-                     description = "Успешное получение версий документов для текущего пользователя",
+                     description = "Успешное получение версий документов",
                      content = @Content(schema = @Schema(implementation = DocumentVersionResponse.class))),
         @ApiResponse(responseCode = "404", description = "Версия документа не найдена",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
@@ -85,23 +83,5 @@ public class DocumentVersionController {
     public ResponseEntity<Resource> getDocumentVersionContent(@PathVariable Long id, Authentication auth) {
         var resource = new InputStreamResource(documentVersionService.getDocumentVersionContent(id, auth));
         return new ResponseEntity<>(resource, HttpStatus.OK);
-    }
-
-    @Operation(summary = "Обновить версию документа по id",
-               description = "Обновляет версию документа и возвращает её")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Успешное обновление версии документа",
-                     content = @Content(schema = @Schema(implementation = DocumentVersionResponse.class))),
-        @ApiResponse(responseCode = "404", description = "Версия документа не найдена",
-                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
-        @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
-                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
-    })
-    @PutMapping("/{id}")
-    public DocumentVersionResponse updateDocumentVersion(
-        @PathVariable("id") Long id, @RequestBody
-    UpdateDocumentVersionRequest body, Authentication auth
-    ) {
-        return documentVersionService.updateDocumentVersion(id, body, auth);
     }
 }

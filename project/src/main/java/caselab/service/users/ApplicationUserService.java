@@ -5,15 +5,14 @@ import caselab.controller.users.payload.UserUpdateRequest;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.ApplicationUserRepository;
-import caselab.exception.PermissionDeniedException;
 import caselab.exception.entity.not_found.UserNotFoundException;
 import caselab.service.secutiry.AuthenticationService;
 import caselab.service.users.mapper.UserMapper;
+import caselab.service.util.UserUtilService;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,9 +20,11 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ApplicationUserService {
 
+    private final AuthenticationService authService;
+    private final UserUtilService userUtilService;
+
     private final ApplicationUserRepository userRepository;
     private final UserMapper mapper;
-    private final AuthenticationService authService;
 
     public List<UserResponse> findAllUsers() {
         List<ApplicationUser> users = userRepository.findAll();
@@ -39,7 +40,7 @@ public class ApplicationUserService {
     }
 
     public UserResponse updateUser(Authentication authentication, UserUpdateRequest updateRequest) {
-        var userToUpdate = findUserByAuthentication(authentication);
+        var userToUpdate = userUtilService.findUserByAuthentication(authentication);
 
         userToUpdate.setHashedPassword(authService.encodePassword(updateRequest.password()));
         userToUpdate.setDisplayName(updateRequest.displayName());
@@ -48,25 +49,9 @@ public class ApplicationUserService {
     }
 
     public void deleteUser(Authentication authentication, String email) {
-        checkAdmin(authentication);
-        userRepository.delete(findUserByEmail(email));
-    }
+        userUtilService.checkUserGlobalPermission(
+            userUtilService.findUserByAuthentication(authentication), GlobalPermissionName.ADMIN);
 
-    public ApplicationUser findUserByAuthentication(Authentication authentication) {
-        var userDetails = (UserDetails) authentication.getPrincipal();
-        return userRepository.findByEmail(userDetails.getUsername())
-            .orElseThrow(() -> new UserNotFoundException(userDetails.getUsername()));
-    }
-
-    public ApplicationUser findUserByEmail(String email) {
-        return userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException(email));
-    }
-
-    public void checkAdmin(Authentication authentication) {
-        var applicationUser = findUserByAuthentication(authentication);
-        if (applicationUser.getAuthorities().stream()
-            .noneMatch(globalPermission -> globalPermission.getAuthority().equals(GlobalPermissionName.ADMIN.name()))) {
-            throw new PermissionDeniedException();
-        }
+        userRepository.delete(userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException(email)));
     }
 }

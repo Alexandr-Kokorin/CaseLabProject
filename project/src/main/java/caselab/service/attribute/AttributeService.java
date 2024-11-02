@@ -3,10 +3,11 @@ package caselab.service.attribute;
 import caselab.controller.attribute.payload.AttributeRequest;
 import caselab.controller.attribute.payload.AttributeResponse;
 import caselab.domain.entity.Attribute;
+import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.AttributeRepository;
 import caselab.exception.entity.not_found.AttributeNotFoundException;
-import caselab.service.users.ApplicationUserService;
 import caselab.service.util.PageUtil;
+import caselab.service.util.UserUtilService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -20,11 +21,12 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AttributeService {
 
+    private final UserUtilService userUtilService;
     private final AttributeRepository attributeRepository;
-    private final ApplicationUserService userService;
 
     public AttributeResponse createAttribute(AttributeRequest attributeRequest, Authentication authentication) {
-        userService.checkAdmin(authentication);
+        userUtilService.checkUserGlobalPermission(
+            userUtilService.findUserByAuthentication(authentication), GlobalPermissionName.ADMIN);
 
         Attribute attribute = new Attribute();
         attribute.setName(attributeRequest.name());
@@ -43,9 +45,10 @@ public class AttributeService {
         Integer pageNum,
         Integer pageSize,
         String sortStrategy,
-        Authentication auth
+        Authentication authentication
     ) {
-        userService.checkAdmin(auth);
+        userUtilService.checkUserGlobalPermission(
+            userUtilService.findUserByAuthentication(authentication), GlobalPermissionName.ADMIN);
 
         PageRequest pageable = PageUtil.toPageable(pageNum, pageSize, Sort.by("name"), sortStrategy);
         Page<Attribute> attributes = attributeRepository.findAll(pageable);
@@ -54,7 +57,8 @@ public class AttributeService {
     }
 
     public AttributeResponse updateAttribute(Long id, AttributeRequest request, Authentication authentication) {
-        userService.checkAdmin(authentication);
+        userUtilService.checkUserGlobalPermission(
+            userUtilService.findUserByAuthentication(authentication), GlobalPermissionName.ADMIN);
 
         Attribute attribute = attributeRepository.findById(id)
             .orElseThrow(() -> new AttributeNotFoundException(id));
@@ -65,7 +69,9 @@ public class AttributeService {
     }
 
     public void deleteAttribute(Long id, Authentication authentication) {
-        userService.checkAdmin(authentication);
+        userUtilService.checkUserGlobalPermission(
+            userUtilService.findUserByAuthentication(authentication), GlobalPermissionName.ADMIN);
+
         if (attributeRepository.existsById(id)) {
             attributeRepository.deleteById(id);
         } else {

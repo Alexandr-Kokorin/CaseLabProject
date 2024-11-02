@@ -14,6 +14,7 @@ import caselab.service.users.mapper.UserMapper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import caselab.service.util.UserUtilService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,6 +44,8 @@ public class ApplicationUserServiceTest {
     private ApplicationUserRepository userRepository;
     @Mock
     private UserMapper userMapper;
+    @Mock
+    private UserUtilService userUtilService;
     @Mock
     private AuthenticationService authService;
     private ApplicationUser user1;

@@ -1,4 +1,4 @@
-package caselab.controller.version.payload;
+package caselab.controller.document.version.payload;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.OffsetDateTime;

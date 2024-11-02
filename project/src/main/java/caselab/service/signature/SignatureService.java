@@ -7,17 +7,17 @@ import caselab.domain.entity.enums.DocumentPermissionName;
 import caselab.domain.entity.enums.DocumentStatus;
 import caselab.domain.entity.enums.SignatureStatus;
 import caselab.domain.repository.ApplicationUserRepository;
-import caselab.domain.repository.DocumentVersionRepository;
+import caselab.domain.repository.DocumentRepository;
 import caselab.domain.repository.SignatureRepository;
 import caselab.exception.SignatureAlreadySignedException;
-import caselab.exception.entity.not_found.DocumentVersionNotFoundException;
+import caselab.exception.entity.not_found.DocumentNotFoundException;
 import caselab.exception.entity.not_found.SignatureNotFoundException;
 import caselab.exception.entity.not_found.UserNotFoundException;
 import caselab.exception.status.StatusIncorrectForCreateSignatureException;
 import caselab.service.document.facade.DocumentFacadeService;
 import caselab.service.signature.mapper.SignatureMapper;
-import caselab.service.users.ApplicationUserService;
-import caselab.service.util.DocumentPermissionUtilService;
+import caselab.service.util.DocumentUtilService;
+import caselab.service.util.UserUtilService;
 import jakarta.transaction.Transactional;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -32,12 +32,12 @@ import org.springframework.stereotype.Service;
 public class SignatureService {
 
     private final DocumentFacadeService documentFacadeService;
-    private final ApplicationUserService applicationUserService;
-    private final DocumentPermissionUtilService documentPermissionUtilService;
+    private final UserUtilService userUtilService;
+    private final DocumentUtilService documentUtilService;
 
     private final SignatureRepository signatureRepository;
     private final ApplicationUserRepository userRepository;
-    private final DocumentVersionRepository documentVersionRepository;
+    private final DocumentRepository documentRepository;
 
     private final SignatureMapper signatureMapper;
 
@@ -45,7 +45,7 @@ public class SignatureService {
         var signature = signatureRepository.findById(id)
             .orElseThrow(() -> new SignatureNotFoundException(id));
 
-        var user = applicationUserService.findUserByAuthentication(authentication);
+        var user = userUtilService.findUserByAuthentication(authentication);
         if (!user.getId().equals(signature.getApplicationUser().getId())) {
             throw new SignatureNotFoundException(id);
         }
@@ -80,7 +80,7 @@ public class SignatureService {
 
     private void setStatus(Signature signature, Long id) {
         if (signature.getStatus() == SignatureStatus.SIGNED) {
-            var signatures = findAllSignaturesByDocumentVersionId(signature.getDocumentVersion().getId());
+            var signatures = findAllSignaturesByDocumentId(signature.getDocumentVersion().getDocument().getId());
             boolean flag = true;
             for (var temp : signatures) {
                 if (temp.status() != SignatureStatus.SIGNED && !temp.id().equals(id)) {
@@ -99,14 +99,15 @@ public class SignatureService {
     public SignatureResponse createSignature(SignatureCreateRequest signRequest, Authentication auth) {
         var signature = signatureMapper.requestToEntity(signRequest);
 
-        var documentVersionForSign = documentVersionRepository.findById(signRequest.documentVersionId())
-            .orElseThrow(() -> new DocumentVersionNotFoundException(signRequest.documentVersionId()));
+        var documentVersionForSign = documentRepository.findById(signRequest.documentId())
+            .orElseThrow(() -> new DocumentNotFoundException(signRequest.documentId()))
+            .getDocumentVersions().getFirst();
 
-        var user = applicationUserService.findUserByAuthentication(auth);
-        documentPermissionUtilService.assertHasPermission(
+        var user = userUtilService.findUserByAuthentication(auth);
+        documentUtilService.assertHasPermission(
             user, documentVersionForSign.getDocument(), DocumentPermissionName::isCreator, "Creator");
 
-        documentPermissionUtilService.assertHasDocumentStatus(
+        documentUtilService.assertHasDocumentStatus(
             documentVersionForSign.getDocument(),
             List.of(DocumentStatus.DRAFT, DocumentStatus.SIGNATURE_IN_PROGRESS, DocumentStatus.SIGNATURE_ACCEPTED),
             new StatusIncorrectForCreateSignatureException()
@@ -136,9 +137,10 @@ public class SignatureService {
             .toList();
     }
 
-    public List<SignatureResponse> findAllSignaturesByDocumentVersionId(Long documentVersionId) {
-        var documentVersion = documentVersionRepository.findById(documentVersionId)
-            .orElseThrow(() -> new DocumentVersionNotFoundException(documentVersionId));
+    public List<SignatureResponse> findAllSignaturesByDocumentId(Long documentId) {
+        var documentVersion = documentRepository.findById(documentId)
+            .orElseThrow(() -> new DocumentNotFoundException(documentId))
+            .getDocumentVersions().getLast();
 
         return documentVersion.getSignatures().stream()
             .map(signatureMapper::entityToResponse)

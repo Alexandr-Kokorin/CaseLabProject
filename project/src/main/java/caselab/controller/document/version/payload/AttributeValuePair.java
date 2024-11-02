@@ -1,4 +1,4 @@
-package caselab.controller.version.payload;
+package caselab.controller.document.version.payload;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -9,7 +9,7 @@ public record AttributeValuePair(
     @JsonProperty("attributeId")
     Long attributeId,
     @Schema(description = "Значение атрибута", example = "120")
-    @JsonProperty("name")
+    @JsonProperty("value")
     String value
 ) {
 }

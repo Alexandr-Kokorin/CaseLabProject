@@ -1,13 +1,13 @@
-package caselab.service.version;
+package caselab.service.document.version;
 
-import caselab.controller.version.payload.AttributeValuePair;
-import caselab.controller.version.payload.DocumentVersionResponse;
+import caselab.controller.document.version.payload.AttributeValuePair;
+import caselab.controller.document.version.payload.DocumentVersionResponse;
 import caselab.domain.entity.Attribute;
 import caselab.domain.entity.Document;
 import caselab.domain.entity.DocumentVersion;
 import caselab.domain.entity.attribute.value.AttributeValue;
 import caselab.domain.entity.attribute.value.AttributeValueId;
-import caselab.service.version.mapper.DocumentVersionMapper;
+import caselab.service.document.version.mapper.DocumentVersionMapper;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.LongStream;

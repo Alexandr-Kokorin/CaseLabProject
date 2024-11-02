@@ -1,4 +1,4 @@
-package caselab.service.document.mapper;
+package caselab.service.document;
 
 import caselab.Application;
 import caselab.controller.document.payload.DocumentRequest;
@@ -10,6 +10,7 @@ import caselab.domain.entity.Document;
 import caselab.domain.entity.DocumentType;
 import caselab.domain.entity.DocumentVersion;
 import caselab.domain.entity.UserToDocument;
+import caselab.service.document.mapper.DocumentMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

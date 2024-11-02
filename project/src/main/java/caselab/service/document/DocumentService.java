@@ -19,7 +19,7 @@ import caselab.exception.entity.not_found.DocumentTypeNotFoundException;
 import caselab.exception.status.StatusIncorrectForDeleteDocumentException;
 import caselab.exception.status.StatusIncorrectForUpdateDocumentException;
 import caselab.service.document.mapper.DocumentMapper;
-import caselab.service.util.DocumentPermissionUtilService;
+import caselab.service.util.DocumentUtilService;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.stream.Stream;
@@ -32,13 +32,14 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class DocumentService {
 
+    private final DocumentUtilService documentUtilService;
+
     private final DocumentRepository documentRepository;
     private final DocumentTypesRepository documentTypeRepository;
     private final UserToDocumentRepository userToDocumentRepository;
     private final DocumentPermissionRepository documentPermissionRepository;
-    private final DocumentMapper documentMapper;
 
-    private final DocumentPermissionUtilService docPermissionService;
+    private final DocumentMapper documentMapper;
 
     public DocumentResponse createDocument(DocumentRequest documentRequest, ApplicationUser creator) {
         var document = documentMapper.requestToEntity(documentRequest);
@@ -69,7 +70,7 @@ public class DocumentService {
     public DocumentResponse getDocumentById(Long id, ApplicationUser user) {
         var document = getDocumentEntityById(id);
 
-        docPermissionService.assertHasPermission(user, document, DocumentPermissionName::any, "Any");
+        documentUtilService.assertHasPermission(user, document, DocumentPermissionName::any, "Any");
         return documentMapper.entityToResponse(document);
     }
 
@@ -95,8 +96,8 @@ public class DocumentService {
     public DocumentResponse updateDocument(Long id, UpdateDocumentRequest updateDocumentRequest, ApplicationUser user) {
         var document = getDocumentEntityById(id);
 
-        docPermissionService.assertHasPermission(user, document, DocumentPermissionName::canEdit, "Edit");
-        docPermissionService.assertHasDocumentStatus(
+        documentUtilService.assertHasPermission(user, document, DocumentPermissionName::canEdit, "Edit");
+        documentUtilService.assertHasDocumentStatus(
             document,
             List.of(DocumentStatus.DRAFT, DocumentStatus.SIGNATURE_REJECTED,
                 DocumentStatus.VOTING_REJECTED, DocumentStatus.ARCHIVED
@@ -115,8 +116,8 @@ public class DocumentService {
         ApplicationUser by
     ) {
         var document = getDocumentEntityById(id);
-        docPermissionService.assertHasPermission(by, document, DocumentPermissionName::isCreator, "Creator");
-        if (!docPermissionService.checkLacksPermission(user, document, DocumentPermissionName::canRead)) {
+        documentUtilService.assertHasPermission(by, document, DocumentPermissionName::isCreator, "Creator");
+        if (!documentUtilService.checkLacksPermission(user, document, DocumentPermissionName::canRead)) {
             throw new DocumentPermissionAlreadyGrantedException("Read");
         }
         var permission = documentPermissionRepository.findDocumentPermissionByName(DocumentPermissionName.READ);
@@ -132,8 +133,8 @@ public class DocumentService {
     public void documentToArchive(Long documentId, ApplicationUser user) {
         var document = getDocumentEntityById(documentId);
 
-        docPermissionService.assertHasPermission(user, document, DocumentPermissionName::isCreator, "Creator");
-        docPermissionService.assertHasDocumentStatus(
+        documentUtilService.assertHasPermission(user, document, DocumentPermissionName::isCreator, "Creator");
+        documentUtilService.assertHasDocumentStatus(
             document,
             List.of(DocumentStatus.DRAFT, DocumentStatus.SIGNATURE_REJECTED, DocumentStatus.SIGNATURE_ACCEPTED,
                 DocumentStatus.VOTING_REJECTED, DocumentStatus.VOTING_ACCEPTED

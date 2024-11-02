@@ -1,6 +1,6 @@
-package caselab.service.version.mapper;
+package caselab.service.document.version.mapper;
 
-import caselab.controller.version.payload.DocumentVersionResponse;
+import caselab.controller.document.version.payload.DocumentVersionResponse;
 import caselab.domain.entity.Document;
 import caselab.domain.entity.DocumentVersion;
 import caselab.domain.entity.Signature;

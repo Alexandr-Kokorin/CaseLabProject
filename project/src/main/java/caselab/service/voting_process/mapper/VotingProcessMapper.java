@@ -15,7 +15,7 @@ import org.mapstruct.ReportingPolicy;
         uses = {VoteMapper.class})
 public interface VotingProcessMapper {
 
-    @Mapping(target = "documentVersionId", source = "documentVersion.id")
+    @Mapping(target = "documentId", source = "documentVersion.document.id")
     VotingProcessResponse entityToResponse(VotingProcess votingProcess);
 
     @Mapping(target = "deadline", ignore = true)

@@ -22,8 +22,8 @@ public record VotingProcessResponse(
     OffsetDateTime createdAt,
     @Schema(description = "Время окончания", example = "2024-10-31T01:30+01:00")
     OffsetDateTime deadline,
-    @Schema(description = "ID версии документа", example = "1")
-    long documentVersionId,
+    @Schema(description = "ID документа", example = "1")
+    long documentId,
     @ArraySchema(schema = @Schema(implementation = VoteResponse.class, description = "Голос"))
     List<VoteResponse> votes
 ) {

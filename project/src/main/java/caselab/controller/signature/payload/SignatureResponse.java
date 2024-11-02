@@ -28,7 +28,7 @@ public record SignatureResponse(
     @Schema(description = "Электронная почта пользователя, к которому относится подпись", example = "user@example.com")
     String email,
 
-    @Schema(description = "ID версии документа для подписи", example = "1")
-    Long documentVersionId
+    @Schema(description = "ID документа для подписи", example = "1")
+    Long documentId
 ) {
 }

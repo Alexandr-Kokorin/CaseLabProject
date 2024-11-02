@@ -20,11 +20,13 @@ import caselab.domain.entity.DocumentVersion;
 import caselab.domain.entity.enums.VoteStatus;
 import caselab.domain.repository.DocumentRepository;
 import caselab.domain.repository.DocumentVersionRepository;
+import caselab.service.notification.email.EmailService;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
@@ -44,6 +46,8 @@ public class VotingProcessControllerTest extends BaseControllerTest {
 
     private String token;
     private final String URL = "/api/v1/voting_process";
+    @Mock
+    private EmailService emailService;
 
     //TODO - удалить, когда появится контроллер версии документа
     @Autowired
@@ -54,7 +58,6 @@ public class VotingProcessControllerTest extends BaseControllerTest {
     private long attributeId;
     private long documentTypeId;
     private long documentId;
-    private long documentVersionId;
 
     @SneakyThrows
     private String login() {
@@ -82,7 +85,6 @@ public class VotingProcessControllerTest extends BaseControllerTest {
         attributeId = createAttribute();
         documentTypeId = createDocumentType();
         documentId = createDocument();
-        documentVersionId = createDocumentVersion();
     }
 
     @SneakyThrows
@@ -122,26 +124,13 @@ public class VotingProcessControllerTest extends BaseControllerTest {
         return readValue(mvcResponse, DocumentResponse.class).id();
     }
 
-    //TODO - заменить на обращение к контроллеру, как сделаны и остальные
-    @SneakyThrows
-    private long createDocumentVersion() {
-        var documentVersion = DocumentVersion.builder()
-            .name("name")
-            .createdAt(OffsetDateTime.now())
-            .contentName("url")
-            .document(documentRepository.findById(documentId).orElseThrow())
-            .build();
-
-        return documentVersionRepository.save(documentVersion).getId();
-    }
-
     @SneakyThrows
     private VotingProcessResponse createVotingProcess() {
         var request = VotingProcessRequest.builder()
             .name("name")
             .threshold(0.6)
             .deadline(Duration.ofHours(2))
-            .documentVersionId(documentVersionId)
+            .documentId(documentId)
             .emails(List.of("user@example.com"))
             .build();
 
@@ -170,9 +159,6 @@ public class VotingProcessControllerTest extends BaseControllerTest {
 
     @AfterEach
     public void deleteEntity() {
-        //TODO - заменить на обращение к контроллеру, как сделаны и остальные
-        documentVersionRepository.deleteById(documentVersionId);
-
         deleteRequest("/api/v1/documents", documentId);
         deleteRequest("/api/v1/document_types", documentTypeId);
         deleteRequest("/api/v1/attributes", attributeId);
@@ -208,7 +194,7 @@ public class VotingProcessControllerTest extends BaseControllerTest {
             () -> assertThat(response.name()).isEqualTo("name"),
             () -> assertThat(response.threshold()).isEqualTo(0.6),
             () -> assertThat(response.deadline()).isEqualTo(deadline),
-            () -> assertThat(response.documentVersionId()).isEqualTo(documentVersionId),
+            () -> assertThat(response.documentId()).isEqualTo(documentId),
             () -> assertThat(response.votes()).isEqualTo(votes)
         );
 
@@ -223,7 +209,7 @@ public class VotingProcessControllerTest extends BaseControllerTest {
             .name("name")
             .threshold(0.6)
             .deadline(Duration.ofHours(2))
-            .documentVersionId(100)
+            .documentId(100)
             .emails(List.of("user@example.com"))
             .build();
 
@@ -242,7 +228,7 @@ public class VotingProcessControllerTest extends BaseControllerTest {
             .name("name")
             .threshold(0.6)
             .deadline(Duration.ofHours(2))
-            .documentVersionId(documentVersionId)
+            .documentId(documentId)
             .emails(List.of("test@example.com"))
             .build();
 
@@ -261,7 +247,7 @@ public class VotingProcessControllerTest extends BaseControllerTest {
             .name(null)
             .threshold(-1)
             .deadline(Duration.ofHours(2))
-            .documentVersionId(0)
+            .documentId(0)
             .emails(List.of("user@example.com"))
             .build();
 
@@ -300,7 +286,7 @@ public class VotingProcessControllerTest extends BaseControllerTest {
             () -> assertThat(response.name()).isEqualTo("name"),
             () -> assertThat(response.threshold()).isEqualTo(0.6),
             () -> assertThat(response.deadline()).isEqualTo(deadline),
-            () -> assertThat(response.documentVersionId()).isEqualTo(documentVersionId),
+            () -> assertThat(response.documentId()).isEqualTo(documentId),
             () -> assertThat(response.votes()).isEqualTo(votes)
         );
 
