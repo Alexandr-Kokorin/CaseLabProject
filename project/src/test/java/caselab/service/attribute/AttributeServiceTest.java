@@ -8,12 +8,18 @@ import caselab.exception.entity.not_found.AttributeNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import caselab.service.users.ApplicationUserService;
+import caselab.service.util.PageUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -29,6 +35,9 @@ public class AttributeServiceTest {
 
     @Mock
     private AttributeRepository attributeRepository;
+
+    @Mock
+    private ApplicationUserService userService;
 
     @Test
     void testCreateAttribute_shouldReturnCreatedAttribute() {
@@ -88,20 +97,29 @@ public class AttributeServiceTest {
         attribute2.setName("name2");
         attribute2.setType("type2");
 
-        List<Attribute> attributes = new ArrayList<>(List.of(attribute1, attribute2));
+        Page<Attribute> attributes = new PageImpl<>(List.of(attribute1, attribute2));
 
-        Mockito.when(attributeRepository.findAll()).thenReturn(attributes);
+        PageRequest pageable = PageUtil.toPageable(0, 10, Sort.by("id"), "asc");
 
-        List<AttributeResponse> attributeResponses = attributeService.findAllAttributes();
+        Mockito.when(attributeRepository.findAll(pageable)).thenReturn(attributes);
+
+        Page<AttributeResponse> attributeResponses = attributeService.findAllAttributes(
+            pageable.getPageNumber(),
+            pageable.getPageSize(),
+            "asc",
+            null
+        );
+
+        List<AttributeResponse> responses = attributeResponses.getContent();
 
         assertAll(
-            () -> assertEquals(2, attributeResponses.size()),
-            () -> assertEquals(1L, attributeResponses.get(0).id()),
-            () -> assertEquals("name1", attributeResponses.get(0).name()),
-            () -> assertEquals("type1", attributeResponses.get(0).type()),
-            () -> assertEquals(2L, attributeResponses.get(1).id()),
-            () -> assertEquals("name2", attributeResponses.get(1).name()),
-            () -> assertEquals("type2", attributeResponses.get(1).type())
+            () -> assertEquals(2, responses.size()),
+            () -> assertEquals(1L, responses.get(0).id()),
+            () -> assertEquals("name1", responses.get(0).name()),
+            () -> assertEquals("type1", responses.get(0).type()),
+            () -> assertEquals(2L, responses.get(1).id()),
+            () -> assertEquals("name2", responses.get(1).name()),
+            () -> assertEquals("type2", responses.get(1).type())
         );
     }
 

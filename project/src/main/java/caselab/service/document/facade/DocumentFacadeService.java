@@ -167,14 +167,13 @@ public class DocumentFacadeService {
         Pageable pageable,
         String sortStrategy
     ) {
-        sortStrategy = sortStrategy == null ? "desc" : sortStrategy;
-        list = switch (sortStrategy.toLowerCase()) {
+        List<DocumentFacadeResponse> validList = switch (sortStrategy.toLowerCase()) {
             case "desc" -> list;
             case "asc" -> list.reversed();
             default -> throw new IllegalArgumentException("Parameter sortStrategy: " + sortStrategy + " is not valid");
         };
 
-        List<DocumentFacadeResponse> pageList = list.stream()
+        List<DocumentFacadeResponse> pageList = validList.stream()
             .skip(pageable.getOffset())
             .limit(pageable.getPageSize())
             .toList();

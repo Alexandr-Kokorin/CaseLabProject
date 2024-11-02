@@ -6,9 +6,12 @@ import caselab.domain.entity.Attribute;
 import caselab.domain.repository.AttributeRepository;
 import caselab.exception.entity.not_found.AttributeNotFoundException;
 import caselab.service.users.ApplicationUserService;
+import caselab.service.util.PageUtil;
 import jakarta.transaction.Transactional;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
@@ -36,11 +39,18 @@ public class AttributeService {
         return new AttributeResponse(attribute.getId(), attribute.getName(), attribute.getType());
     }
 
-    public List<AttributeResponse> findAllAttributes() {
-        List<Attribute> attributes = attributeRepository.findAll();
-        return attributes.stream()
-            .map(attribute -> new AttributeResponse(attribute.getId(), attribute.getName(), attribute.getType()))
-            .toList();
+    public Page<AttributeResponse> findAllAttributes(
+        Integer pageNum,
+        Integer pageSize,
+        String sortStrategy,
+        Authentication auth
+    ) {
+        userService.checkAdmin(auth);
+
+        PageRequest pageable = PageUtil.toPageable(pageNum, pageSize, Sort.by("name"), sortStrategy);
+        Page<Attribute> attributes = attributeRepository.findAll(pageable);
+        return attributes
+            .map(attribute -> new AttributeResponse(attribute.getId(), attribute.getName(), attribute.getType()));
     }
 
     public AttributeResponse updateAttribute(Long id, AttributeRequest request, Authentication authentication) {

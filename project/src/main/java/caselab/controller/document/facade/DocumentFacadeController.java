@@ -86,7 +86,7 @@ public class DocumentFacadeController {
     Page<DocumentFacadeResponse> getAllDocuments(
         @RequestParam(value = "pageNum", required = false) Integer pageNum,
         @RequestParam(value = "pageSize", required = false) Integer pageSize,
-        @RequestParam(value = "sortStrategy", required = false) String sortStrategy,
+        @RequestParam(value = "sortStrategy", required = false, defaultValue = "desc") String sortStrategy,
         Authentication authentication
     ) {
         return documentFacadeService.getAllDocuments(pageNum, pageSize, sortStrategy, authentication);
