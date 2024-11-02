@@ -5,14 +5,20 @@ import caselab.controller.secutiry.payload.AuthenticationRequest;
 import caselab.controller.secutiry.payload.AuthenticationResponse;
 import caselab.controller.secutiry.payload.RegisterRequest;
 import caselab.controller.users.payload.UserUpdateRequest;
+import caselab.service.notification.email.EmailNotificationDetails;
+import caselab.service.notification.email.EmailService;
 import lombok.SneakyThrows;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MvcResult;
 
 import static org.hamcrest.Matchers.notNullValue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -27,7 +33,12 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
     private final String AUTH_URI = "/api/v1/auth";
     private final String URL = "/api/v1/users";
     private static AuthenticationResponse authToken;
-
+    @Mock
+    private EmailService emailService;
+    @BeforeEach
+    void setUp() {
+        doNothing().when(emailService).sendNotification(any(EmailNotificationDetails.class));
+    }
     @SneakyThrows
     private AuthenticationResponse login() {
         if (authToken != null) {

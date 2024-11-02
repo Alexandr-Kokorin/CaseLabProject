@@ -3,8 +3,12 @@ package caselab.service.users;
 import caselab.controller.users.payload.UserResponse;
 import caselab.controller.users.payload.UserUpdateRequest;
 import caselab.domain.entity.ApplicationUser;
+import caselab.domain.entity.GlobalPermission;
+import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.ApplicationUserRepository;
 import caselab.exception.entity.not_found.UserNotFoundException;
+import caselab.service.notification.email.EmailNotificationDetails;
+import caselab.service.notification.email.EmailService;
 import caselab.service.secutiry.AuthenticationService;
 import caselab.service.users.mapper.UserMapper;
 import java.util.ArrayList;
@@ -17,10 +21,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -46,6 +52,7 @@ public class ApplicationUserServiceTest {
 
     @BeforeEach
     void setUp() {
+
         Long user2Id = 2L;
 
         user1 = createUser(user1Id, "johnDoe@gmail.com", "john_doe", "PBKDF2WithHmacSHA512");
@@ -153,12 +160,23 @@ public class ApplicationUserServiceTest {
         Authentication authentication = mock(Authentication.class);
         UserDetails userDetails = mock(UserDetails.class);
 
+        // Мокируем получение principal из Authentication
         when(authentication.getPrincipal()).thenReturn(userDetails);
-        when(userDetails.getUsername()).thenReturn(userEmail);
+        when(userDetails.getUsername()).thenReturn("admin@gmail.com");
+
+        // Создаем администратора с правом ADMIN
+        ApplicationUser adminUser = createUser(0L, "admin@gmail.com", "admin", "adminPassword");
+        GlobalPermission adminPermission = new GlobalPermission();
+        adminPermission.setName(GlobalPermissionName.ADMIN);
+        adminUser.setGlobalPermissions(List.of(adminPermission));
+
+        // Настраиваем поведение userRepository
+        when(userRepository.findByEmail("admin@gmail.com")).thenReturn(Optional.of(adminUser));
         when(userRepository.findByEmail(userEmail)).thenReturn(Optional.of(user1));
 
-        userService.deleteUser(authentication);
+        userService.deleteUser(authentication, userEmail);
 
+        // Проверяем, что метод delete был вызван с нужным пользователем
         verify(userRepository).delete(user1);
     }
 
@@ -167,14 +185,24 @@ public class ApplicationUserServiceTest {
         Authentication authentication = mock(Authentication.class);
         UserDetails userDetails = mock(UserDetails.class);
 
+        // Настройка мока аутентификации для администратора
         when(authentication.getPrincipal()).thenReturn(userDetails);
-        when(userDetails.getUsername()).thenReturn(userEmail);
+        when(userDetails.getUsername()).thenReturn("admin@gmail.com");
+
+        ApplicationUser adminUser = createUser(0L, "admin@gmail.com", "admin", "adminPassword");
+        GlobalPermission adminPermission = new GlobalPermission();
+        adminPermission.setName(GlobalPermissionName.ADMIN);
+        adminUser.setGlobalPermissions(List.of(adminPermission));
+
+        when(userRepository.findByEmail("admin@gmail.com")).thenReturn(Optional.of(adminUser));
+
         when(userRepository.findByEmail(userEmail)).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class, () -> userService.deleteUser(authentication));
+        assertThrows(UserNotFoundException.class, () -> userService.deleteUser(authentication, userEmail));
 
         verify(userRepository, times(0)).delete(any(ApplicationUser.class));
     }
+
 
     @Test
     void updateUser_shouldUpdatePasswordWhenNotEmpty() {

@@ -4,12 +4,15 @@ import caselab.controller.BaseControllerTest;
 import caselab.controller.secutiry.payload.AuthenticationRequest;
 import caselab.controller.secutiry.payload.AuthenticationResponse;
 import caselab.controller.secutiry.payload.RegisterRequest;
+import caselab.service.notification.email.EmailNotificationDetails;
+import caselab.service.notification.email.EmailService;
 import caselab.service.secutiry.ClaimsExtractorService;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -17,6 +20,8 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -27,14 +32,19 @@ public class AuthenticationControllerTest extends BaseControllerTest {
 
     @Autowired
     private ClaimsExtractorService claimsExtractorService;
-
+    @Mock
+    private EmailService emailService;
     private String token;
-    //TODO - ИСПРАВИТЬ УДАЛЕНИЕ ПОЛЬЗОВАТЕЛЯ, ПОТОМУ ЧТО УДАЛЯЕТСЯ АДМИН А НЕ ПОЛЬЗОВАТЕЛЬ
-    //Следовательно код закомментирован
-//    @AfterEach
-//    public void cleanUp() {
-//        deleteTestUser(token);
-//    }
+
+    @AfterEach
+    public void cleanUp() {
+        deleteTestUser(token);
+    }
+
+    @BeforeEach
+    void setUp() {
+        doNothing().when(emailService).sendNotification(any(EmailNotificationDetails.class));
+    }
 
     @SneakyThrows
     @Test

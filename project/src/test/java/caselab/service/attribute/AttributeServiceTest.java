@@ -2,12 +2,18 @@ package caselab.service.attribute;
 
 import caselab.controller.attribute.payload.AttributeRequest;
 import caselab.controller.attribute.payload.AttributeResponse;
+import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.Attribute;
+import caselab.domain.entity.GlobalPermission;
+import caselab.domain.entity.enums.GlobalPermissionName;
+import caselab.domain.repository.ApplicationUserRepository;
 import caselab.domain.repository.AttributeRepository;
+import caselab.exception.PermissionDeniedException;
 import caselab.exception.entity.not_found.AttributeNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import caselab.service.users.ApplicationUserService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,11 +21,16 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class AttributeServiceTest {
@@ -29,6 +40,10 @@ public class AttributeServiceTest {
 
     @Mock
     private AttributeRepository attributeRepository;
+    @Mock
+    private ApplicationUserService userService;
+    @Mock
+    private ApplicationUserRepository userRepository;
 
     @Test
     void testCreateAttribute_shouldReturnCreatedAttribute() {
@@ -38,15 +53,37 @@ public class AttributeServiceTest {
         attribute.setName("name");
         attribute.setType("type");
 
-        Mockito.when(attributeRepository.save(Mockito.any(Attribute.class))).thenReturn(attribute);
+        when(attributeRepository.save(Mockito.any(Attribute.class))).thenReturn(attribute);
+        Mockito.doNothing().when(userService).checkAdmin(Mockito.any(Authentication.class));
 
-        AttributeResponse attributeResponse = attributeService
-            .createAttribute(attributeRequest, any(Authentication.class));
+        Authentication authentication = Mockito.mock(Authentication.class);
+        AttributeResponse attributeResponse = attributeService.createAttribute(attributeRequest, authentication);
 
         assertAll(
             () -> assertEquals(1L, attributeResponse.id()),
             () -> assertEquals("name", attributeResponse.name()),
             () -> assertEquals("type", attributeResponse.type())
+        );
+    }
+
+    @Test
+    void testCreateAttribute_notAdminCreating() {
+        AttributeRequest attributeRequest = new AttributeRequest("name", "type");
+        Attribute attribute = new Attribute();
+        attribute.setId(1L);
+        attribute.setName("name");
+        attribute.setType("type");
+
+
+        Mockito.doThrow(new PermissionDeniedException()).when(userService).checkAdmin(Mockito.any(Authentication.class));
+
+
+        Authentication authentication = Mockito.mock(Authentication.class);
+
+        assertThrows(
+            PermissionDeniedException.class,
+            ()-> attributeService.createAttribute(attributeRequest, authentication),
+            "Доступ к этому ресурсу разрешен только администраторам"
         );
     }
 
@@ -116,14 +153,30 @@ public class AttributeServiceTest {
 
         Mockito.when(attributeRepository.findById(1L)).thenReturn(Optional.of(attribute));
         Mockito.when(attributeRepository.save(Mockito.any(Attribute.class))).thenReturn(attribute);
+        Mockito.doNothing().when(userService).checkAdmin(Mockito.any(Authentication.class));
 
-        AttributeResponse attributeResponse = attributeService
-            .updateAttribute(1L, attributeRequest, any(Authentication.class));
+        Authentication authentication = Mockito.mock(Authentication.class);
+        AttributeResponse attributeResponse = attributeService.updateAttribute(1L, attributeRequest, authentication);
 
         assertAll(
             () -> assertEquals(1L, attributeResponse.id()),
             () -> assertEquals("newName", attributeResponse.name()),
             () -> assertEquals("newType", attributeResponse.type())
+        );
+    }
+
+    @Test
+    void testUpdateAttribute_notAdminUpdating() {
+        AttributeRequest attributeRequest = new AttributeRequest("newName", "newType");
+
+        Mockito.doThrow(new PermissionDeniedException()).when(userService).checkAdmin(Mockito.any(Authentication.class));
+
+        Authentication authentication = Mockito.mock(Authentication.class);
+
+        assertThrows(
+            PermissionDeniedException.class,
+            () -> attributeService.updateAttribute(1L, attributeRequest, authentication),
+            "Доступ к этому ресурсу разрешен только администраторам"
         );
     }
 
@@ -141,8 +194,23 @@ public class AttributeServiceTest {
     void deleteAttribute_whenAttributeExists_shouldDeleteAttributeById() {
         Mockito.when(attributeRepository.existsById(1L)).thenReturn(true);
         Mockito.doNothing().when(attributeRepository).deleteById(1L);
+        Mockito.doNothing().when(userService).checkAdmin(Mockito.any(Authentication.class));
 
-        attributeService.deleteAttribute(1L, any(Authentication.class));
+        Authentication authentication = Mockito.mock(Authentication.class);
+        attributeService.deleteAttribute(1L, authentication);
+    }
+    @Test
+    void deleteAttribute_notAdminDeleting() {
+
+        Mockito.doThrow(new PermissionDeniedException()).when(userService).checkAdmin(Mockito.any(Authentication.class));
+
+        Authentication authentication = Mockito.mock(Authentication.class);
+
+        assertThrows(
+            PermissionDeniedException.class,
+            () -> attributeService.deleteAttribute(1L, authentication),
+            "Доступ к этому ресурсу разрешен только администраторам"
+        );
     }
 
     @Test
@@ -154,5 +222,14 @@ public class AttributeServiceTest {
             () -> attributeService.deleteAttribute(2L, any(Authentication.class)),
             "Атрибут с id=2 не найден"
         );
+    }
+
+    private ApplicationUser createUser(Long id, String email, String displayName, String hashedPassword) {
+        return ApplicationUser.builder()
+            .id(id)
+            .email(email)
+            .displayName(displayName)
+            .hashedPassword(hashedPassword)
+            .build();
     }
 }
