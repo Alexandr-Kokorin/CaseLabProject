@@ -14,16 +14,19 @@ import caselab.domain.repository.DocumentRepository;
 import caselab.domain.repository.DocumentTypeToAttributeRepository;
 import caselab.domain.repository.DocumentTypesRepository;
 import caselab.exception.DocumentTypeInUseException;
+import caselab.exception.PermissionDeniedException;
 import caselab.service.types.mapper.DocumentTypeMapper;
 import caselab.exception.entity.not_found.DocumentTypeNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import caselab.service.users.ApplicationUserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.Authentication;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,6 +34,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -58,7 +63,10 @@ class DocumentTypesServiceTest {
     private AttributeRepository attributeRepository;
     @Mock
     private DocumentTypeToAttributeRepository documentTypeToAttributeRepository;
-
+    @Mock
+    private ApplicationUserService userService;
+    @Mock
+    private Authentication authentication;
     private DocumentTypeRequest request;
     private DocumentType documentType;
     private DocumentTypeResponse response;
@@ -81,6 +89,10 @@ class DocumentTypesServiceTest {
 
     @Test
     void createDocumentType_shouldCreateAndReturnDocumentTypeResponse() {
+
+        doNothing().when(userService).checkAdmin(Mockito.any(Authentication.class));
+
+
         when(documentTypeMapper.requestToEntity(request)).thenReturn(documentType);
         when(documentTypeRepository.save(documentType)).thenReturn(documentType);
         when(attributeRepository.findById(anyLong())).thenReturn(Optional.of(attribute));
@@ -92,12 +104,23 @@ class DocumentTypesServiceTest {
         ));
         when(documentTypeMapper.entityToResponse(documentType)).thenReturn(response);
 
-        DocumentTypeResponse result = documentTypesService.createDocumentType(request, any(Authentication.class));
+        DocumentTypeResponse result = documentTypesService.createDocumentType(request, authentication);
 
         assertThat(result).isEqualTo(response);
         verify(documentTypeRepository).save(documentType);
         verify(attributeRepository, times(4)).findById(anyLong());
         verify(documentTypeMapper).entityToResponse(documentType);
+    }
+
+    @Test
+    void createDocumentType_shouldReturnExceptionPermissionDenied() {
+        doThrow(new PermissionDeniedException()).when(userService).checkAdmin(Mockito.any(Authentication.class));
+
+        assertThrows(
+            PermissionDeniedException.class,
+            ()-> documentTypesService.createDocumentType(request, authentication),
+            "Доступ к этому ресурсу разрешен только администраторам"
+        );
     }
 
     @Test
@@ -137,6 +160,9 @@ class DocumentTypesServiceTest {
 
     @Test
     void updateDocumentType_shouldUpdateAndReturnDocumentTypeResponse() {
+
+        doNothing().when(userService).checkAdmin(Mockito.any(Authentication.class));
+
         when(documentTypeRepository.findById(anyLong())).thenReturn(Optional.of(documentType));
         when(documentTypeMapper.requestToEntity(updateRequest)).thenReturn(updatedDocumentType);
         when(documentTypeRepository.save(updatedDocumentType)).thenReturn(updatedDocumentType);
@@ -150,7 +176,7 @@ class DocumentTypesServiceTest {
         when(documentTypeMapper.entityToResponse(updatedDocumentType)).thenReturn(updatedResponse);
 
         DocumentTypeResponse result = documentTypesService
-            .updateDocumentType(DOCUMENT_TYPE_ID, updateRequest, any(Authentication.class));
+            .updateDocumentType(DOCUMENT_TYPE_ID, updateRequest, authentication);
 
         assertThat(result).isEqualTo(updatedResponse);
         verify(documentTypeRepository).findById(1L);
@@ -160,22 +186,49 @@ class DocumentTypesServiceTest {
     }
 
     @Test
+    void updateDocumentType_shouldReturnPermissionDeniedException() {
+
+        doThrow(new PermissionDeniedException()).when(userService).checkAdmin(Mockito.any(Authentication.class));
+
+        assertThrows(
+            PermissionDeniedException.class,
+            ()-> documentTypesService.createDocumentType(request, authentication),
+            "Доступ к этому ресурсу разрешен только администраторам"
+        );
+    }
+
+    @Test
     void deleteDocumentType_shouldDeleteDocumentType() {
+        doNothing().when(userService).checkAdmin(Mockito.any(Authentication.class));
+
         when(documentTypeRepository.findById(DOCUMENT_TYPE_ID)).thenReturn(Optional.of(documentType));
         when(documentRepository.findByDocumentType(documentType)).thenReturn(new ArrayList<>());
 
-        documentTypesService.deleteDocumentType(DOCUMENT_TYPE_ID, any(Authentication.class));
+        documentTypesService.deleteDocumentType(DOCUMENT_TYPE_ID, authentication);
 
         verify(documentTypeRepository).delete(documentType);
     }
 
     @Test
+    void deleteDocumentType_shouldReturnPermissionDeniedException() {
+        doThrow(new PermissionDeniedException()).when(userService).checkAdmin(Mockito.any(Authentication.class));
+
+        assertThrows(
+            PermissionDeniedException.class,
+            ()-> documentTypesService.createDocumentType(request, authentication),
+            "Доступ к этому ресурсу разрешен только администраторам"
+        );
+    }
+
+    @Test
     void deleteDocumentType_shouldThrowConflictExceptionWhenInUse() {
+        doNothing().when(userService).checkAdmin(Mockito.any(Authentication.class));
+
         when(documentTypeRepository.findById(DOCUMENT_TYPE_ID)).thenReturn(Optional.of(documentType));
         when(documentRepository.findByDocumentType(documentType)).thenReturn(List.of(new Document()));
 
         assertThrows(DocumentTypeInUseException.class,
-            () -> documentTypesService.deleteDocumentType(DOCUMENT_TYPE_ID, any(Authentication.class)));
+            () -> documentTypesService.deleteDocumentType(DOCUMENT_TYPE_ID, authentication));
     }
 
     private DocumentType createDocumentType(Long id, String name) {

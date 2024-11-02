@@ -96,8 +96,8 @@ public class ApplicationUserController {
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @DeleteMapping
-    public ResponseEntity<Void> deleteUser(Authentication authentication) {
-        userService.deleteUser(authentication);
+    public ResponseEntity<Void> deleteUser(Authentication authentication, @RequestParam String email) {
+        userService.deleteUser(authentication, email);
         return ResponseEntity.noContent().build();
     }
 }
