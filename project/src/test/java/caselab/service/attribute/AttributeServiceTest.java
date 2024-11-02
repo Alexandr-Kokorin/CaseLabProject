@@ -4,17 +4,14 @@ import caselab.controller.attribute.payload.AttributeRequest;
 import caselab.controller.attribute.payload.AttributeResponse;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.Attribute;
-import caselab.domain.entity.GlobalPermission;
-import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.ApplicationUserRepository;
 import caselab.domain.repository.AttributeRepository;
 import caselab.exception.PermissionDeniedException;
 import caselab.exception.entity.not_found.AttributeNotFoundException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 import caselab.service.users.ApplicationUserService;
 import caselab.service.util.PageUtil;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -24,17 +21,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -49,9 +43,6 @@ public class AttributeServiceTest {
     private ApplicationUserService userService;
     @Mock
     private ApplicationUserRepository userRepository;
-
-    @Mock
-    private ApplicationUserService userService;
 
     @Test
     void testCreateAttribute_shouldReturnCreatedAttribute() {
@@ -82,15 +73,14 @@ public class AttributeServiceTest {
         attribute.setName("name");
         attribute.setType("type");
 
-
-        Mockito.doThrow(new PermissionDeniedException()).when(userService).checkAdmin(Mockito.any(Authentication.class));
-
+        Mockito.doThrow(new PermissionDeniedException()).when(userService)
+            .checkAdmin(Mockito.any(Authentication.class));
 
         Authentication authentication = Mockito.mock(Authentication.class);
 
         assertThrows(
             PermissionDeniedException.class,
-            ()-> attributeService.createAttribute(attributeRequest, authentication),
+            () -> attributeService.createAttribute(attributeRequest, authentication),
             "Доступ к этому ресурсу разрешен только администраторам"
         );
     }
@@ -137,13 +127,13 @@ public class AttributeServiceTest {
 
         PageRequest pageable = PageUtil.toPageable(0, 10, Sort.by("id"), "asc");
 
-        Mockito.when(attributeRepository.findAll(pageable)).thenReturn(attributes);
+        when(attributeRepository.findAll(any(Pageable.class))).thenReturn(attributes);
 
         Page<AttributeResponse> attributeResponses = attributeService.findAllAttributes(
             pageable.getPageNumber(),
             pageable.getPageSize(),
             "asc",
-            null
+            any(Authentication.class)
         );
 
         List<AttributeResponse> responses = attributeResponses.getContent();
@@ -186,7 +176,8 @@ public class AttributeServiceTest {
     void testUpdateAttribute_notAdminUpdating() {
         AttributeRequest attributeRequest = new AttributeRequest("newName", "newType");
 
-        Mockito.doThrow(new PermissionDeniedException()).when(userService).checkAdmin(Mockito.any(Authentication.class));
+        Mockito.doThrow(new PermissionDeniedException()).when(userService)
+            .checkAdmin(Mockito.any(Authentication.class));
 
         Authentication authentication = Mockito.mock(Authentication.class);
 
@@ -203,8 +194,10 @@ public class AttributeServiceTest {
 
         Mockito.when(attributeRepository.findById(2L)).thenReturn(Optional.empty());
 
-        assertThrows(AttributeNotFoundException.class,
-            () -> attributeService.updateAttribute(2L, attributeRequest, any(Authentication.class)));
+        assertThrows(
+            AttributeNotFoundException.class,
+            () -> attributeService.updateAttribute(2L, attributeRequest, any(Authentication.class))
+        );
     }
 
     @Test
@@ -216,10 +209,12 @@ public class AttributeServiceTest {
         Authentication authentication = Mockito.mock(Authentication.class);
         attributeService.deleteAttribute(1L, authentication);
     }
+
     @Test
     void deleteAttribute_notAdminDeleting() {
 
-        Mockito.doThrow(new PermissionDeniedException()).when(userService).checkAdmin(Mockito.any(Authentication.class));
+        Mockito.doThrow(new PermissionDeniedException()).when(userService)
+            .checkAdmin(Mockito.any(Authentication.class));
 
         Authentication authentication = Mockito.mock(Authentication.class);
 
