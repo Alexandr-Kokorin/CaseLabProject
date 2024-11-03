@@ -18,6 +18,7 @@ import caselab.service.document.version.DocumentVersionService;
 import caselab.service.signature.mapper.SignatureMapper;
 import caselab.service.util.PageUtil;
 import caselab.service.util.UserUtilService;
+import jakarta.transaction.Transactional;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -32,6 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class DocumentFacadeService {
 
