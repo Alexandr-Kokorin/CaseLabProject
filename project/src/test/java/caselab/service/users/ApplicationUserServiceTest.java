@@ -7,11 +7,8 @@ import caselab.domain.entity.GlobalPermission;
 import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.ApplicationUserRepository;
 import caselab.exception.entity.not_found.UserNotFoundException;
-import caselab.service.notification.email.EmailNotificationDetails;
-import caselab.service.notification.email.EmailService;
 import caselab.service.secutiry.AuthenticationService;
 import caselab.service.users.mapper.UserMapper;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import caselab.service.util.UserUtilService;
@@ -22,12 +19,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -61,8 +56,8 @@ public class ApplicationUserServiceTest {
         user1 = createUser(user1Id, "johnDoe@gmail.com", "john_doe", "PBKDF2WithHmacSHA512");
         ApplicationUser user2 = createUser(user2Id, "janeDoe@gmail.com", "jane_doe", "BthHmacSHA512");
 
-        userResponse1 = createUserResponse("johnDoe@gmail.com", "john_doe", new ArrayList<>());
-        UserResponse userResponse2 = createUserResponse("jane_doe", "janeDoe@gmail.com", new ArrayList<>());
+        userResponse1 = createUserResponse("johnDoe@gmail.com", "john_doe", List.of("USER"));
+        UserResponse userResponse2 = createUserResponse("jane_doe", "janeDoe@gmail.com", List.of("USER"));
 
         users = List.of(user1, user2);
         userResponses = List.of(userResponse1, userResponse2);
@@ -77,11 +72,11 @@ public class ApplicationUserServiceTest {
             .build();
     }
 
-    private UserResponse createUserResponse(String email, String displayName, List<Long> documentsIds) {
+    private UserResponse createUserResponse(String email, String displayName, List<String> roles) {
         return UserResponse.builder()
             .email(email)
             .displayName(displayName)
-            .documentIds(documentsIds)
+            .roles(roles)
             .build();
     }
 
@@ -125,7 +120,7 @@ public class ApplicationUserServiceTest {
     @Test
     void updateUser_shouldUpdateAndReturnUserResponse() {
         UserUpdateRequest updateRequest = createUserUpdateRequest("JohnNewName", "newPassword");
-        UserResponse updatedUserResponse = createUserResponse(userEmail, "JohnNewName", new ArrayList<>());
+        UserResponse updatedUserResponse = createUserResponse(userEmail, "JohnNewName", List.of("USER"));
 
         Authentication authentication = mock(Authentication.class);
         UserDetails userDetails = mock(UserDetails.class);
@@ -212,7 +207,7 @@ public class ApplicationUserServiceTest {
         String newPassword = "NewPassword";
         UserUpdateRequest updateRequest = createUserUpdateRequest("john_updated", newPassword);
         ApplicationUser existingUser = createUser(user1Id, "johnDoe@gmail.com", "john_doe", "oldPassword");
-        UserResponse updatedUserResponse = createUserResponse("johnDoe@gmail.com", "john_updated", new ArrayList<>());
+        UserResponse updatedUserResponse = createUserResponse("johnDoe@gmail.com", "john_updated", List.of("USER"));
 
         Authentication authentication = mock(Authentication.class);
         when(authentication.getPrincipal()).thenReturn(existingUser);
@@ -241,7 +236,7 @@ public class ApplicationUserServiceTest {
         when(userDetails.getUsername()).thenReturn(userEmail);
 
         ApplicationUser existingUser = createUser(user1Id, "johnDoe@gmail.com", "john_doe", "oldPassword");
-        UserResponse updatedUserResponse = createUserResponse("johnDoe@gmail.com", "john_updated", new ArrayList<>());
+        UserResponse updatedUserResponse = createUserResponse("johnDoe@gmail.com", "john_updated", List.of("USER"));
 
         when(userRepository.findByEmail(userEmail)).thenReturn(Optional.of(existingUser));
         when(authService.encodePassword(newPassword)).thenReturn("hashedPassword");

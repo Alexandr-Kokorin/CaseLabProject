@@ -51,10 +51,10 @@ public class UserMapperTest {
             ),
             () -> assertAll(
                 "Document fields",
-                () -> assertThat(response.documentIds()).hasSize(1),
+                () -> assertThat(response.roles()).hasSize(1),
                 () -> {
-                    assert response.documentIds() != null;
-                    assertThat(response.documentIds().getFirst()).isEqualTo(100L);
+                    assert response.roles() != null;
+                    assertThat(response.roles().getFirst()).isEqualTo("USER");
                 }
             )
         );

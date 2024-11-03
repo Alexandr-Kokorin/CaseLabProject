@@ -2,7 +2,7 @@ package caselab.service.users.mapper;
 
 import caselab.controller.users.payload.UserResponse;
 import caselab.domain.entity.ApplicationUser;
-import caselab.domain.entity.UserToDocument;
+import caselab.domain.entity.GlobalPermission;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import org.mapstruct.Mapper;
@@ -16,11 +16,11 @@ import org.mapstruct.ReportingPolicy;
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface UserMapper {
 
-    @Mapping(target = "documentIds", source = "usersToDocuments", qualifiedByName = "usersToDocumentsToDocumentIds")
+    @Mapping(target = "roles", source = "globalPermissions", qualifiedByName = "globalPermissionsToRoles")
     UserResponse entityToResponse(ApplicationUser user);
 
-    @Named("usersToDocumentsToDocumentIds")
-    static List<Long> usersToDocumentsToDocumentIds(@NotNull List<UserToDocument> usersToDocuments) {
-        return usersToDocuments.stream().map(userToDocument -> userToDocument.getDocument().getId()).toList();
+    @Named("globalPermissionsToRoles")
+    static List<String> globalPermissionsToRoles(@NotNull List<GlobalPermission> globalPermissions) {
+        return globalPermissions.stream().map(globalPermission -> globalPermission.getName().name()).toList();
     }
 }
