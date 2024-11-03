@@ -75,7 +75,8 @@ public class DocumentFacadeController {
     }
 
     @Operation(summary = "Возвращает все документы",
-               description = "Возвращает все документы")
+               description = "Возвращает все документы доступные пользователю, " +
+                   "либо все документы если запрос делает администратор")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Успешное получение всех документов",
                      content = @Content(schema = @Schema(implementation = DocumentFacadeResponse.class))),

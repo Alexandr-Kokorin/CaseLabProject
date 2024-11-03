@@ -48,7 +48,8 @@ public class DocumentVersionController {
     }
 
     @Operation(summary = "Получить все версии документов по id документа",
-               description = "Возвращает все версии документа по id документа")
+               description = "Возвращает все версии документа по id документа. " +
+                   "Доступно только администратору либо создателю документа.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200",
                      description = "Успешное получение версий документов",

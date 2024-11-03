@@ -68,7 +68,7 @@ public class DocumentFacadeService {
             documentResponse.documentVersionIds().getLast()
         );
 
-        // TODO: Переделать логику, что бы админ получал список всех пользователей
+        // TODO: Переделать логику, что бы админ получал список всех подписей
 
         return new DocumentFacadeResponse(documentResponse, latestVersionResponse, null);
     }

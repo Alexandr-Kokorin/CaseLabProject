@@ -69,7 +69,7 @@ public class AttributeController {
     }
 
     @Operation(summary = "Получить список всех атрибутов",
-               description = "Возвращает список всех атрибутов")
+               description = "Возвращает список всех атрибутов. Доступно только администраторам.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Успешное получение",
                      content = @Content(
