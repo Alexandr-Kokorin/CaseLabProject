@@ -39,6 +39,12 @@ public class ApplicationUserService {
         return mapper.entityToResponse(user);
     }
 
+    public UserResponse getCurrentUser(Authentication authentication) {
+        var currentUser = userUtilService.findUserByAuthentication(authentication);
+
+        return mapper.entityToResponse(currentUser);
+    }
+
     public UserResponse updateUser(Authentication authentication, UserUpdateRequest updateRequest) {
         var userToUpdate = userUtilService.findUserByAuthentication(authentication);
 
