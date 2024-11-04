@@ -31,12 +31,12 @@ import caselab.service.util.UserUtilService;
 import jakarta.transaction.Transactional;
 import java.io.InputStream;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
@@ -118,20 +118,19 @@ public class DocumentVersionService {
     }
 
     private void checkMandatoryAttributesPresent(CreateDocumentVersionRequest body, Document document) {
-        Set<Long> presentAttributesIds = body
-            .attributes()
-            .stream()
-            .map(AttributeValuePair::attributeId).collect(Collectors.toSet());
+        Set<Long> presentAttributesIds = body.attributes().stream()
+            .map(AttributeValuePair::attributeId)
+            .collect(Collectors.toSet());
 
-        Stream<Long> mandatoryAttributesIds = document
-            .getDocumentType()
+        Set<Long> mandatoryAttributesIds = document.getDocumentType()
             .getDocumentTypesToAttributes()
             .stream()
             .filter(dtta -> !dtta.getIsOptional())
             .map(DocumentTypeToAttribute::getAttribute)
-            .map(Attribute::getId);
+            .map(Attribute::getId)
+            .collect(Collectors.toSet());
 
-        if (!mandatoryAttributesIds.allMatch(presentAttributesIds::contains)) {
+        if (!presentAttributesIds.containsAll(mandatoryAttributesIds)) {
             throw new MissingAttributesException();
         }
     }
@@ -150,37 +149,22 @@ public class DocumentVersionService {
         MultipartFile file,
         ApplicationUser user
     ) {
-
-        Document document = documentRepository.findById(body.documentId())
-            .orElseThrow(() -> new DocumentNotFoundException(body.documentId()));
+        var document = findDocumentById(body.documentId());
 
         documentUtilService.assertHasPermission(user, document, DocumentPermissionName::canEdit, "Edit");
-        checkMandatoryAttributesPresent(body, document);
+        if (Objects.nonNull(body.attributes())) {
+            checkMandatoryAttributesPresent(body, document);
+        }
 
         DocumentVersion documentVersion = new DocumentVersion();
-        documentVersion.setName(body.name());
+        documentVersion.setName(String.format("%s v%d", document.getName(), document.getDocumentVersions().size() + 1));
         documentVersion.setCreatedAt(OffsetDateTime.now());
         if (Objects.nonNull(file)) {
             documentVersion.setContentName(documentVersionStorage.put(file));
         }
         documentVersion.setDocument(document);
 
-        var attributeValues = body
-            .attributes()
-            .stream()
-            .map(
-                pair -> {
-                    var value = new AttributeValue();
-                    value.setAppValue(pair.value());
-                    value.setAttribute(
-                        attributeRepository
-                            .findById(pair.attributeId())
-                            .orElseThrow(() -> new AttributeNotFoundException(pair.attributeId()))
-                    );
-                    value.setDocumentVersion(documentVersion);
-                    return value;
-                }
-            ).toList();
+        List<AttributeValue> attributeValues = createAttributeValues(body, document, documentVersion);
 
         var saved = documentVersionRepository.save(documentVersion);
         attributeValueRepository.saveAll(attributeValues);
@@ -197,6 +181,45 @@ public class DocumentVersionService {
 
         clearReaders(document);
         return versionResponse;
+    }
+
+    private List<AttributeValue> createAttributeValues(
+        CreateDocumentVersionRequest body,
+        Document document,
+        DocumentVersion version
+    ) {
+        if (Objects.nonNull(body.attributes())) {
+            return body.attributes()
+                .stream()
+                .map(pair -> createAttributeValueFromPair(pair, version))
+                .toList();
+        } else {
+            DocumentVersion newestVersion = document.getDocumentVersions().getFirst();
+            return newestVersion.getAttributeValues()
+                .stream()
+                .map(pair -> createAttributeValueFromExisting(pair, version))
+                .toList();
+        }
+    }
+
+    private AttributeValue createAttributeValueFromPair(AttributeValuePair pair, DocumentVersion documentVersion) {
+        var value = new AttributeValue();
+        value.setAppValue(pair.value());
+        value.setAttribute(
+            attributeRepository
+                .findById(pair.attributeId())
+                .orElseThrow(() -> new AttributeNotFoundException(pair.attributeId()))
+        );
+        value.setDocumentVersion(documentVersion);
+        return value;
+    }
+
+    private AttributeValue createAttributeValueFromExisting(AttributeValue pair, DocumentVersion documentVersion) {
+        var value = new AttributeValue();
+        value.setAppValue(pair.getAppValue());
+        value.setAttribute(pair.getAttribute());
+        value.setDocumentVersion(documentVersion);
+        return value;
     }
 
     public DocumentVersionResponse getDocumentVersionById(Long id, Authentication auth) {
@@ -235,8 +258,7 @@ public class DocumentVersionService {
     ) {
         ApplicationUser user = userUtilService.findUserByAuthentication(auth);
 
-        Document document = documentRepository.findById(id)
-            .orElseThrow(() -> new DocumentNotFoundException(id));
+        var document = findDocumentById(id);
 
         if (!documentUtilService.checkLacksPermission(user, document, DocumentPermissionName::isCreator)) {
             userUtilService.checkUserGlobalPermission(user, GlobalPermissionName.ADMIN);
@@ -267,5 +289,10 @@ public class DocumentVersionService {
         );
 
         return documentVersionStorage.get(documentVersion.getContentName());
+    }
+
+    private Document findDocumentById(Long id) {
+        return documentRepository.findById(id)
+            .orElseThrow(() -> new DocumentNotFoundException(id));
     }
 }

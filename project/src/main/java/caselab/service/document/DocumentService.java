@@ -1,5 +1,6 @@
 package caselab.service.document;
 
+import caselab.controller.document.facade.payload.PatchDocumentRequest;
 import caselab.controller.document.facade.payload.UpdateDocumentRequest;
 import caselab.controller.document.payload.DocumentRequest;
 import caselab.controller.document.payload.DocumentResponse;
@@ -22,6 +23,7 @@ import caselab.service.document.mapper.DocumentMapper;
 import caselab.service.util.DocumentUtilService;
 import jakarta.transaction.Transactional;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -44,7 +46,7 @@ public class DocumentService {
     public DocumentResponse createDocument(DocumentRequest documentRequest, ApplicationUser creator) {
         var document = documentMapper.requestToEntity(documentRequest);
 
-        document.setDocumentType(getDocumentTypeById(documentRequest.documentTypeId()));
+        document.setDocumentType(findDocumentTypeById(documentRequest.documentTypeId()));
         document.setStatus(DocumentStatus.DRAFT);
         document.setDocumentVersions(List.of());
         documentRepository.save(document);
@@ -62,13 +64,8 @@ public class DocumentService {
         return documentMapper.entityToResponse(document);
     }
 
-    private Document getDocumentEntityById(Long id) {
-        return documentRepository.findById(id)
-            .orElseThrow(() -> new DocumentNotFoundException(id));
-    }
-
     public DocumentResponse getDocumentById(Long id, ApplicationUser user) {
-        var document = getDocumentEntityById(id);
+        var document = findDocumentById(id);
 
         documentUtilService.assertHasPermission(user, document, DocumentPermissionName::any, "Any");
         return documentMapper.entityToResponse(document);
@@ -93,10 +90,38 @@ public class DocumentService {
         return documents.map(documentMapper::entityToResponse).toList();
     }
 
-    public DocumentResponse updateDocument(Long id, UpdateDocumentRequest updateDocumentRequest, ApplicationUser user) {
-        var document = getDocumentEntityById(id);
+    public DocumentResponse updateDocument(Long id, UpdateDocumentRequest updateRequest, ApplicationUser user) {
+        var document = findDocumentById(id);
 
+        validateDocumentForUpdate(document, user);
+
+        document.setDocumentType(findDocumentTypeById(updateRequest.getDocumentTypeId()));
+        document.setName(updateRequest.getName());
+        document.setStatus(DocumentStatus.DRAFT);
+        return documentMapper.entityToResponse(documentRepository.save(document));
+    }
+
+    public DocumentResponse patchDocument(Long id, PatchDocumentRequest request, ApplicationUser user) {
+        var document = findDocumentById(id);
+
+        validateDocumentForUpdate(document, user);
+
+        documentMapper.patchDocumentFromPatchRequest(document, request);
+
+        var documentTypeId = request.getDocumentTypeId();
+        if (Objects.nonNull(documentTypeId)) {
+            var documentType = findDocumentTypeById(documentTypeId);
+            document.setDocumentType(documentType);
+        }
+
+        document.setStatus(DocumentStatus.DRAFT);
+
+        return documentMapper.entityToResponse(documentRepository.save(document));
+    }
+
+    private void validateDocumentForUpdate(Document document, ApplicationUser user) {
         documentUtilService.assertHasPermission(user, document, DocumentPermissionName::canEdit, "Edit");
+
         documentUtilService.assertHasDocumentStatus(
             document,
             List.of(DocumentStatus.DRAFT, DocumentStatus.SIGNATURE_REJECTED,
@@ -104,10 +129,6 @@ public class DocumentService {
             ),
             new StatusIncorrectForUpdateDocumentException()
         );
-
-        document.setName(updateDocumentRequest.getName());
-        document.setStatus(DocumentStatus.DRAFT);
-        return documentMapper.entityToResponse(documentRepository.save(document));
     }
 
     public DocumentResponse grantReadDocumentPermission(
@@ -115,7 +136,7 @@ public class DocumentService {
         ApplicationUser user,
         ApplicationUser by
     ) {
-        var document = getDocumentEntityById(id);
+        var document = findDocumentById(id);
         documentUtilService.assertHasPermission(by, document, DocumentPermissionName::isCreator, "Creator");
         if (!documentUtilService.checkLacksPermission(user, document, DocumentPermissionName::canRead)) {
             throw new DocumentPermissionAlreadyGrantedException("Read");
@@ -131,7 +152,7 @@ public class DocumentService {
     }
 
     public void documentToArchive(Long documentId, ApplicationUser user) {
-        var document = getDocumentEntityById(documentId);
+        var document = findDocumentById(documentId);
 
         documentUtilService.assertHasPermission(user, document, DocumentPermissionName::isCreator, "Creator");
         documentUtilService.assertHasDocumentStatus(
@@ -146,8 +167,13 @@ public class DocumentService {
         documentRepository.save(document);
     }
 
-    private DocumentType getDocumentTypeById(Long id) {
+    private DocumentType findDocumentTypeById(Long id) {
         return documentTypeRepository.findById(id)
             .orElseThrow(() -> new DocumentTypeNotFoundException(id));
+    }
+
+    private Document findDocumentById(Long id) {
+        return documentRepository.findById(id)
+            .orElseThrow(() -> new DocumentNotFoundException(id));
     }
 }

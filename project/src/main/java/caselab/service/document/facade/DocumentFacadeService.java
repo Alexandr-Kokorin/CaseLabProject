@@ -2,6 +2,7 @@ package caselab.service.document.facade;
 
 import caselab.controller.document.facade.payload.CreateDocumentRequest;
 import caselab.controller.document.facade.payload.DocumentFacadeResponse;
+import caselab.controller.document.facade.payload.PatchDocumentRequest;
 import caselab.controller.document.facade.payload.UpdateDocumentRequest;
 import caselab.controller.document.payload.DocumentRequest;
 import caselab.controller.document.payload.DocumentResponse;
@@ -103,7 +104,6 @@ public class DocumentFacadeService {
 
         var documentVersionRequest = CreateDocumentVersionRequest.builder()
             .documentId(documentResponse.id())
-            .name(body.getVersionName())
             .attributes(body.getAttributes())
             .build();
         var latestVersion = documentVersionService.createDocumentVersion(documentVersionRequest, file, user);
@@ -194,9 +194,29 @@ public class DocumentFacadeService {
 
         var documentVersionRequest = CreateDocumentVersionRequest.builder()
             .documentId(documentResponse.id())
-            .name(body.getVersionName())
             .attributes(body.getAttributes())
             .build();
+
+        var latestVersion = documentVersionService.createDocumentVersion(documentVersionRequest, file, user);
+        documentResponse.documentVersionIds().add(latestVersion.getId());
+
+        return enrichResponse(documentResponse, user);
+    }
+
+    public DocumentFacadeResponse partiallyUpdateDocument(
+        Long id,
+        PatchDocumentRequest body,
+        MultipartFile file,
+        Authentication auth
+    ) {
+        var user = userUtilService.findUserByAuthentication(auth);
+        var documentResponse = documentService.patchDocument(id, body, user);
+
+        var documentVersionRequest = CreateDocumentVersionRequest.builder()
+            .documentId(documentResponse.id())
+            .attributes(body.getAttributes())
+            .build();
+
         var latestVersion = documentVersionService.createDocumentVersion(documentVersionRequest, file, user);
         documentResponse.documentVersionIds().add(latestVersion.getId());
 
