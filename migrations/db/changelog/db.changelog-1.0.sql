@@ -3,10 +3,10 @@
 --changeset hottabych04:1
 CREATE TABLE IF NOT EXISTS application_user
 (
-    id                  BIGSERIAL     NOT NULL,
-    email               TEXT          NOT NULL,
-    display_name        TEXT          NOT NULL,
-    hashed_password     TEXT          NOT NULL,
+    id              BIGSERIAL NOT NULL,
+    email           TEXT      NOT NULL,
+    display_name    TEXT      NOT NULL,
+    hashed_password TEXT      NOT NULL,
 
     PRIMARY KEY (id)
 );
@@ -14,9 +14,9 @@ CREATE TABLE IF NOT EXISTS application_user
 --changeset hottabych04:2
 CREATE TABLE IF NOT EXISTS attribute
 (
-    id             BIGSERIAL      NOT NULL,
-    name           TEXT           NOT NULL,
-    type           TEXT           NOT NULL,
+    id   BIGSERIAL NOT NULL,
+    name TEXT      NOT NULL,
+    type TEXT      NOT NULL,
 
     PRIMARY KEY (id)
 );
@@ -24,8 +24,8 @@ CREATE TABLE IF NOT EXISTS attribute
 --changeset hottabych04:3
 CREATE TABLE IF NOT EXISTS document_type
 (
-    id              BIGSERIAL     NOT NULL,
-    name            TEXT          NOT NULL,
+    id   BIGSERIAL NOT NULL,
+    name TEXT      NOT NULL,
 
     PRIMARY KEY (id)
 );
@@ -33,10 +33,10 @@ CREATE TABLE IF NOT EXISTS document_type
 --changeset TimurTimergalin:8
 CREATE TABLE IF NOT EXISTS document
 (
-    id                       BIGSERIAL        NOT NULL,
-    document_type_id         BIGINT           NOT NULL REFERENCES document_type(id),
-    name                     TEXT             NOT NULL,
-    status                   TEXT             NOT NULL,
+    id               BIGSERIAL NOT NULL,
+    document_type_id BIGINT    NOT NULL REFERENCES document_type (id),
+    name             TEXT      NOT NULL,
+    status           TEXT      NOT NULL,
 
     PRIMARY KEY (id)
 );
@@ -44,11 +44,11 @@ CREATE TABLE IF NOT EXISTS document
 --changeset hottabych04:4
 CREATE TABLE IF NOT EXISTS document_version
 (
-    id                 BIGSERIAL          NOT NULL,
-    name               TEXT               NOT NULL,
-    created_at         timestamptz        NOT NULL,
-    content_name       TEXT               ,
-    document_id        BIGINT             NOT NULL REFERENCES document(id) ON DELETE CASCADE,
+    id           BIGSERIAL   NOT NULL,
+    name         TEXT        NOT NULL,
+    created_at   timestamptz NOT NULL,
+    content_name TEXT,
+    document_id  BIGINT      NOT NULL REFERENCES document (id) ON DELETE CASCADE,
 
     PRIMARY KEY (id)
 );
@@ -56,9 +56,9 @@ CREATE TABLE IF NOT EXISTS document_version
 --changeset hottabych04:5
 CREATE TABLE IF NOT EXISTS user_to_document
 (
-    id                             BIGSERIAL       NOT NULL,
-    document_id                    BIGINT          NOT NULL REFERENCES document(id) ON DELETE CASCADE,
-    application_user_id            BIGINT          NOT NULL REFERENCES application_user(id) ON DELETE CASCADE,
+    id                  BIGSERIAL NOT NULL,
+    document_id         BIGINT    NOT NULL REFERENCES document (id) ON DELETE CASCADE,
+    application_user_id BIGINT    NOT NULL REFERENCES application_user (id) ON DELETE CASCADE,
 
     PRIMARY KEY (id)
 );
@@ -66,18 +66,18 @@ CREATE TABLE IF NOT EXISTS user_to_document
 --changeset hottabych04:6
 CREATE TABLE IF NOT EXISTS document_attribute_value
 (
-    document_version_id         BIGINT          NOT NULL REFERENCES document_version(id) ON DELETE CASCADE,
-    attribute_id        BIGINT          NOT NULL REFERENCES attribute(id) ON DELETE CASCADE,
-    app_value           TEXT            ,
+    document_version_id BIGINT NOT NULL REFERENCES document_version (id) ON DELETE CASCADE,
+    attribute_id        BIGINT NOT NULL REFERENCES attribute (id) ON DELETE CASCADE,
+    app_value           TEXT,
     PRIMARY KEY (document_version_id, attribute_id)
 );
 
 --changeset hottabych04:7
 CREATE TABLE IF NOT EXISTS document_type_to_attribute
 (
-    document_type_id        BIGINT          NOT NULL REFERENCES document_type(id) ON DELETE CASCADE,
-    attribute_id            BIGINT          NOT NULL REFERENCES attribute(id) ON DELETE CASCADE,
-    is_optional             BOOLEAN         NOT NULL,
+    document_type_id BIGINT  NOT NULL REFERENCES document_type (id) ON DELETE CASCADE,
+    attribute_id     BIGINT  NOT NULL REFERENCES attribute (id) ON DELETE CASCADE,
+    is_optional      BOOLEAN NOT NULL,
 
     PRIMARY KEY (document_type_id, attribute_id)
 );
@@ -85,8 +85,8 @@ CREATE TABLE IF NOT EXISTS document_type_to_attribute
 --changeset TimurTimergalin:9
 CREATE TABLE IF NOT EXISTS document_permission
 (
-    id          BIGSERIAL        NOT NULL,
-    name        TEXT             NOT NULL,
+    id   BIGSERIAL NOT NULL,
+    name TEXT      NOT NULL,
 
     PRIMARY KEY (id)
 );
@@ -94,8 +94,8 @@ CREATE TABLE IF NOT EXISTS document_permission
 --changeset TimurTimergalin:10
 CREATE TABLE IF NOT EXISTS global_permission
 (
-    id          BIGSERIAL       NOT NULL,
-    name        TEXT            NOT NULL,
+    id   BIGSERIAL NOT NULL,
+    name TEXT      NOT NULL,
 
     PRIMARY KEY (id)
 );
@@ -103,14 +103,14 @@ CREATE TABLE IF NOT EXISTS global_permission
 --changeset TimurTimergalin:11
 CREATE TABLE IF NOT EXISTS signature
 (
-    id                         BIGSERIAL          NOT NULL,
-    name                       TEXT               NOT NULL,
-    status                     TEXT               NOT NULL,
-    sent_at                    timestamptz        NOT NULL,
-    signed_at                  timestamptz        ,
-    document_version_id        BIGINT             NOT NULL REFERENCES document_version(id) ON DELETE CASCADE,
-    application_user_id        BIGINT             NOT NULL REFERENCES application_user(id) ON DELETE CASCADE,
-    signature_data             TEXT               ,
+    id                  BIGSERIAL   NOT NULL,
+    name                TEXT        NOT NULL,
+    status              TEXT        NOT NULL,
+    sent_at             timestamptz NOT NULL,
+    signed_at           timestamptz,
+    document_version_id BIGINT      NOT NULL REFERENCES document_version (id) ON DELETE CASCADE,
+    application_user_id BIGINT      NOT NULL REFERENCES application_user (id) ON DELETE CASCADE,
+    signature_data      TEXT,
 
     PRIMARY KEY (id)
 );
@@ -118,8 +118,8 @@ CREATE TABLE IF NOT EXISTS signature
 --changeset TimurTimergalin:12
 CREATE TABLE IF NOT EXISTS document_permissions
 (
-    user_to_document_id            BIGINT NOT NULL REFERENCES user_to_document(id) ON DELETE CASCADE,
-    document_permission_id         BIGINT NOT NULL REFERENCES document_permission(id) ON DELETE CASCADE,
+    user_to_document_id    BIGINT NOT NULL REFERENCES user_to_document (id) ON DELETE CASCADE,
+    document_permission_id BIGINT NOT NULL REFERENCES document_permission (id) ON DELETE CASCADE,
 
     PRIMARY KEY (user_to_document_id, document_permission_id)
 );
@@ -127,13 +127,13 @@ CREATE TABLE IF NOT EXISTS document_permissions
 --changeset TimurTimergalin:13
 CREATE TABLE IF NOT EXISTS voting_process
 (
-    id                         BIGSERIAL               NOT NULL,
-    name                       TEXT                    NOT NULL,
-    threshold                  DOUBLE PRECISION        NOT NULL,
-    status                     TEXT                    NOT NULL,
-    created_at                 timestamptz             NOT NULL,
-    deadline                   timestamptz             ,
-    document_version_id        BIGINT                  NOT NULL REFERENCES document_version(id) ON DELETE CASCADE,
+    id                  BIGSERIAL        NOT NULL,
+    name                TEXT             NOT NULL,
+    threshold           DOUBLE PRECISION NOT NULL,
+    status              TEXT             NOT NULL,
+    created_at          timestamptz      NOT NULL,
+    deadline            timestamptz,
+    document_version_id BIGINT           NOT NULL REFERENCES document_version (id) ON DELETE CASCADE,
 
     PRIMARY KEY (id)
 );
@@ -141,10 +141,10 @@ CREATE TABLE IF NOT EXISTS voting_process
 --changeset TimurTimergalin:14
 CREATE TABLE IF NOT EXISTS vote
 (
-    id                         BIGSERIAL        NOT NULL,
-    status                     TEXT             NOT NULL,
-    application_user_id        BIGINT           NOT NULL REFERENCES application_user(id) ON DELETE CASCADE,
-    voting_process_id          BIGINT           NOT NULL REFERENCES voting_process(id) ON DELETE CASCADE,
+    id                  BIGSERIAL NOT NULL,
+    status              TEXT      NOT NULL,
+    application_user_id BIGINT    NOT NULL REFERENCES application_user (id) ON DELETE CASCADE,
+    voting_process_id   BIGINT    NOT NULL REFERENCES voting_process (id) ON DELETE CASCADE,
 
     PRIMARY KEY (id)
 );
@@ -152,8 +152,8 @@ CREATE TABLE IF NOT EXISTS vote
 --changeset TimurTimergalin:15
 CREATE TABLE IF NOT EXISTS global_permission_to_user
 (
-    application_user_id  BIGINT NOT NULL REFERENCES application_user(id) ON DELETE CASCADE,
-    global_permission_id BIGINT NOT NULL REFERENCES global_permission(id) ON DELETE CASCADE,
+    application_user_id  BIGINT NOT NULL REFERENCES application_user (id) ON DELETE CASCADE,
+    global_permission_id BIGINT NOT NULL REFERENCES global_permission (id) ON DELETE CASCADE,
 
     PRIMARY KEY (application_user_id, global_permission_id)
 );
@@ -194,7 +194,7 @@ VALUES (1, 2);
 -- changeset ghostofendless:18
 CREATE TABLE IF NOT EXISTS subscription
 (
-    id                  BIGSERIAL PRIMARY KEY,
-    document_version_id BIGINT       NOT NULL,
-    user_email          TEXT         NOT NULL
+    id          BIGSERIAL PRIMARY KEY,
+    document_id BIGINT NOT NULL,
+    user_email  TEXT   NOT NULL
 );

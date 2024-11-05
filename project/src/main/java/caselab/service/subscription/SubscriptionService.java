@@ -3,10 +3,10 @@ package caselab.service.subscription;
 import caselab.domain.entity.DocumentEvent;
 import caselab.domain.entity.Subscription;
 import caselab.domain.entity.enums.EventType;
-import caselab.domain.repository.DocumentVersionRepository;
+import caselab.domain.repository.DocumentRepository;
 import caselab.domain.repository.SubscriptionRepository;
 import caselab.exception.entity.already_exists.SubscriptionAlreadyExistsException;
-import caselab.exception.entity.not_found.DocumentVersionNotFoundException;
+import caselab.exception.entity.not_found.DocumentNotFoundException;
 import caselab.exception.entity.not_found.SubscriptionNotFoundException;
 import jakarta.transaction.Transactional;
 import java.util.List;
@@ -21,71 +21,72 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class SubscriptionService {
 
-    private final SubscriptionRepository repository;
-    private final DocumentVersionRepository documentVersionRepository;
+    private final SubscriptionRepository subscriptionRepository;
+    private final DocumentRepository documentRepository;
     private final KafkaTemplate<String, DocumentEvent> kafkaTemplate;
 
-    public void sendEvent(Long documentVersionId, EventType eventType) {
-        var subscriptions = repository.findAllByDocumentVersionId(documentVersionId);
+    public boolean sendEvent(Long documentId, EventType eventType) {
+        var subscriptions = subscriptionRepository.findAllByDocumentId(documentId);
 
         subscriptions.forEach(subscription -> {
             var documentEvent = DocumentEvent.builder()
                 .userEmail(subscription.getUserEmail())
-                .documentVersionId(documentVersionId)
+                .documentId(documentId)
                 .eventType(eventType)
                 .build();
 
             kafkaTemplate.send("event-topic", documentEvent);
             log.info("Send document event to kafka: {}", documentEvent);
         });
+        return true;
     }
 
-    public boolean isSubscribed(String userEmail, Long documentVersionId) {
-        if (!documentVersionRepository.existsById(documentVersionId)) {
-            throw new DocumentVersionNotFoundException(documentVersionId);
+    public boolean isSubscribed(String userEmail, Long documentId) {
+        if (!documentRepository.existsById(documentId)) {
+            throw new DocumentNotFoundException(documentId);
         }
 
-        return repository.existsByDocumentVersionIdAndUserEmail(documentVersionId, userEmail);
+        return subscriptionRepository.existsByDocumentIdAndUserEmail(documentId, userEmail);
     }
 
     public List<Long> getIdsOfAllSubscribed(String userEmail) {
-        return repository.findAllByUserEmail(userEmail).stream()
-            .map(Subscription::getDocumentVersionId)
+        return subscriptionRepository.findAllByUserEmail(userEmail).stream()
+            .map(Subscription::getDocumentId)
             .toList();
     }
 
-    public void subscribe(String userEmail, Long documentVersionId) {
-        if (!documentVersionRepository.existsById(documentVersionId)) {
-            throw new DocumentVersionNotFoundException(documentVersionId);
+    public void subscribe(String userEmail, Long documentId) {
+        if (!documentRepository.existsById(documentId)) {
+            throw new DocumentNotFoundException(documentId);
         }
 
-        if (repository.existsByDocumentVersionIdAndUserEmail(documentVersionId, userEmail)) {
-            throw new SubscriptionAlreadyExistsException(documentVersionId);
+        if (subscriptionRepository.existsByDocumentIdAndUserEmail(documentId, userEmail)) {
+            throw new SubscriptionAlreadyExistsException(documentId);
         }
 
         var subscription = Subscription.builder()
             .userEmail(userEmail)
-            .documentVersionId(documentVersionId)
+            .documentId(documentId)
             .build();
 
-        repository.save(subscription);
+        subscriptionRepository.save(subscription);
     }
 
-    public void unsubscribe(String userEmail, Long documentVersionId) {
-        if (!documentVersionRepository.existsById(documentVersionId)) {
-            var subscriptions = repository.findAllByDocumentVersionId(documentVersionId);
-            repository.deleteAll(subscriptions);
+    public void unsubscribe(String userEmail, Long documentId) {
+        if (!documentRepository.existsById(documentId)) {
+            var subscriptions = subscriptionRepository.findAllByDocumentId(documentId);
+            subscriptionRepository.deleteAll(subscriptions);
             return;
         }
 
-        var subscription = repository.findFirstByDocumentVersionIdAndUserEmail(documentVersionId, userEmail)
-            .orElseThrow(() -> new SubscriptionNotFoundException(documentVersionId));
+        var subscription = subscriptionRepository.findFirstByDocumentIdAndUserEmail(documentId, userEmail)
+            .orElseThrow(() -> new SubscriptionNotFoundException(documentId));
 
-        repository.delete(subscription);
+        subscriptionRepository.delete(subscription);
     }
 
     public void unsubscribeAll(String userEmail) {
-        var subscriptions = repository.findAllByUserEmail(userEmail);
-        repository.deleteAll(subscriptions);
+        var subscriptions = subscriptionRepository.findAllByUserEmail(userEmail);
+        subscriptionRepository.deleteAll(subscriptions);
     }
 }

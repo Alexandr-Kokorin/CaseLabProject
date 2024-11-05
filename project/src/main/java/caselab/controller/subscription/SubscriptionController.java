@@ -36,7 +36,7 @@ public class SubscriptionController {
 
     @Operation(summary = "Получить все подписки",
                description = """
-                   Возвращает массив id версий документов, на которые подписан текущий пользователь
+                   Возвращает массив id документов, на которые подписан текущий пользователь
                    """)
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Успешное получение массива всех id версий документов"),
@@ -47,18 +47,18 @@ public class SubscriptionController {
     @GetMapping("/all")
     public ResponseEntity<List<Long>> getAllSubscriptions(Authentication authentication) {
         var user = userUtilService.findUserByAuthentication(authentication);
-        var documentsVersionsIds = subscribeService.getIdsOfAllSubscribed(user.getEmail());
+        var documentsIds = subscribeService.getIdsOfAllSubscribed(user.getEmail());
 
-        return new ResponseEntity<>(documentsVersionsIds, HttpStatus.OK);
+        return new ResponseEntity<>(documentsIds, HttpStatus.OK);
     }
 
     @Operation(summary = "Проверить подписку",
                description = """
-                   Возвращает статус подписки текущего пользователя на указанную версию документа
+                   Возвращает статус подписки текущего пользователя на указанный документ
                    """)
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Успешная получение статуса подписки"),
-        @ApiResponse(responseCode = "404", description = "Версия документа с указанным ID не найдена",
+        @ApiResponse(responseCode = "404", description = "Документ с указанным ID не найден",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
         @ApiResponse(responseCode = "404",
                      description = "Пользователь с указанным адресом электронной почты не найден",
@@ -66,59 +66,59 @@ public class SubscriptionController {
     })
     @GetMapping
     public ResponseEntity<Map<String, Boolean>> isUserSubscribedToDocumentVersion(
-        @Parameter(description = "ID версии документа", required = true)
-        @RequestParam(name = "documentVersionId") Long documentVersionId,
+        @Parameter(description = "ID документа", required = true)
+        @RequestParam(name = "documentId") Long documentId,
         Authentication authentication
     ) {
         var user = userUtilService.findUserByAuthentication(authentication);
-        boolean isSubscribed = subscribeService.isSubscribed(user.getEmail(), documentVersionId);
+        boolean isSubscribed = subscribeService.isSubscribed(user.getEmail(), documentId);
 
         return new ResponseEntity<>(Map.of("isSubscribed", isSubscribed), HttpStatus.OK);
     }
 
     @Operation(summary = "Подписаться",
-               description = "Подписывает текущего пользователя на события версии документа с указанным ID"
+               description = "Подписывает текущего пользователя на события документа с указанным ID"
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Успешная подписка на события документа"),
-        @ApiResponse(responseCode = "404", description = "Версия документа с указанным ID не найдена",
+        @ApiResponse(responseCode = "404", description = "Документ с указанным ID не найден",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
         @ApiResponse(responseCode = "404",
                      description = "Пользователь с указанным адресом электронной почты не найден",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
         @ApiResponse(responseCode = "409",
-                     description = "Текущий пользователь уже подписан на события этой версии документа",
+                     description = "Текущий пользователь уже подписан на события этого документа",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @PostMapping
     public ResponseEntity<Void> subscribe(
-        @Parameter(description = "ID версии документа", required = true)
-        @RequestParam(name = "documentVersionId") Long documentVersionId,
+        @Parameter(description = "ID документа", required = true)
+        @RequestParam(name = "documentId") Long documentId,
         Authentication authentication
     ) {
         var user = userUtilService.findUserByAuthentication(authentication);
-        subscribeService.subscribe(user.getEmail(), documentVersionId);
+        subscribeService.subscribe(user.getEmail(), documentId);
 
         return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "Отписаться",
-               description = "Отписывает текущего пользователя от событий версии документа с указанным ID")
+               description = "Отписывает текущего пользователя от событий документа с указанным ID")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Успешная подписка на события версии документа"),
-        @ApiResponse(responseCode = "404", description = "Подписка не указанную версию документа не найдена",
+        @ApiResponse(responseCode = "200", description = "Успешная подписка на события документа"),
+        @ApiResponse(responseCode = "404", description = "Подписка не указанный документ не найдена",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
         @ApiResponse(responseCode = "404", description = "Пользователь с указанным адресом электронной почты не найден",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @DeleteMapping
     public ResponseEntity<Void> unsubscribe(
-        @Parameter(description = "ID версии документа", required = true)
-        @RequestParam(name = "documentVersionId") Long documentVersionId,
+        @Parameter(description = "ID документа", required = true)
+        @RequestParam(name = "documentId") Long documentId,
         Authentication authentication
     ) {
         var user = userUtilService.findUserByAuthentication(authentication);
-        subscribeService.unsubscribe(user.getEmail(), documentVersionId);
+        subscribeService.unsubscribe(user.getEmail(), documentId);
 
         return ResponseEntity.ok().build();
     }
