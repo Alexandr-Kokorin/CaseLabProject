@@ -152,25 +152,15 @@ public class DocumentVersionService {
         var document = findDocumentById(body.documentId());
 
         documentUtilService.assertHasPermission(user, document, DocumentPermissionName::canEdit, "Edit");
-        if (Objects.nonNull(body.attributes())) {
-            checkMandatoryAttributesPresent(body, document);
-        }
+
+        Optional.ofNullable(body.attributes()).ifPresent(attributes -> checkMandatoryAttributesPresent(body, document));
 
         DocumentVersion documentVersion = new DocumentVersion();
-        documentVersion.setName(String.format("%s v%d", document.getName(), document.getDocumentVersions().size() + 1));
+        documentVersion.setName(generateVersionName(document));
         documentVersion.setCreatedAt(OffsetDateTime.now());
-
-        boolean isFilePresent = Objects.nonNull(file);
-        boolean hasExistingVersions = !document.getDocumentVersions().isEmpty();
-        if (isFilePresent) {
-            String name = file.isEmpty() ? null : documentVersionStorage.put(file);
-            documentVersion.setContentName(name);
-        } else if (hasExistingVersions) {
-            var newestDocVersion = document.getDocumentVersions().getFirst();
-            documentVersion.setContentName(newestDocVersion.getContentName());
-        }
-
         documentVersion.setDocument(document);
+
+        setDocumentContentName(documentVersion, file, document);
 
         List<AttributeValue> attributeValues = createAttributeValues(body, document, documentVersion);
 
@@ -189,6 +179,20 @@ public class DocumentVersionService {
 
         clearReaders(document);
         return versionResponse;
+    }
+
+    private String generateVersionName(Document document) {
+        return String.format("%s v%d", document.getName(), document.getDocumentVersions().size() + 1);
+    }
+
+    private void setDocumentContentName(DocumentVersion documentVersion, MultipartFile file, Document document) {
+        if (Objects.nonNull(file)) {
+            String contentName = file.isEmpty() ? null : documentVersionStorage.put(file);
+            documentVersion.setContentName(contentName);
+        } else if (!document.getDocumentVersions().isEmpty()) {
+            var newestDocVersion = document.getDocumentVersions().getFirst();
+            documentVersion.setContentName(newestDocVersion.getContentName());
+        }
     }
 
     private List<AttributeValue> createAttributeValues(
