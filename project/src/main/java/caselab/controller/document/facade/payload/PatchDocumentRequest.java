@@ -15,7 +15,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-@Schema(description = "Запрос на обновление документа")
+@Schema(description = "Запрос на точечное обновление документа")
 public class PatchDocumentRequest {
 
     @JsonProperty("document_type_id")

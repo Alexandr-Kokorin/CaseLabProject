@@ -20,15 +20,15 @@ import lombok.Setter;
 @Schema(description = "Запрос на создание первой версии документа")
 public class CreateDocumentRequest {
 
-    @NotEmpty
+    @NotEmpty(message = "{document.facade.request.document.type.id.is_blank}")
     @JsonProperty("document_type_id")
     private Long documentTypeId;
 
-    @NotNull
+    @NotNull(message = "{document.facade.request.name.is_empty}")
     @JsonProperty("name")
     private String name;
 
-    @NotNull
-    @JsonProperty("first_version_attributes_attributes")
+    @NotNull(message = "{document.facade.request.first.version.attributes.is_empty}")
+    @JsonProperty("first_version_attributes")
     List<AttributeValuePair> attributes;
 }
