@@ -159,9 +159,17 @@ public class DocumentVersionService {
         DocumentVersion documentVersion = new DocumentVersion();
         documentVersion.setName(String.format("%s v%d", document.getName(), document.getDocumentVersions().size() + 1));
         documentVersion.setCreatedAt(OffsetDateTime.now());
-        if (Objects.nonNull(file)) {
-            documentVersion.setContentName(documentVersionStorage.put(file));
+
+        boolean isFilePresent = Objects.nonNull(file);
+        boolean hasExistingVersions = !document.getDocumentVersions().isEmpty();
+        if (isFilePresent) {
+            String name = file.isEmpty() ? null : documentVersionStorage.put(file);
+            documentVersion.setContentName(name);
+        } else if (hasExistingVersions) {
+            var newestDocVersion = document.getDocumentVersions().getFirst();
+            documentVersion.setContentName(newestDocVersion.getContentName());
         }
+
         documentVersion.setDocument(document);
 
         List<AttributeValue> attributeValues = createAttributeValues(body, document, documentVersion);
