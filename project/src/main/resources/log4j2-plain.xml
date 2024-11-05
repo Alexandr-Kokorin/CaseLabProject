@@ -36,6 +36,8 @@
         <!--        <Logger name="org.hibernate.cache" level="debug"/>-->
 
         <Logger name="edu.java" level="TRACE"/>
+        <Logger name="org.springframework.web.socket" level="TRACE"/>
+        <Logger name="org.springframework.messaging" level="TRACE"/>
 
         <Root level="INFO">
             <AppenderRef ref="STDOUT_PLAIN"/>

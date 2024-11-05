@@ -1,16 +1,16 @@
-package caselab.service;
+package caselab.service.subscription;
 
 import caselab.domain.entity.DocumentEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 @Slf4j
-@Component
+@Service
 @RequiredArgsConstructor
-public class KafkaConsumer {
+public class DocumentEventConsumer {
 
     private final SimpMessagingTemplate brokerMessagingTemplate;
 
