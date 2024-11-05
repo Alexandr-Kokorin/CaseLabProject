@@ -10,8 +10,8 @@ import lombok.Builder;
 @Schema(description = "Запрос, содержащий информацию о голосе")
 public record VoteRequest(
     @Positive(message = "{vote.request.id.not_positive}")
-    @Schema(description = "ID голосования", example = "1")
-    long votingProcessId,
+    @Schema(description = "ID документа", example = "1")
+    long documentId,
     @NotNull(message = "{vote.request.status.is_null}")
     @Schema(description = "Статус", example = "IN_FAVOUR")
     VoteStatus status

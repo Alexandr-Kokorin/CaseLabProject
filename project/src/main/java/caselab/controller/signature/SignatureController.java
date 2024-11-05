@@ -36,7 +36,7 @@ public class SignatureController {
     private final SignatureService signatureService;
     private final SubscriptionService subscriptionService;
 
-    @PostMapping("/sign/{id}")
+    @PostMapping("/sign")
     @Operation(summary = "Подписать документ",
                description = """
                    Подписывает документ, вычисляет хеш подписи
@@ -48,13 +48,13 @@ public class SignatureController {
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     public SignatureResponse sign(
-        @Parameter(description = "ID подписи", required = true)
-        @PathVariable("id") Long id,
+        @Parameter(description = "ID документа", required = true)
+        @RequestParam("documentId") Long documentId,
         @Parameter(description = "Статус подписания (true - подписать, false - отклонить)", required = true)
         @RequestParam("status") Boolean sign,
         Authentication authentication
     ) {
-        var response = signatureService.signatureUpdate(id, sign, authentication);
+        var response = signatureService.signatureUpdate(documentId, sign, authentication);
         subscriptionService.sendEvent(response.documentId(), EventType.valueOf(response.status().name()));
         return response;
     }

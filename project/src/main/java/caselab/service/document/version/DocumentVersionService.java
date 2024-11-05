@@ -272,7 +272,7 @@ public class DocumentVersionService {
 
         var document = findDocumentById(id);
 
-        if (!documentUtilService.checkLacksPermission(user, document, DocumentPermissionName::isCreator)) {
+        if (documentUtilService.checkLacksPermission(user, document, DocumentPermissionName::isCreator)) {
             userUtilService.checkUserGlobalPermission(user, GlobalPermissionName.ADMIN);
         }
 

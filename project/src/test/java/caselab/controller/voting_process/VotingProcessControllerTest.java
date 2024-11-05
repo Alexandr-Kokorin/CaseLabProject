@@ -16,7 +16,6 @@ import caselab.controller.voting_process.payload.VoteResponse;
 import caselab.controller.voting_process.payload.VoteUserResponse;
 import caselab.controller.voting_process.payload.VotingProcessRequest;
 import caselab.controller.voting_process.payload.VotingProcessResponse;
-import caselab.domain.entity.DocumentVersion;
 import caselab.domain.entity.enums.VoteStatus;
 import caselab.domain.repository.DocumentRepository;
 import caselab.domain.repository.DocumentVersionRepository;
@@ -26,12 +25,11 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import java.time.Duration;
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Objects;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,14 +37,13 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class VotingProcessControllerTest extends BaseControllerTest {
 
     private String token;
     private final String URL = "/api/v1/voting_process";
-    @Mock
+    @MockBean
     private EmailService emailService;
 
     //TODO - удалить, когда появится контроллер версии документа
@@ -311,7 +308,7 @@ public class VotingProcessControllerTest extends BaseControllerTest {
         var votingProcessResponse = createVotingProcess();
 
         var request = VoteRequest.builder()
-            .votingProcessId(votingProcessResponse.id())
+            .documentId(documentId)
             .status(VoteStatus.IN_FAVOUR)
             .build();
 
@@ -343,7 +340,7 @@ public class VotingProcessControllerTest extends BaseControllerTest {
     @DisplayName("Should be an exception for missing voting process cast vote")
     public void castVoteWithNotExistVotingProcess_NotFound() {
         var request = VoteRequest.builder()
-            .votingProcessId(100)
+            .documentId(100)
             .status(VoteStatus.IN_FAVOUR)
             .build();
 
