@@ -2,6 +2,7 @@ package caselab.controller.document.facade;
 
 import caselab.controller.document.facade.payload.CreateDocumentRequest;
 import caselab.controller.document.facade.payload.DocumentFacadeResponse;
+import caselab.controller.document.facade.payload.PatchDocumentRequest;
 import caselab.controller.document.facade.payload.UpdateDocumentRequest;
 import caselab.controller.document.payload.DocumentResponse;
 import caselab.elastic.service.DocumentElasticService;
@@ -21,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -111,6 +113,26 @@ public class DocumentFacadeController {
         Authentication authentication
     ) {
         return documentFacadeService.updateDocument(id, documentRequest, file, authentication);
+    }
+
+    @Operation(summary = "Точечно обновить информацию о документе",
+               description = "Точечно обновляет информацию о документе и возвращает его")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Успешное обновление информации о документе",
+                     content = @Content(schema = @Schema(implementation = DocumentFacadeResponse.class))),
+        @ApiResponse(responseCode = "400", description = "Ошибка ввода",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+        @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @PatchMapping("/{id}")
+    public DocumentFacadeResponse patchDocument(
+        @PathVariable Long id,
+        @RequestPart("document_params") PatchDocumentRequest documentRequest,
+        @RequestPart(value = "content", required = false) MultipartFile file,
+        Authentication authentication
+    ) {
+        return documentFacadeService.partiallyUpdateDocument(id, documentRequest, file, authentication);
     }
 
     @Operation(summary = "Добавить разрешение для чтения документа для пользователя по его email",

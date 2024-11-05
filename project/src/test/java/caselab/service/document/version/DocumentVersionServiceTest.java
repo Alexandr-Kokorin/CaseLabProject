@@ -26,14 +26,14 @@ import caselab.exception.document.version.MissingDocumentPermissionException;
 import caselab.exception.entity.not_found.AttributeNotFoundException;
 import caselab.exception.entity.not_found.DocumentVersionNotFoundException;
 import caselab.service.document.version.mapper.DocumentVersionMapper;
+import caselab.service.util.DocumentUtilService;
+import caselab.service.util.UserUtilService;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
-import caselab.service.util.DocumentUtilService;
-import caselab.service.util.UserUtilService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -182,7 +182,6 @@ public class DocumentVersionServiceTest {
             MissingDocumentPermissionException.class,
             () -> service.createDocumentVersion(new CreateDocumentVersionRequest(
                 1L,
-                "",
                 List.of()
             ), null, (Authentication) null)
         );
@@ -197,7 +196,6 @@ public class DocumentVersionServiceTest {
 
         CreateDocumentVersionRequest request = new CreateDocumentVersionRequest(
             1L,
-            "",
             List.of(
                 new AttributeValuePair(1L, ""),
                 new AttributeValuePair(3L, "")  // Не хватает аттрибута с id=2
@@ -223,7 +221,6 @@ public class DocumentVersionServiceTest {
 
         CreateDocumentVersionRequest request = new CreateDocumentVersionRequest(
             1L,
-            "",
             List.of(
                 new AttributeValuePair(1L, ""),
                 new AttributeValuePair(2L, ""),
@@ -256,7 +253,6 @@ public class DocumentVersionServiceTest {
 
         CreateDocumentVersionRequest request = new CreateDocumentVersionRequest(
             1L,
-            "",
             List.of(
                 new AttributeValuePair(1L, ""),
                 new AttributeValuePair(2L, ""),
