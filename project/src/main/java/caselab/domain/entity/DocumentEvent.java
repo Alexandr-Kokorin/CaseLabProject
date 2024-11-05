@@ -16,7 +16,7 @@ import lombok.ToString;
 @AllArgsConstructor
 public class DocumentEvent {
 
-    private Long documentVersionId;
+    private Long documentId;
     private String userEmail;
     private EventType eventType;
 }
