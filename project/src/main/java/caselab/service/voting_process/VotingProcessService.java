@@ -4,6 +4,7 @@ import caselab.controller.voting_process.payload.VoteRequest;
 import caselab.controller.voting_process.payload.VoteResponse;
 import caselab.controller.voting_process.payload.VotingProcessRequest;
 import caselab.controller.voting_process.payload.VotingProcessResponse;
+import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.Vote;
 import caselab.domain.entity.VotingProcess;
 import caselab.domain.entity.enums.DocumentPermissionName;
@@ -75,26 +76,35 @@ public class VotingProcessService {
         validateEmails(request.emails());
         documentVersion.getDocument().setStatus(DocumentStatus.VOTING_IN_PROGRESS);
         votingProcessRepository.save(votingProcess);
-        votingProcess.setVotes(saveVotes(request.emails(), votingProcess, authentication));
+        votingProcess.setVotes(saveVotes(request.emails(), votingProcess, authentication, user));
 
         votingProcess.getVotes().forEach(this::sendMessage);
         return votingProcessMapper.entityToResponse(votingProcess);
     }
 
-    public VotingProcessResponse getVotingProcessById(Long id) {
-        return votingProcessMapper.entityToResponse(votingProcessRepository.findById(id)
-            .orElseThrow(() -> new VotingProcessNotFoundException(id)));
+    public VotingProcessResponse getVotingProcessByDocumentId(Long documentId) {
+        var documentVersion = documentRepository.findById(documentId)
+            .orElseThrow(() -> new DocumentNotFoundException(documentId))
+            .getDocumentVersions().getFirst();
+
+        return votingProcessMapper.entityToResponse(votingProcessRepository.findByDocumentVersion(documentVersion)
+            .orElseThrow(VotingProcessNotFoundException::new));
     }
 
     public VoteResponse castVote(Authentication authentication, VoteRequest voteRequest) {
         var user = userUtilService.findUserByAuthentication(authentication);
+        var documentVersion = documentRepository.findById(voteRequest.documentId())
+            .orElseThrow(() -> new DocumentNotFoundException(voteRequest.documentId()))
+            .getDocumentVersions().getFirst();
 
+        var votingProcess = votingProcessRepository.findByDocumentVersion(documentVersion)
+            .orElseThrow(VotingProcessNotFoundException::new);
         var vote = voteRepository.findByApplicationUserIdAndVotingProcessId(
-                user.getId(), voteRequest.votingProcessId())
-            .orElseThrow(() -> new VoteNotFoundException(user.getEmail()));
+                user.getId(), votingProcess.getId())
+            .orElseThrow(VoteNotFoundException::new);
 
-        if (vote.getVotingProcess().getStatus() != VotingProcessStatus.IN_PROGRESS) {
-            throw new VotingProcessIsOverException(voteRequest.votingProcessId());
+        if (votingProcess.getStatus() != VotingProcessStatus.IN_PROGRESS) {
+            throw new VotingProcessIsOverException(votingProcess.getId());
         }
 
         vote.setStatus(voteRequest.status());
@@ -119,10 +129,17 @@ public class VotingProcessService {
             .orElseThrow(() -> new UserNotFoundException(email)));
     }
 
-    private List<Vote> saveVotes(List<String> emails, VotingProcess votingProcess, Authentication authentication) {
+    private List<Vote> saveVotes(
+        List<String> emails, VotingProcess votingProcess,
+        Authentication authentication, ApplicationUser user
+    ) {
         List<Vote> votes = new ArrayList<>();
-        emails.forEach(email -> documentFacadeService.grantPermission(
-            votingProcess.getDocumentVersion().getDocument().getId(), email, authentication));
+        for (String email : emails) {
+            if (!email.equals(user.getEmail())) {
+                documentFacadeService.grantPermission(
+                    votingProcess.getDocumentVersion().getDocument().getId(), email, authentication);
+            }
+        }
         emails.forEach(email -> votes.add(createVoteById(email, votingProcess)));
         return voteRepository.saveAll(votes);
     }

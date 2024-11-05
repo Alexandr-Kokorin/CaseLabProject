@@ -19,7 +19,7 @@ public class DocumentVersionResponse {
     @Schema(description = "id версии документа", example = "3")
     Long id;
     @Schema(description = "Значения аттрибутов текущей версии документа")
-    List<AttributeValuePair> attributes;
+    List<AttributeValueResponse> attributes;
     @Schema(description = "Название версии документа", example = "Приказ об отпуске с изменённым описанием")
     String name;
     @Schema(description = "Дата создания текущей версии документа", example = "")

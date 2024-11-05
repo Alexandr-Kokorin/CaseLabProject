@@ -2,6 +2,7 @@ package caselab.service.document.facade;
 
 import caselab.controller.document.facade.payload.CreateDocumentRequest;
 import caselab.controller.document.facade.payload.DocumentFacadeResponse;
+import caselab.controller.document.facade.payload.PatchDocumentRequest;
 import caselab.controller.document.facade.payload.UpdateDocumentRequest;
 import caselab.controller.document.payload.DocumentRequest;
 import caselab.controller.document.payload.DocumentResponse;
@@ -18,6 +19,7 @@ import caselab.service.document.version.DocumentVersionService;
 import caselab.service.signature.mapper.SignatureMapper;
 import caselab.service.util.PageUtil;
 import caselab.service.util.UserUtilService;
+import jakarta.transaction.Transactional;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -32,6 +34,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class DocumentFacadeService {
 
@@ -101,7 +104,6 @@ public class DocumentFacadeService {
 
         var documentVersionRequest = CreateDocumentVersionRequest.builder()
             .documentId(documentResponse.id())
-            .name(body.getVersionName())
             .attributes(body.getAttributes())
             .build();
         var latestVersion = documentVersionService.createDocumentVersion(documentVersionRequest, file, user);
@@ -192,9 +194,29 @@ public class DocumentFacadeService {
 
         var documentVersionRequest = CreateDocumentVersionRequest.builder()
             .documentId(documentResponse.id())
-            .name(body.getVersionName())
             .attributes(body.getAttributes())
             .build();
+
+        var latestVersion = documentVersionService.createDocumentVersion(documentVersionRequest, file, user);
+        documentResponse.documentVersionIds().add(latestVersion.getId());
+
+        return enrichResponse(documentResponse, user);
+    }
+
+    public DocumentFacadeResponse partiallyUpdateDocument(
+        Long id,
+        PatchDocumentRequest body,
+        MultipartFile file,
+        Authentication auth
+    ) {
+        var user = userUtilService.findUserByAuthentication(auth);
+        var documentResponse = documentService.patchDocument(id, body, user);
+
+        var documentVersionRequest = CreateDocumentVersionRequest.builder()
+            .documentId(documentResponse.id())
+            .attributes(body.getAttributes())
+            .build();
+
         var latestVersion = documentVersionService.createDocumentVersion(documentVersionRequest, file, user);
         documentResponse.documentVersionIds().add(latestVersion.getId());
 

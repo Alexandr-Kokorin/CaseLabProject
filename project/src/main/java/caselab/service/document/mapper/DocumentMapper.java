@@ -1,5 +1,6 @@
 package caselab.service.document.mapper;
 
+import caselab.controller.document.facade.payload.PatchDocumentRequest;
 import caselab.controller.document.payload.DocumentRequest;
 import caselab.controller.document.payload.DocumentResponse;
 import caselab.domain.entity.Document;
@@ -9,6 +10,7 @@ import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
@@ -32,4 +34,6 @@ public interface DocumentMapper {
     }
 
     Document requestToEntity(DocumentRequest documentRequest);
+
+    void patchDocumentFromPatchRequest(@MappingTarget Document document, PatchDocumentRequest request);
 }

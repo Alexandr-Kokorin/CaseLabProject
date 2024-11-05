@@ -6,6 +6,7 @@ import caselab.controller.voting_process.payload.VotingProcessRequest;
 import caselab.controller.voting_process.payload.VotingProcessResponse;
 import caselab.service.voting_process.VotingProcessService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -18,10 +19,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -61,9 +62,12 @@ public class VotingProcessController {
         @ApiResponse(responseCode = "404", description = "Голосование не найдено",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
-    @GetMapping("/{id}")
-    public VotingProcessResponse getVotingProcessById(@Positive @PathVariable Long id) {
-        return votingProcessService.getVotingProcessById(id);
+    @GetMapping()
+    public VotingProcessResponse getVotingProcessById(
+        @Parameter(description = "ID документа", required = true)
+        @Positive @RequestParam Long documentId
+    ) {
+        return votingProcessService.getVotingProcessByDocumentId(documentId);
     }
 
     @Operation(summary = "Проголосовать",

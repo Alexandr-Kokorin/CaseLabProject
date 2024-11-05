@@ -1,6 +1,6 @@
 package caselab.service.document.version;
 
-import caselab.controller.document.version.payload.AttributeValuePair;
+import caselab.controller.document.version.payload.AttributeValueResponse;
 import caselab.controller.document.version.payload.DocumentVersionResponse;
 import caselab.domain.entity.Attribute;
 import caselab.domain.entity.Document;
@@ -63,9 +63,9 @@ public class DocumentVersionMapperTest {
         var expected = new DocumentVersionResponse(
             documentVersionId,
             List.of(
-                new AttributeValuePair(1L, "1"),
-                new AttributeValuePair(2L, "2"),
-                new AttributeValuePair(3L, "3")
+                new AttributeValueResponse(1L, "", "",  "1"),
+                new AttributeValueResponse(2L,"", "", "2"),
+                new AttributeValueResponse(3L,"", "", "3")
             ),
             "documentVersion",
             createdAt,

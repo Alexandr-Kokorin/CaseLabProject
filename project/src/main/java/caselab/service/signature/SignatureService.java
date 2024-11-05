@@ -41,14 +41,15 @@ public class SignatureService {
 
     private final SignatureMapper signatureMapper;
 
-    public SignatureResponse signatureUpdate(Long id, Boolean sign, Authentication authentication) {
-        var signature = signatureRepository.findById(id)
-            .orElseThrow(() -> new SignatureNotFoundException(id));
-
+    public SignatureResponse signatureUpdate(Long documentId, Boolean sign, Authentication authentication) {
         var user = userUtilService.findUserByAuthentication(authentication);
-        if (!user.getId().equals(signature.getApplicationUser().getId())) {
-            throw new SignatureNotFoundException(id);
-        }
+        var documentVersion = documentRepository.findById(documentId)
+            .orElseThrow(() -> new DocumentNotFoundException(documentId))
+            .getDocumentVersions().getFirst();
+
+        var signature = signatureRepository.findByApplicationUserAndDocumentVersion(user, documentVersion)
+            .orElseThrow(SignatureNotFoundException::new);
+
         if (signature.getStatus() == SignatureStatus.SIGNED || signature.getStatus() == SignatureStatus.REFUSED) {
             throw new SignatureAlreadySignedException();
         }
@@ -60,7 +61,7 @@ public class SignatureService {
         }
         signature.setSignedAt(OffsetDateTime.now());
 
-        setStatus(signature, id);
+        setStatus(signature);
 
         return signatureMapper.entityToResponse(signatureRepository.save(signature));
     }
@@ -78,12 +79,12 @@ public class SignatureService {
         signature.setSignatureData(hash);
     }
 
-    private void setStatus(Signature signature, Long id) {
+    private void setStatus(Signature signature) {
         if (signature.getStatus() == SignatureStatus.SIGNED) {
             var signatures = findAllSignaturesByDocumentId(signature.getDocumentVersion().getDocument().getId());
             boolean flag = true;
             for (var temp : signatures) {
-                if (temp.status() != SignatureStatus.SIGNED && !temp.id().equals(id)) {
+                if (temp.status() != SignatureStatus.SIGNED && !temp.id().equals(signature.getId())) {
                     flag = false;
                     break;
                 }
@@ -123,7 +124,11 @@ public class SignatureService {
 
         signature.getDocumentVersion().getDocument().setStatus(DocumentStatus.SIGNATURE_IN_PROGRESS);
         var savedSignature = signatureRepository.save(signature);
-        documentFacadeService.grantPermission(documentVersionForSign.getDocument().getId(), signRequest.email(), auth);
+
+        if (!signRequest.email().equals(user.getEmail())) {
+            documentFacadeService.grantPermission(
+                documentVersionForSign.getDocument().getId(), signRequest.email(), auth);
+        }
 
         return signatureMapper.entityToResponse(savedSignature);
     }

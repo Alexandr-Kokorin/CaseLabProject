@@ -6,7 +6,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public final class VoteNotFoundException extends ApplicationNotFoundException {
 
-    public VoteNotFoundException(String email) {
-        super("vote.not.found", new Object[]{email});
+    public VoteNotFoundException() {
+        super("vote.not.found", new Object[]{});
     }
 }
