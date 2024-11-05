@@ -15,6 +15,6 @@ public record CreateDocumentVersionRequest(
 
     @Schema(description = "Значения аттрибутов текущей версии документа")
     @JsonProperty("attributes")
-    List<AttributeValuePair> attributes
+    List<AttributeValueRequest> attributes
 ) {
 }

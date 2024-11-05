@@ -69,17 +69,13 @@ public class AuthenticationServiceTest {
 
         when(globalPermissionRepository.findByName(GlobalPermissionName.USER)).thenReturn(mockGlobalPermission());
         when(passwordEncoder.encode(anyString())).thenReturn("hashedPassword");
-        when(jwtService.generateToken(any(ApplicationUser.class))).thenReturn("mocked-jwt-token");
         when(appUserRepository.save(any(ApplicationUser.class)))
             .thenReturn(null); // Ничего не возвращаем, просто сохраняем
 
-        AuthenticationResponse response = authenticationService.register(registerRequest, any(Authentication.class));
+        authenticationService.register(registerRequest, any(Authentication.class));
 
         assertAll(
-            () -> assertThat(response).isNotNull(),
-            () -> assertThat(response.token()).isEqualTo("mocked-jwt-token"),
-            () -> verify(appUserRepository).save(any(ApplicationUser.class)),
-            () -> verify(jwtService).generateToken(any(ApplicationUser.class))
+            () -> verify(appUserRepository).save(any(ApplicationUser.class))
         );
     }
 

@@ -1,6 +1,6 @@
 package caselab.controller.document.facade.payload;
 
-import caselab.controller.document.version.payload.AttributeValuePair;
+import caselab.controller.document.version.payload.AttributeValueRequest;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
@@ -26,6 +26,6 @@ public class PatchDocumentRequest {
     @JsonProperty("name")
     private String name;
 
-    @JsonProperty("version_attributes_attributes")
-    List<AttributeValuePair> attributes;
+    @JsonProperty("version_attributes")
+    List<AttributeValueRequest> attributes;
 }

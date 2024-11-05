@@ -1,6 +1,6 @@
 package caselab.service.document.version;
 
-import caselab.controller.document.version.payload.AttributeValuePair;
+import caselab.controller.document.version.payload.AttributeValueRequest;
 import caselab.controller.document.version.payload.CreateDocumentVersionRequest;
 import caselab.controller.document.version.payload.DocumentVersionResponse;
 import caselab.domain.entity.ApplicationUser;
@@ -119,7 +119,7 @@ public class DocumentVersionService {
 
     private void checkMandatoryAttributesPresent(CreateDocumentVersionRequest body, Document document) {
         Set<Long> presentAttributesIds = body.attributes().stream()
-            .map(AttributeValuePair::attributeId)
+            .map(AttributeValueRequest::attributeId)
             .collect(Collectors.toSet());
 
         Set<Long> mandatoryAttributesIds = document.getDocumentType()
@@ -214,7 +214,7 @@ public class DocumentVersionService {
         }
     }
 
-    private AttributeValue createAttributeValueFromPair(AttributeValuePair pair, DocumentVersion documentVersion) {
+    private AttributeValue createAttributeValueFromPair(AttributeValueRequest pair, DocumentVersion documentVersion) {
         var value = new AttributeValue();
         value.setAppValue(pair.value());
         value.setAttribute(

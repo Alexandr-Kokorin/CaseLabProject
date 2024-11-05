@@ -1,6 +1,6 @@
 package caselab.controller.document.facade.payload;
 
-import caselab.controller.document.version.payload.AttributeValuePair;
+import caselab.controller.document.version.payload.AttributeValueRequest;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
@@ -30,5 +30,5 @@ public class CreateDocumentRequest {
 
     @NotNull(message = "{document.facade.request.first.version.attributes.is_empty}")
     @JsonProperty("first_version_attributes")
-    List<AttributeValuePair> attributes;
+    List<AttributeValueRequest> attributes;
 }

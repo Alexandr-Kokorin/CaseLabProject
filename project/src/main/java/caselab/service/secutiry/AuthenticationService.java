@@ -36,7 +36,7 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
 
-    public AuthenticationResponse register(RegisterRequest request, Authentication authentication) {
+    public void register(RegisterRequest request, Authentication authentication) {
         userUtilService.checkUserGlobalPermission(
             userUtilService.findUserByAuthentication(authentication), GlobalPermissionName.ADMIN);
 
@@ -51,8 +51,6 @@ public class AuthenticationService {
             .build();
         appUserRepository.save(user);
         sendMessage(request);
-        var jwtToken = jwtService.generateToken(user);
-        return new AuthenticationResponse(jwtToken);
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {

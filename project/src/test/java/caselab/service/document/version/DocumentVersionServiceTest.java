@@ -1,6 +1,6 @@
 package caselab.service.document.version;
 
-import caselab.controller.document.version.payload.AttributeValuePair;
+import caselab.controller.document.version.payload.AttributeValueRequest;
 import caselab.controller.document.version.payload.CreateDocumentVersionRequest;
 import caselab.controller.document.version.payload.DocumentVersionResponse;
 import caselab.domain.entity.ApplicationUser;
@@ -197,8 +197,8 @@ public class DocumentVersionServiceTest {
         CreateDocumentVersionRequest request = new CreateDocumentVersionRequest(
             1L,
             List.of(
-                new AttributeValuePair(1L, ""),
-                new AttributeValuePair(3L, "")  // Не хватает аттрибута с id=2
+                new AttributeValueRequest(1L, ""),
+                new AttributeValueRequest(3L, "")  // Не хватает аттрибута с id=2
             )
         );
 
@@ -222,9 +222,9 @@ public class DocumentVersionServiceTest {
         CreateDocumentVersionRequest request = new CreateDocumentVersionRequest(
             1L,
             List.of(
-                new AttributeValuePair(1L, ""),
-                new AttributeValuePair(2L, ""),
-                new AttributeValuePair(4L, "")  // Такого нет
+                new AttributeValueRequest(1L, ""),
+                new AttributeValueRequest(2L, ""),
+                new AttributeValueRequest(4L, "")  // Такого нет
             )
         );
 
@@ -254,9 +254,9 @@ public class DocumentVersionServiceTest {
         CreateDocumentVersionRequest request = new CreateDocumentVersionRequest(
             1L,
             List.of(
-                new AttributeValuePair(1L, ""),
-                new AttributeValuePair(2L, ""),
-                new AttributeValuePair(3L, "")
+                new AttributeValueRequest(1L, ""),
+                new AttributeValueRequest(2L, ""),
+                new AttributeValueRequest(3L, "")
             )
         );
 
