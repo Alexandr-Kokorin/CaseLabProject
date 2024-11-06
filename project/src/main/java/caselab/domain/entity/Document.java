@@ -1,15 +1,19 @@
 package caselab.domain.entity;
 
-import jakarta.persistence.CascadeType;
+import caselab.domain.entity.enums.DocumentStatus;
+import caselab.elastic.listener.DocumentEventListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -17,6 +21,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
@@ -24,6 +29,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@ToString
+@EntityListeners(DocumentEventListener.class)
 @Table(name = "document")
 public class Document {
 
@@ -36,9 +43,18 @@ public class Document {
     @JoinColumn(name = "document_type_id", nullable = false)
     private DocumentType documentType;
 
-    @ManyToMany(mappedBy = "documents")
-    private List<ApplicationUser> applicationUsers;
+    @Column(nullable = false)
+    private String name;
 
-    @OneToMany(mappedBy = "document", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<AttributeValue> attributeValues;
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private DocumentStatus status = DocumentStatus.DRAFT;
+
+    @OneToMany(mappedBy = "document")
+    @OrderBy("createdAt desc")
+    private List<DocumentVersion> documentVersions;
+
+    @OneToMany(mappedBy = "document")
+    @ToString.Exclude
+    private List<UserToDocument> usersToDocuments;
 }

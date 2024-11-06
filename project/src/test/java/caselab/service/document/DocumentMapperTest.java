@@ -1,96 +1,200 @@
 package caselab.service.document;
 
+import caselab.Application;
+import caselab.controller.document.payload.DocumentRequest;
 import caselab.controller.document.payload.DocumentResponse;
+import caselab.controller.document.payload.UserToDocumentRequest;
+import caselab.domain.IntegrationTest;
 import caselab.domain.entity.ApplicationUser;
-import caselab.domain.entity.Attribute;
-import caselab.domain.entity.AttributeValue;
-import caselab.domain.entity.AttributeValueId;
 import caselab.domain.entity.Document;
 import caselab.domain.entity.DocumentType;
-import java.util.Arrays;
-import org.junit.jupiter.api.BeforeEach;
+import caselab.domain.entity.DocumentVersion;
+import caselab.domain.entity.UserToDocument;
+import caselab.service.document.mapper.DocumentMapper;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mapstruct.factory.Mappers;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import java.util.List;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class DocumentMapperTest {
+import static org.assertj.core.api.Assertions.assertThat;
 
-    private final DocumentMapper documentMapper = Mappers.getMapper(DocumentMapper.class);
+@SpringBootTest(classes = Application.class)
+public class DocumentMapperTest extends IntegrationTest {
 
-    private Document document;
-    private final DocumentType documentType = createDocumentType();
-    private final ApplicationUser user1 = createApplicationUser(1L, "user1");
-    private final ApplicationUser user2 = createApplicationUser(2L, "user2");
-    private final Attribute attribute1 = createAttribute(1L, "Color", "String");
-    private final Attribute attribute2 = createAttribute(2L, "Size", "Integer");
+    @Autowired
+    private DocumentMapper documentMapper;
+    @Test
+    @DisplayName("Should map DocumentRequest to Document entity correctly")
+    public void shouldMapRequestToEntity_correctly() {
 
-    @BeforeEach
-    void setUp() {
-        document = Document.builder()
+        var userToDocumentRequest = UserToDocumentRequest.builder()
+            .email("user1@example.com")
+            .documentPermissionIds(List.of(1L, 2L, 3L))
+            .build();
+
+        var documentType = DocumentType.builder()
             .id(1L)
+            .name("test")
+            .build();
+
+        var documentRequest = DocumentRequest.builder()
+            .name("Test Document")
+            .documentTypeId(documentType.getId())
+            .usersPermissions(List.of(userToDocumentRequest))
+            .build();
+
+
+        Document document = documentMapper.requestToEntity(documentRequest);
+
+
+
+        assertAll(
+            "Group of tests for map request to entity",
+            ()-> assertThat(document).isNotNull(),
+            ()-> assertThat(document.getName()).isEqualTo("Test Document")
+        );
+    }
+
+
+    @Test
+    @DisplayName("Should map Document entity to DocumentResponse correctly")
+    public void shouldMapEntityToResponse_correctly() {
+        var documentType = DocumentType.builder()
+            .id(1L)
+            .name("Internal Document")
+            .build();
+
+        var documentVersion = DocumentVersion.builder()
+            .id(101L)
+            .name("Version 1")
+            .build();
+
+        var userToDocument = UserToDocument.builder()
+            .applicationUser(ApplicationUser.builder().email("user@example.com").build())
+            .build();
+
+        var document = Document.builder()
+            .id(1L)
+            .name("Test Document")
             .documentType(documentType)
-            .applicationUsers(Arrays.asList(user1, user2))
-            .attributeValues(Arrays.asList(
-                createAttributeValue(1L, attribute1, "Red"),
-                createAttributeValue(2L, attribute2, "42")
-            ))
+            .documentVersions(List.of(documentVersion))
+            .usersToDocuments(List.of(userToDocument))
             .build();
-    }
 
-    @Test
-    void entityToResponse_shouldMapDocumentToResponse() {
         DocumentResponse response = documentMapper.entityToResponse(document);
 
-        assertNotNull(response);
-        assertEquals(1L, response.id());
+        assertAll(
+            "Mapped response should not be null and properties should be mapped correctly",
+
+            () -> assertThat(response).isNotNull(),
+            () -> assertEquals(1L, response.id()),
+            () -> assertEquals("Test Document", response.name()),
+            () -> assertEquals(1L, response.documentTypeId()),
+            () -> assertNotNull(response.documentVersionIds()),
+            () -> assertEquals(1, response.documentVersionIds().size()),
+            () -> assertEquals(101L, response.documentVersionIds().get(0)),
+            () -> assertNotNull(response.usersPermissions()),
+            () -> assertEquals(1, response.usersPermissions().size())
+        );
+    }
+
+
+    @Test
+    @DisplayName("Should return null when DocumentRequest has null documentTypeId")
+    public void shouldReturnNullWhenDocumentTypeIdIsNull() {
+        var userToDocumentRequest = UserToDocumentRequest.builder()
+            .email("user1@example.com")
+            .documentPermissionIds(List.of(1L, 2L, 3L))
+            .build();
+
+        var documentRequest = DocumentRequest.builder()
+            .name("Test Document")
+            .documentTypeId(null)
+            .usersPermissions(List.of(userToDocumentRequest))
+            .build();
+
+        Document document = documentMapper.requestToEntity(documentRequest);
+
+        assertAll(
+            "Grouped assertions for null when DocumentRequest has null documentTypeId",
+            ()->assertThat(document).isNotNull(),
+            ()->assertThat(document.getDocumentType()).isNull()
+        );
     }
 
     @Test
-    void entityToResponse_shouldReturnNullWhenDocumentIsNull() {
-        DocumentResponse response = documentMapper.entityToResponse(null);
+    @DisplayName("Should return null when DocumentRequest has empty usersPermissions")
+    public void shouldReturnNullWhenUsersPermissionsIsEmpty() {
 
-        assertNull(response);
+        var documentRequest = DocumentRequest.builder()
+            .name("Test Document")
+            .documentTypeId(1L)
+            .usersPermissions(List.of()) // Empty usersPermissions
+            .build();
+
+        Document document = documentMapper.requestToEntity(documentRequest);
+
+        assertAll(
+            "tests for empty usersPermissions",
+            ()->assertThat(document).isNotNull(),
+            ()->assertThat(document.getUsersToDocuments()).isNull()
+        );
     }
 
     @Test
-    void entityToResponse_shouldReturnNullDocumentTypeWhenDocumentTypeIsNull() {
-        document.setDocumentType(null);
-        DocumentResponse response = documentMapper.entityToResponse(document);
+    @DisplayName("Should return null when DocumentRequest has null name")
+    public void shouldReturnNullWhenNameIsNull() {
+        var userToDocumentRequest = UserToDocumentRequest.builder()
+            .email("user1@example.com")
+            .documentPermissionIds(List.of(1L, 2L, 3L))
+            .build();
 
-        assertNotNull(response);
-        assertEquals(1L, response.id());
-        assertNull(response.documentTypeId());
+        var documentRequest = DocumentRequest.builder()
+            .name(null) // Null name
+            .documentTypeId(1L)
+            .usersPermissions(List.of(userToDocumentRequest))
+            .build();
+
+
+        Document document = documentMapper.requestToEntity(documentRequest);
+
+        assertAll(
+            "Group asserts when name is null",
+            ()->assertThat(document).isNotNull(),
+            ()->assertThat(document.getName()).isNull()
+        );
     }
 
-    private static DocumentType createDocumentType() {
-        return DocumentType.builder()
+    @Test
+    @DisplayName("Should return null when Document entity has null documentType")
+    public void shouldReturnNullWhenDocumentTypeIsNullInEntity() {
+        var documentVersion = DocumentVersion.builder()
+            .id(101L)
+            .name("Version 1")
+            .build();
+
+
+
+        var document = Document.builder()
             .id(1L)
-            .name("Contract")
+            .name("Test Document")
+            .documentType(null) // Null documentType
+            .documentVersions(List.of(documentVersion))
             .build();
+
+        DocumentResponse response = documentMapper.entityToResponse(document);
+
+        assertAll(
+            "Group asserts when documentType is null",
+            ()->assertThat(response).isNotNull(),
+            ()->assertThat(response.documentTypeId()).isNull()
+        );
     }
 
-    private static ApplicationUser createApplicationUser(Long id, String login) {
-        return ApplicationUser.builder()
-            .id(id)
-            .login(login)
-            .build();
-    }
 
-    private static Attribute createAttribute(Long id, String name, String type) {
-        return Attribute.builder()
-            .id(id)
-            .name(name)
-            .type(type)
-            .build();
-    }
-
-    private static AttributeValue createAttributeValue(Long attributeId, Attribute attribute, String value) {
-        return AttributeValue.builder()
-            .id(new AttributeValueId(1L, attributeId))
-            .attribute(attribute)
-            .appValue(value)
-            .build();
-    }
 }

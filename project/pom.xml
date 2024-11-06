@@ -15,6 +15,7 @@
     <properties>
         <jwt.version>0.12.6</jwt.version>
         <springdoc.version>2.3.0</springdoc.version>
+        <springmail.version>3.3.4</springmail.version>
         <mapstruct.version>1.6.0.RC1</mapstruct.version>
         <bucket4j.version>8.1.0</bucket4j.version>
         <bucket4j.starter.version>0.8.1</bucket4j.starter.version>
@@ -50,6 +51,19 @@
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>${springdoc.version}</version>
+        </dependency>
+
+        <!-- Spring WebSocket -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+
+        <!-- Spring mail -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+            <version>${springmail.version}</version>
         </dependency>
 
         <!-- Security -->
@@ -126,6 +140,13 @@
             <artifactId>micrometer-tracing-bridge-brave</artifactId>
         </dependency>
 
+        <!-- Storage -->
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+            <version>8.5.12</version>
+        </dependency>
+
         <!-- Testing -->
         <dependency>
             <groupId>org.springframework.security</groupId>
@@ -188,8 +209,18 @@
             <artifactId>kafka</artifactId>
             <scope>test</scope>
         </dependency>
-
-        <!-- Database -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>elasticsearch</artifactId>
+            <version>1.20.0</version>
+            <scope>test</scope>
+        </dependency>
+<!--        Elastic Search-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
+        </dependency>
+<!--         Database-->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>

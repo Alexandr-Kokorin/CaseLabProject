@@ -3,24 +3,28 @@ package caselab.service.users;
 import caselab.controller.users.payload.UserResponse;
 import caselab.controller.users.payload.UserUpdateRequest;
 import caselab.domain.entity.ApplicationUser;
+import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.ApplicationUserRepository;
+import caselab.exception.entity.not_found.UserNotFoundException;
 import caselab.service.secutiry.AuthenticationService;
+import caselab.service.users.mapper.UserMapper;
+import caselab.service.util.UserUtilService;
+import jakarta.transaction.Transactional;
 import java.util.List;
-import java.util.Locale;
-import java.util.NoSuchElementException;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.MessageSource;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class ApplicationUserService {
 
+    private final AuthenticationService authService;
+    private final UserUtilService userUtilService;
+
     private final ApplicationUserRepository userRepository;
     private final UserMapper mapper;
-    private final AuthenticationService authService;
-    private final MessageSource messageSource;
 
     public List<UserResponse> findAllUsers() {
         List<ApplicationUser> users = userRepository.findAll();
@@ -29,35 +33,31 @@ public class ApplicationUserService {
             .toList();
     }
 
-    public UserResponse findUser(Long id) {
-        ApplicationUser user = getUserById(id);
+    public UserResponse findUser(String email) {
+        var user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new UserNotFoundException(email));
         return mapper.entityToResponse(user);
     }
 
-    public UserResponse updateUser(Long id, UserUpdateRequest updateRequest) {
-        ApplicationUser userToUpdate = getUserById(id);
+    public UserResponse getCurrentUser(Authentication authentication) {
+        var currentUser = userUtilService.findUserByAuthentication(authentication);
 
-        updatePassword(userToUpdate, updateRequest.password());
-        mapper.updateUserFromUpdateRequest(updateRequest, userToUpdate);
+        return mapper.entityToResponse(currentUser);
+    }
+
+    public UserResponse updateUser(Authentication authentication, UserUpdateRequest updateRequest) {
+        var userToUpdate = userUtilService.findUserByAuthentication(authentication);
+
+        userToUpdate.setHashedPassword(authService.encodePassword(updateRequest.password()));
+        userToUpdate.setDisplayName(updateRequest.displayName());
+
         return mapper.entityToResponse(userRepository.save(userToUpdate));
     }
 
-    public void deleteUser(Long id) {
-        ApplicationUser user = getUserById(id);
-        userRepository.delete(user);
-    }
+    public void deleteUser(Authentication authentication, String email) {
+        userUtilService.checkUserGlobalPermission(
+            userUtilService.findUserByAuthentication(authentication), GlobalPermissionName.ADMIN);
 
-    private ApplicationUser getUserById(Long id) {
-        return userRepository.findById(id)
-            .orElseThrow(() -> new NoSuchElementException(
-                messageSource.getMessage("user.not.found", new Object[] {id}, Locale.getDefault())
-            ));
-    }
-
-    private void updatePassword(ApplicationUser userToUpdate, String password) {
-        if (Objects.nonNull(password) && !password.isEmpty()) {
-            String hashedPassword = authService.encodePassword(password);
-            userToUpdate.setHashedPassword(hashedPassword);
-        }
+        userRepository.delete(userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException(email)));
     }
 }

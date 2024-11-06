@@ -1,10 +1,7 @@
 package caselab.domain.entity;
 
-import caselab.domain.entity.enums.Role;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -12,6 +9,7 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.Collection;
 import java.util.List;
@@ -41,7 +39,7 @@ public class ApplicationUser implements UserDetails {
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String login;
+    private String email;
 
     @Column(nullable = false)
     private String displayName;
@@ -49,21 +47,25 @@ public class ApplicationUser implements UserDetails {
     @Column(nullable = false)
     private String hashedPassword;
 
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private Role role;
+    @OneToMany(mappedBy = "applicationUser")
+    private List<UserToDocument> usersToDocuments;
+
+    @OneToMany(mappedBy = "applicationUser")
+    private List<Signature> signatures;
 
     @ManyToMany
     @JoinTable(
-        name = "user_to_document",
-        joinColumns = @JoinColumn(name = "document_id", nullable = false),
-        inverseJoinColumns = @JoinColumn(name = "user_id", nullable = false)
+        name = "global_permission_to_user",
+        joinColumns = @JoinColumn(name = "application_user_id", nullable = false),
+        inverseJoinColumns = @JoinColumn(name = "global_permission_id", nullable = false)
     )
-    private List<Document> documents;
+    private List<GlobalPermission> globalPermissions;
+    @OneToMany(mappedBy = "applicationUser")
+    private List<Vote> votes;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(role.name()));
+        return globalPermissions.stream().map(gb -> new SimpleGrantedAuthority(gb.getName().name())).toList();
     }
 
     @Override
@@ -73,7 +75,7 @@ public class ApplicationUser implements UserDetails {
 
     @Override
     public String getUsername() {
-        return login;
+        return email;
     }
 
     @Override

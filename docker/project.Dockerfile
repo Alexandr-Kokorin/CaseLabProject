@@ -1,11 +1,16 @@
+FROM maven:3.9.7-eclipse-temurin-21 AS dependencies
+WORKDIR /opt/app
+COPY pom.xml .
+COPY project/pom.xml project/pom.xml
+RUN mvn -B -e -am -pl project dependency:go-offline
+
 FROM maven:3.9.7-eclipse-temurin-21 AS builder
 WORKDIR /opt/app
-COPY ./pom.xml .
-COPY ./project/pom.xml project/pom.xml
-COPY .git/ .git/
-COPY ./project/src project/src/
-RUN mvn dependency:go-offline
-RUN mvn clean install -DskipTests
+COPY --from=dependencies /root/.m2 /root/.m2
+COPY --from=dependencies /opt/app/ /opt/app
+COPY .git/ /opt/app/.git/
+COPY project/src /opt/app/project/src/
+RUN mvn -B -e -am -pl project clean install -DskipTests
 
 FROM eclipse-temurin:21.0.2_13-jre-jammy AS final
 WORKDIR /opt/app
