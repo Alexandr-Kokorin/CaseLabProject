@@ -3,6 +3,7 @@ package caselab.controller.document.version;
 import caselab.controller.document.version.payload.DocumentVersionResponse;
 import caselab.service.document.version.DocumentVersionService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -64,6 +65,7 @@ public class DocumentVersionController {
         @PathVariable("id") Long id,
         @RequestParam(value = "pageNum", required = false) Integer pageNum,
         @RequestParam(value = "pageSize", required = false) Integer pageSize,
+        @Parameter(description = "Значение может быть desc или asc")
         @RequestParam(value = "sortStrategy", required = false, defaultValue = "desc") String sortStrategy,
         Authentication auth
     ) {

@@ -89,6 +89,7 @@ public class DocumentFacadeController {
     Page<DocumentFacadeResponse> getAllDocuments(
         @RequestParam(value = "pageNum", required = false) Integer pageNum,
         @RequestParam(value = "pageSize", required = false) Integer pageSize,
+        @Parameter(description = "Значение может быть desc или asc")
         @RequestParam(value = "sortStrategy", required = false, defaultValue = "desc") String sortStrategy,
         Authentication authentication
     ) {

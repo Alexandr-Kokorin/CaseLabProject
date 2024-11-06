@@ -4,6 +4,7 @@ import caselab.controller.attribute.payload.AttributeRequest;
 import caselab.controller.attribute.payload.AttributeResponse;
 import caselab.service.attribute.AttributeService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -81,6 +82,7 @@ public class AttributeController {
     public Page<AttributeResponse> findAllAttributes(
         @RequestParam(value = "pageNum", required = false) Integer pageNum,
         @RequestParam(value = "pageSize", required = false) Integer pageSize,
+        @Parameter(description = "Значение может быть desc или asc")
         @RequestParam(value = "sortStrategy", required = false, defaultValue = "desc") String sortStrategy,
         Authentication auth
     ) {
