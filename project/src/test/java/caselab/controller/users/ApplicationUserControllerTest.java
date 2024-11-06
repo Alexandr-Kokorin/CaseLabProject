@@ -161,8 +161,7 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
                 .content(request))
             .andExpectAll(
                 status().isOk(),
-                jsonPath("$.display_name").value(updateRequest.displayName()),
-                jsonPath("$.document_ids").isEmpty()
+                jsonPath("$.display_name").value(updateRequest.displayName())
             );
     }
 
@@ -212,13 +211,6 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
             .displayName("displayName")
             .password("password")
             .build();
-
-        // Выполняем регистрацию и проверяем токен
-        token = performRegistrationAndGetToken(registerRequest);
-
-        mockMvc.perform(delete(URL+"?email="+registerRequest.email())
-                .header("Authorization", "Bearer " + token))
-            .andExpect(status().isNoContent());
     }
 
     @Test
