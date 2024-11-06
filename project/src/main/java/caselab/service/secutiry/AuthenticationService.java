@@ -2,6 +2,7 @@ package caselab.service.secutiry;
 
 import caselab.controller.secutiry.payload.AuthenticationRequest;
 import caselab.controller.secutiry.payload.AuthenticationResponse;
+import caselab.controller.secutiry.payload.RefreshTokenRequest;
 import caselab.controller.secutiry.payload.RegisterRequest;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.enums.GlobalPermissionName;
@@ -64,6 +65,11 @@ public class AuthenticationService {
             .orElseThrow();
         var jwtToken = jwtService.generateToken(user);
         return new AuthenticationResponse(jwtToken);
+    }
+
+    public AuthenticationResponse refreshToken(RefreshTokenRequest request) {
+        //TODO доделать
+        return null;
     }
 
     public String encodePassword(String password) {

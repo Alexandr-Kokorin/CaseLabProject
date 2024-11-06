@@ -2,6 +2,7 @@ package caselab.controller.secutiry;
 
 import caselab.controller.secutiry.payload.AuthenticationRequest;
 import caselab.controller.secutiry.payload.AuthenticationResponse;
+import caselab.controller.secutiry.payload.RefreshTokenRequest;
 import caselab.controller.secutiry.payload.RegisterRequest;
 import caselab.service.secutiry.AuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -56,5 +57,10 @@ public class AuthenticationController {
     @PostMapping("/authenticate")
     public AuthenticationResponse authenticate(@Valid @RequestBody AuthenticationRequest request) {
         return authenticationService.authenticate(request);
+    }
+
+    @PostMapping("/refresh-token")
+    public AuthenticationResponse refreshToken(@RequestBody RefreshTokenRequest request) {
+        return authenticationService.refreshToken(request);
     }
 }
