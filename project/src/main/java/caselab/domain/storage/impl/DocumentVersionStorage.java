@@ -6,6 +6,7 @@ import io.minio.GetObjectArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectArgs;
+import io.minio.StatObjectArgs;
 import io.minio.errors.ErrorResponseException;
 import io.minio.errors.InsufficientDataException;
 import io.minio.errors.InternalException;
@@ -71,7 +72,29 @@ public class DocumentVersionStorage implements FileStorage {
 
     private String generateFileName(MultipartFile file) {
         String extension = getExtension(file.getOriginalFilename());
-        return UUID.randomUUID() + "." + extension;
+        String fileName;
+        do {
+            fileName = UUID.randomUUID() + "." + extension;
+        } while (isObjectExist(fileName));
+        return fileName;
+    }
+
+    private boolean isObjectExist(String name) {
+        try {
+            minioClient.statObject(StatObjectArgs.builder()
+                .bucket(bucket)
+                .object(name)
+                .build());
+            return true;
+        } catch (ErrorResponseException e) {
+            if ("NoSuchKey".equals(e.errorResponse().code())) {
+                return false;
+            } else {
+                throw new DocumentStorageException(e.getMessage(), e.getCause());
+            }
+        } catch (Exception e) {
+            throw new DocumentStorageException(e.getMessage(), e.getCause());
+        }
     }
 
     @Override

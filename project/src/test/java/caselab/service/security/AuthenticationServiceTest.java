@@ -9,16 +9,20 @@ import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.ApplicationUserRepository;
 import caselab.domain.repository.GlobalPermissionRepository;
 import caselab.exception.entity.already_exists.UserAlreadyExistsException;
+import caselab.service.notification.email.EmailService;
 import caselab.service.secutiry.AuthenticationService;
 import caselab.service.secutiry.JwtService;
+import caselab.service.util.UserUtilService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
@@ -43,6 +47,10 @@ public class AuthenticationServiceTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+    @Mock
+    private UserUtilService userUtilService;
+    @Mock
+    private EmailService emailService;
 
     @Mock
     private JwtService jwtService;
@@ -61,17 +69,13 @@ public class AuthenticationServiceTest {
 
         when(globalPermissionRepository.findByName(GlobalPermissionName.USER)).thenReturn(mockGlobalPermission());
         when(passwordEncoder.encode(anyString())).thenReturn("hashedPassword");
-        when(jwtService.generateToken(any(ApplicationUser.class))).thenReturn("mocked-jwt-token");
         when(appUserRepository.save(any(ApplicationUser.class)))
             .thenReturn(null); // Ничего не возвращаем, просто сохраняем
 
-        AuthenticationResponse response = authenticationService.register(registerRequest);
+        authenticationService.register(registerRequest, any(Authentication.class));
 
         assertAll(
-            () -> assertThat(response).isNotNull(),
-            () -> assertThat(response.token()).isEqualTo("mocked-jwt-token"),
-            () -> verify(appUserRepository).save(any(ApplicationUser.class)),
-            () -> verify(jwtService).generateToken(any(ApplicationUser.class))
+            () -> verify(appUserRepository).save(any(ApplicationUser.class))
         );
     }
 
@@ -87,7 +91,8 @@ public class AuthenticationServiceTest {
         when(appUserRepository.findByEmail(anyString())).thenReturn(Optional.of(mockApplicationUser()));
 
         assertAll(
-            () -> assertThrows(UserAlreadyExistsException.class, () -> authenticationService.register(registerRequest)),
+            () -> assertThrows(UserAlreadyExistsException.class,
+                () -> authenticationService.register(registerRequest, any(Authentication.class))),
             () -> verify(appUserRepository).findByEmail(anyString()),
             () -> verify(appUserRepository, never()).save(any(ApplicationUser.class))
         );

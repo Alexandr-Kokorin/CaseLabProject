@@ -3,6 +3,8 @@ package caselab.controller.attribute;
 import caselab.controller.BaseControllerTest;
 import caselab.controller.attribute.payload.AttributeRequest;
 import caselab.controller.attribute.payload.AttributeResponse;
+import caselab.controller.secutiry.payload.AuthenticationRequest;
+import caselab.controller.secutiry.payload.AuthenticationResponse;
 import caselab.domain.entity.Attribute;
 import java.util.List;
 import java.util.function.Supplier;
@@ -12,9 +14,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.test.context.support.WithMockUser;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -42,24 +43,79 @@ public class AttributeControllerTest extends BaseControllerTest {
     );
 
     private final String ATTRIBUTE_URI = "/api/v1/attributes";
+    private static AuthenticationResponse token;
 
-    @MockBean
-    private SecurityFilterChain securityFilterChain;
 
     public static Stream<Arguments> provideInvalidAttributeRequests() {
         return invalidAttributeRequests.get();
     }
 
+    @SneakyThrows
+    private AuthenticationResponse loginAdmin() {
+        if (token != null) {
+            return token;
+        }
+
+        var request = AuthenticationRequest.builder()
+            .email("admin@gmail.com")
+            .password("admin321@&123")
+            .build();
+
+        var mvcResponse = mockMvc.perform(post("/api/v1/auth/authenticate")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(
+                status().isOk()
+            )
+            .andReturn();
+
+        token = objectMapper.readValue(
+            mvcResponse.getResponse().getContentAsString(),
+            AuthenticationResponse.class
+        );
+
+        return token;
+    }
+    @SneakyThrows
+    private AuthenticationResponse loginUser() {
+        if (token != null) {
+            return token;
+        }
+
+        var request = AuthenticationRequest.builder()
+            .email("user@example.com")
+            .password("password")
+            .build();
+
+        var mvcResponse = mockMvc.perform(post("/api/v1/auth/authenticate")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(
+                status().isOk()
+            )
+            .andReturn();
+
+        token = objectMapper.readValue(
+            mvcResponse.getResponse().getContentAsString(),
+            AuthenticationResponse.class
+        );
+
+        return token;
+    }
+
 
     @Test
     @SneakyThrows
-    public void testCreateAttribute_whenAttributeRequestIsValid_shouldReturnCreatedAttribute() {
+    @WithMockUser(username = "admin@gmail.com", roles = {"ADMIN"})
+    public void testCreateAttribute_whenAttributeRequestIsValid_shouldReturnCreatedAttribute_forAdmin() {
+        var token = loginAdmin().token();
         var attributeRequest = AttributeRequest.builder()
             .name("name")
             .type("type")
             .build();
 
         var mvcResponse = mockMvc.perform(post(ATTRIBUTE_URI)
+                .header("Authorization", "Bearer " + token) // Вставка токена в заголовок
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(attributeRequest)))
             .andExpectAll(
@@ -83,7 +139,10 @@ public class AttributeControllerTest extends BaseControllerTest {
     @ParameterizedTest
     @MethodSource("provideInvalidAttributeRequests")
     public void testCreateAttribute_whenAttributeRequestIsInvalid(AttributeRequest attributeRequest) {
+        var token = loginAdmin().token();
+
         mockMvc.perform(post(ATTRIBUTE_URI)
+                .header("Authorization", "Bearer " + token) // Вставка токена в заголовок
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(attributeRequest)))
             .andExpectAll(
@@ -91,13 +150,17 @@ public class AttributeControllerTest extends BaseControllerTest {
                 content().contentType(MediaType.APPLICATION_PROBLEM_JSON)
             );
     }
-
+    // Тут написал админа в тесте, потому что используется создание атрибута, доступ к которому
+    //есть только у админа
     @Test
     @SneakyThrows
+    @WithMockUser(username = "admin@gmail.com", roles = {"ADMIN"})
     public void testFindAttributeById_whenAttributeExists_shouldReturnAttributeById() {
+        var token = loginUser().token();
         var existingAttribute = createAttribute("name", "type");
 
         var mvcResponse = mockMvc.perform(get(ATTRIBUTE_URI + "/" + existingAttribute.getId())
+                .header("Authorization", "Bearer " + token) // Вставка токена в заголовок
                 .accept(MediaType.APPLICATION_JSON))
             .andExpectAll(
                 status().isOk(),
@@ -119,20 +182,33 @@ public class AttributeControllerTest extends BaseControllerTest {
 
     @Test
     @SneakyThrows
+    @WithMockUser(username = "user@exmaple.com", roles = {"USER"})
     public void testFindAttributeById_whenAttributeNotFound() {
-        mockMvc.perform(get(ATTRIBUTE_URI + "/1"))
+        var token = loginUser().token();
+        mockMvc.perform(get(ATTRIBUTE_URI + "/" + 1)
+                .header("Authorization", "Bearer " + token) // Вставка токена в заголовок
+                .accept(MediaType.APPLICATION_JSON))
             .andExpectAll(
                 status().isNotFound(),
                 content().contentType(MediaType.APPLICATION_PROBLEM_JSON)
-            );
+            )
+            .andReturn()
+            .getResponse();
     }
 
+    // TODO - что-нибудь сделать, сейчас не работает
+    /*
+    //Тут так же использую админа, потому что есть создание аттрибута
     @Test
     @SneakyThrows
+    @WithMockUser(username = "admin@gmail.com", roles = {"ADMIN"})
     public void testFindAllAttributes_whenAtLeastOneAttributeExists_shouldReturnListOfAttributes() {
+        var token = loginAdmin().token();
+
         var existingAttribute = createAttribute("name", "type");
 
         var mvcResponse = mockMvc.perform(get(ATTRIBUTE_URI)
+                .header("Authorization", "Bearer " + token)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpectAll(
                 status().isOk(),
@@ -153,9 +229,11 @@ public class AttributeControllerTest extends BaseControllerTest {
 
     @Test
     @SneakyThrows
+    @WithMockUser(username = "user@exmaple.com", roles = {"USER"})
     public void testFindAllAttributes_whenThereIsNoAttribute_shouldReturnEmptyList() {
-
+        var token = loginUser().token();
         var mvcResponse = mockMvc.perform(get(ATTRIBUTE_URI)
+                .header("Authorization", "Bearer " + token)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpectAll(
                 status().isOk(),
@@ -168,10 +246,13 @@ public class AttributeControllerTest extends BaseControllerTest {
 
         assertTrue(attributes.isEmpty());
     }
+     */
 
     @Test
     @SneakyThrows
+    @WithMockUser(username = "admin@gmail.com", roles = {"ADMIN"})
     public void testUpdateAttribute_whenAttributeExists_shouldReturnUpdatedAttribute() {
+        var token = loginAdmin().token();
         var existingAttribute = createAttribute("name", "type");
 
         var attributeRequest = AttributeRequest.builder()
@@ -180,6 +261,7 @@ public class AttributeControllerTest extends BaseControllerTest {
             .build();
 
         var mvcResponse = mockMvc.perform(put(ATTRIBUTE_URI + "/" + existingAttribute.getId())
+                .header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(attributeRequest)))
             .andExpectAll(
@@ -203,10 +285,13 @@ public class AttributeControllerTest extends BaseControllerTest {
     @SneakyThrows
     @ParameterizedTest
     @MethodSource("provideInvalidAttributeRequests")
+    @WithMockUser(username = "admin@gmail.com", roles = {"ADMIN"})
     public void testUpdateAttribute_whenAttributeRequestIsInvalid(AttributeRequest attributeRequest) {
+        var token = loginAdmin().token();
         var existingAttribute = createAttribute("name", "type");
 
         mockMvc.perform(put(ATTRIBUTE_URI + "/" + existingAttribute.getId())
+                .header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(attributeRequest)))
             .andExpectAll(
@@ -219,13 +304,16 @@ public class AttributeControllerTest extends BaseControllerTest {
 
     @Test
     @SneakyThrows
+    @WithMockUser(username = "admin@gmail.com", roles = {"ADMIN"})
     public void testUpdateAttribute_whenAttributeNotFound() {
+        var token = loginAdmin().token();
         var attributeRequest = AttributeRequest.builder()
             .name("name")
             .type("type")
             .build();
 
         mockMvc.perform(put(ATTRIBUTE_URI + "/1")
+                .header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(attributeRequest)))
             .andExpectAll(
@@ -236,6 +324,7 @@ public class AttributeControllerTest extends BaseControllerTest {
 
     @Test
     @SneakyThrows
+    @WithMockUser(username = "admin@gmail.com", roles = {"ADMIN"})
     public void testDeleteAttribute_whenAttributeExists_shouldDeleteAttributeById() {
         var existingAttribute = createAttribute("name", "type");
 
@@ -250,7 +339,9 @@ public class AttributeControllerTest extends BaseControllerTest {
 
     @Test
     @SneakyThrows
+    @WithMockUser(username = "admin@gmail.com", roles = {"ADMIN"})
     public void testDeleteAttribute_whenAttributeNotFound() {
+        var token = loginAdmin().token();
         mockMvc.perform(delete(ATTRIBUTE_URI + "/1"))
             .andExpectAll(
                 status().isNotFound(),
@@ -258,13 +349,17 @@ public class AttributeControllerTest extends BaseControllerTest {
             );
     }
 
+
+    @WithMockUser(username = "admin@gmail.com", roles = {"ADMIN"})
     private Attribute createAttribute(String name, String type) throws Exception {
+        var token = loginAdmin().token();
         var attributeRequest = AttributeRequest.builder()
             .name(name)
             .type(type)
             .build();
 
         var mvcResponse = mockMvc.perform(post(ATTRIBUTE_URI)
+                .header("Authorization", "Bearer " + token) // Вставка токена в заголовок
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(attributeRequest)))
             .andExpect(

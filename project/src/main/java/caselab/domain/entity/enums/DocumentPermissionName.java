@@ -18,4 +18,12 @@ public enum DocumentPermissionName {
     public boolean canSendForVoting() {
         return this == SEND_FOR_VOTING || this == CREATOR;
     }
+
+    public boolean any() {
+        return true;
+    }
+
+    public boolean isCreator() {
+        return this == CREATOR;
+    }
 }

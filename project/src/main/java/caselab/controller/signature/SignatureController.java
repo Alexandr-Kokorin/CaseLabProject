@@ -36,7 +36,7 @@ public class SignatureController {
     private final SignatureService signatureService;
     private final SubscriptionService subscriptionService;
 
-    @PostMapping("/sign/{id}")
+    @PostMapping("/sign")
     @Operation(summary = "Подписать документ",
                description = """
                    Подписывает документ, вычисляет хеш подписи
@@ -48,34 +48,36 @@ public class SignatureController {
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     public SignatureResponse sign(
-        @Parameter(description = "ID подписи", required = true)
-        @PathVariable("id") Long id,
+        @Parameter(description = "ID документа", required = true)
+        @RequestParam("documentId") Long documentId,
         @Parameter(description = "Статус подписания (true - подписать, false - отклонить)", required = true)
-        @RequestParam("status") Boolean sign
+        @RequestParam("status") Boolean sign,
+        Authentication authentication
     ) {
-        var response = signatureService.signatureUpdate(id, sign);
-        subscriptionService.sendEvent(response.documentVersionId(), EventType.valueOf(response.status().name()));
+        var response = signatureService.signatureUpdate(documentId, sign, authentication);
+        subscriptionService.sendEvent(response.documentId(), EventType.valueOf(response.status().name()));
         return response;
     }
 
-    @Operation(summary = "Отправить версию документа на подпись",
+    @Operation(summary = "Отправить документ на подпись",
                description = """
-                   Отправляет версию документа на подписание пользователю
+                   Отправляет документ на подписание пользователю
                    и возвращает DTO с информацией о созданной подписи
                    """)
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Успешная отправка документа на подпись"),
-        @ApiResponse(responseCode = "404", description = "Версия документа не найдена",
+        @ApiResponse(responseCode = "404", description = "Документ не найден",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
         @ApiResponse(responseCode = "404", description = "Пользователь не найден",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @PostMapping("/send")
     public SignatureResponse sendDocumentVersionOnSigning(
-        @RequestBody SignatureCreateRequest signatureCreateRequest
+        @RequestBody SignatureCreateRequest signatureCreateRequest,
+        Authentication authentication
     ) {
-        var response = signatureService.createSignature(signatureCreateRequest);
-        subscriptionService.sendEvent(response.documentVersionId(), EventType.valueOf(response.status().name()));
+        var response = signatureService.createSignature(signatureCreateRequest, authentication);
+        subscriptionService.sendEvent(response.documentId(), EventType.valueOf(response.status().name()));
         return response;
     }
 
@@ -90,5 +92,19 @@ public class SignatureController {
     public List<SignatureResponse> getAllSignaturesForUser(Authentication authentication) {
         var userDetails = (UserDetails) authentication.getPrincipal();
         return signatureService.findAllSignaturesByEmail(userDetails.getUsername());
+    }
+
+    @Operation(summary = "Получить все подписи по id документа",
+               description = "Возвращает список всех подписей, связанных с документом")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Успешное получение списка подписей"),
+        @ApiResponse(responseCode = "404", description = "Документ не найден",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @GetMapping("/all/{documentId}")
+    public List<SignatureResponse> getAllSignaturesByDocumentId(
+        @PathVariable("documentId") Long documentId
+    ) {
+        return signatureService.findAllSignaturesByDocumentId(documentId);
     }
 }

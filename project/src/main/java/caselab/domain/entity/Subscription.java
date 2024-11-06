@@ -27,8 +27,8 @@ public class Subscription {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "document_version_id", nullable = false)
-    private Long documentVersionId;
+    @Column(name = "document_id", nullable = false)
+    private Long documentId;
 
     @Column(name = "user_email", nullable = false)
     private String userEmail;

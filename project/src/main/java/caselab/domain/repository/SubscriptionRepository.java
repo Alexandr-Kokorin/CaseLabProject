@@ -9,11 +9,11 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface SubscriptionRepository extends JpaRepository<Subscription, Long> {
 
-    List<Subscription> findAllByDocumentVersionId(Long documentVersionId);
+    List<Subscription> findAllByDocumentId(Long documentId);
 
     List<Subscription> findAllByUserEmail(String userEmail);
 
-    Optional<Subscription> findFirstByDocumentVersionIdAndUserEmail(Long documentVersionId, String userEmail);
+    Optional<Subscription> findFirstByDocumentIdAndUserEmail(Long documentId, String userEmail);
 
-    boolean existsByDocumentVersionIdAndUserEmail(Long documentVersionId, String userEmail);
+    boolean existsByDocumentIdAndUserEmail(Long documentId, String userEmail);
 }

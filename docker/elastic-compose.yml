@@ -1,3 +1,4 @@
+#file: noinspection ComposeUnknownKeys
 include:
   - environment-compose.yml
 
@@ -16,6 +17,10 @@ services:
       - elastic:/usr/share/elasticsearch/data
     networks:
       - backend
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -q '\"status\":\"green\"\\|\"status\":\"yellow\"'" ]
+      interval: 10s
+      timeout: 10s
 
   kibana:
     image: kibana:8.15.2
@@ -26,7 +31,8 @@ services:
       ELASTICSEARCH_URL: http://elasticsearch:9200
       ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
     depends_on:
-      - elasticsearch
+      elasticsearch:
+        condition: service_healthy
     networks:
       - backend
 
@@ -41,7 +47,8 @@ services:
     environment:
       LS_JAVA_OPTS: "-Xmx256m -Xms256m"
     depends_on:
-      - elasticsearch
+      elasticsearch:
+        condition: service_healthy
     networks:
       - backend
 

@@ -49,6 +49,19 @@ public class ApplicationUserController {
         return userService.findAllUsers();
     }
 
+    @GetMapping("/current")
+    @Operation(summary = "Получить информацию о текущем пользователе",
+               description = "Возвращает информацию о текущем пользователе исходя из контекста аутентификации")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Успешное получение",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+        @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    public UserResponse getCurrentUser(Authentication authentication) {
+        return userService.getCurrentUser(authentication);
+    }
+
     @GetMapping
     @Operation(summary = "Получить информацию о пользователе по его адресу электронной почты",
                description = "Возвращает информацию о пользователе по его адресу электронной почты")
@@ -96,8 +109,8 @@ public class ApplicationUserController {
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @DeleteMapping
-    public ResponseEntity<Void> deleteUser(Authentication authentication) {
-        userService.deleteUser(authentication);
+    public ResponseEntity<Void> deleteUser(Authentication authentication, @RequestParam String email) {
+        userService.deleteUser(authentication, email);
         return ResponseEntity.noContent().build();
     }
 }

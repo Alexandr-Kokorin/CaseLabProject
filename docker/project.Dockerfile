@@ -2,7 +2,6 @@ FROM maven:3.9.7-eclipse-temurin-21 AS dependencies
 WORKDIR /opt/app
 COPY pom.xml .
 COPY project/pom.xml project/pom.xml
-COPY update-consumer/pom.xml update-consumer/pom.xml
 RUN mvn -B -e -am -pl project dependency:go-offline
 
 FROM maven:3.9.7-eclipse-temurin-21 AS builder

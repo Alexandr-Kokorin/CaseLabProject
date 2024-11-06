@@ -18,15 +18,22 @@ services:
       POSTGRES_USER: $POSTGRES_USER
       POSTGRES_PASSWORD: $POSTGRES_PASSWORD
       POSTGRES_CONTAINER_NAME: $POSTGRES_CONTAINER_NAME
+      KAFKA_BOOTSTRAP_SERVER: kafka:9092
       JWT_SECRET: $JWT_SECRET
       MAIL_HOST: $MAIL_HOST
       MAIL_PORT: $MAIL_PORT
+      MINIO_URL: $MINIO_URL
+      MINIO_ACCESS_KEY: $MINIO_ACCESS_KEY
+      MINIO_SECRET_KEY: $MINIO_SECRET_KEY
+      ELASTIC_HOST: $ELASTIC_HOST
     depends_on:
       liquibase-migrations:
         condition: service_completed_successfully
       postgresql:
         condition: service_healthy
       elasticsearch:
-        condition: service_started
+        condition: service_healthy
     networks:
-      - backend
+      backend:
+        aliases:
+          - app

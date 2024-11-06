@@ -1,7 +1,7 @@
 app:
   scheduler:
     enable: true
-    interval: 600s
+    interval: 300s
     force-check-delay: 10s
   retry:
     max-attempts: 5
@@ -24,10 +24,18 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         enable_lazy_load_no_trans: true
   kafka:
-    bootstrap-servers: localhost:9094
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVER:localhost:9094}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: "*"
   cache:
     cache-names:
       - rate-limit-buckets-project
@@ -53,7 +61,7 @@ spring:
             write-timeout: 5000
         transport.protocol: smtp
   elasticsearch:
-    uris: http://elasticsearch:9200
+    uris: http://${ELASTIC_HOST:localhost:9200}
 
 bucket4j:
   enabled: true
@@ -74,6 +82,7 @@ server:
   forward-headers-strategy: NATIVE
 
 logging:
+  config: classpath:log4j2-plain.xml
   level:
     org.apache.kafka: warn
 
@@ -103,4 +112,4 @@ management:
 
 jwt:
   secret: ${JWT_SECRET:55d731c263e1ddb8e50eec214ccf010207b82cfb415c76976751a12f1f04c2ca}
-  ttl: 30 # in minutes
+  ttl: 720 # in minutes

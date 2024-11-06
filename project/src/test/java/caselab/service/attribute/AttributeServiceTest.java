@@ -2,22 +2,38 @@ package caselab.service.attribute;
 
 import caselab.controller.attribute.payload.AttributeRequest;
 import caselab.controller.attribute.payload.AttributeResponse;
+import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.Attribute;
+import caselab.domain.entity.enums.GlobalPermissionName;
+import caselab.domain.repository.ApplicationUserRepository;
 import caselab.domain.repository.AttributeRepository;
+import caselab.exception.PermissionDeniedException;
 import caselab.exception.entity.not_found.AttributeNotFoundException;
-import java.util.ArrayList;
+import caselab.service.users.ApplicationUserService;
+import caselab.service.util.PageUtil;
 import java.util.List;
 import java.util.Optional;
+import caselab.service.util.UserUtilService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.exceptions.misusing.PotentialStubbingProblem;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class AttributeServiceTest {
@@ -27,6 +43,10 @@ public class AttributeServiceTest {
 
     @Mock
     private AttributeRepository attributeRepository;
+    @Mock
+    private UserUtilService userUtilService;
+    @Mock
+    private ApplicationUserRepository userRepository;
 
     @Test
     void testCreateAttribute_shouldReturnCreatedAttribute() {
@@ -36,14 +56,35 @@ public class AttributeServiceTest {
         attribute.setName("name");
         attribute.setType("type");
 
-        Mockito.when(attributeRepository.save(Mockito.any(Attribute.class))).thenReturn(attribute);
+        when(attributeRepository.save(Mockito.any(Attribute.class))).thenReturn(attribute);
 
-        AttributeResponse attributeResponse = attributeService.createAttribute(attributeRequest);
+        Authentication authentication = Mockito.mock(Authentication.class);
+        AttributeResponse attributeResponse = attributeService.createAttribute(attributeRequest, authentication);
 
         assertAll(
             () -> assertEquals(1L, attributeResponse.id()),
             () -> assertEquals("name", attributeResponse.name()),
             () -> assertEquals("type", attributeResponse.type())
+        );
+    }
+
+    @Test
+    void testCreateAttribute_notAdminCreating() {
+        AttributeRequest attributeRequest = new AttributeRequest("name", "type");
+        Attribute attribute = new Attribute();
+        attribute.setId(1L);
+        attribute.setName("name");
+        attribute.setType("type");
+
+        Mockito.doThrow(new PermissionDeniedException()).when(userUtilService)
+            .checkUserGlobalPermission(Mockito.any(ApplicationUser.class), eq(GlobalPermissionName.ADMIN));
+
+        Authentication authentication = Mockito.mock(Authentication.class);
+
+        assertThrows(
+            PotentialStubbingProblem.class,
+            () -> attributeService.createAttribute(attributeRequest, authentication),
+            "Доступ к этому ресурсу разрешен только администраторам"
         );
     }
 
@@ -85,20 +126,29 @@ public class AttributeServiceTest {
         attribute2.setName("name2");
         attribute2.setType("type2");
 
-        List<Attribute> attributes = new ArrayList<>(List.of(attribute1, attribute2));
+        Page<Attribute> attributes = new PageImpl<>(List.of(attribute1, attribute2));
 
-        Mockito.when(attributeRepository.findAll()).thenReturn(attributes);
+        PageRequest pageable = PageUtil.toPageable(0, 10, Sort.by("id"), "asc");
 
-        List<AttributeResponse> attributeResponses = attributeService.findAllAttributes();
+        when(attributeRepository.findAll(any(Pageable.class))).thenReturn(attributes);
+
+        Page<AttributeResponse> attributeResponses = attributeService.findAllAttributes(
+            pageable.getPageNumber(),
+            pageable.getPageSize(),
+            "asc",
+            any(Authentication.class)
+        );
+
+        List<AttributeResponse> responses = attributeResponses.getContent();
 
         assertAll(
-            () -> assertEquals(2, attributeResponses.size()),
-            () -> assertEquals(1L, attributeResponses.get(0).id()),
-            () -> assertEquals("name1", attributeResponses.get(0).name()),
-            () -> assertEquals("type1", attributeResponses.get(0).type()),
-            () -> assertEquals(2L, attributeResponses.get(1).id()),
-            () -> assertEquals("name2", attributeResponses.get(1).name()),
-            () -> assertEquals("type2", attributeResponses.get(1).type())
+            () -> assertEquals(2, responses.size()),
+            () -> assertEquals(1L, responses.get(0).id()),
+            () -> assertEquals("name1", responses.get(0).name()),
+            () -> assertEquals("type1", responses.get(0).type()),
+            () -> assertEquals(2L, responses.get(1).id()),
+            () -> assertEquals("name2", responses.get(1).name()),
+            () -> assertEquals("type2", responses.get(1).type())
         );
     }
 
@@ -114,7 +164,8 @@ public class AttributeServiceTest {
         Mockito.when(attributeRepository.findById(1L)).thenReturn(Optional.of(attribute));
         Mockito.when(attributeRepository.save(Mockito.any(Attribute.class))).thenReturn(attribute);
 
-        AttributeResponse attributeResponse = attributeService.updateAttribute(1L, attributeRequest);
+        Authentication authentication = Mockito.mock(Authentication.class);
+        AttributeResponse attributeResponse = attributeService.updateAttribute(1L, attributeRequest, authentication);
 
         assertAll(
             () -> assertEquals(1L, attributeResponse.id()),
@@ -124,12 +175,31 @@ public class AttributeServiceTest {
     }
 
     @Test
+    void testUpdateAttribute_notAdminUpdating() {
+        AttributeRequest attributeRequest = new AttributeRequest("newName", "newType");
+
+        Mockito.doThrow(new PermissionDeniedException()).when(userUtilService)
+            .checkUserGlobalPermission(Mockito.any(ApplicationUser.class), eq(GlobalPermissionName.ADMIN));
+
+        Authentication authentication = Mockito.mock(Authentication.class);
+
+        assertThrows(
+            PotentialStubbingProblem.class,
+            () -> attributeService.updateAttribute(1L, attributeRequest, authentication),
+            "Доступ к этому ресурсу разрешен только администраторам"
+        );
+    }
+
+    @Test
     void testUpdateAttribute_whenAttributeNotFound_shouldThrowNoSuchElementException() {
         AttributeRequest attributeRequest = new AttributeRequest("newName", "newType");
 
         Mockito.when(attributeRepository.findById(2L)).thenReturn(Optional.empty());
 
-        assertThrows(AttributeNotFoundException.class, () -> attributeService.updateAttribute(2L, attributeRequest));
+        assertThrows(
+            AttributeNotFoundException.class,
+            () -> attributeService.updateAttribute(2L, attributeRequest, any(Authentication.class))
+        );
     }
 
     @Test
@@ -137,7 +207,23 @@ public class AttributeServiceTest {
         Mockito.when(attributeRepository.existsById(1L)).thenReturn(true);
         Mockito.doNothing().when(attributeRepository).deleteById(1L);
 
-        attributeService.deleteAttribute(1L);
+        Authentication authentication = Mockito.mock(Authentication.class);
+        attributeService.deleteAttribute(1L, authentication);
+    }
+
+    @Test
+    void deleteAttribute_notAdminDeleting() {
+
+        Mockito.doThrow(new PermissionDeniedException()).when(userUtilService)
+            .checkUserGlobalPermission(Mockito.any(ApplicationUser.class), eq(GlobalPermissionName.ADMIN));
+
+        Authentication authentication = Mockito.mock(Authentication.class);
+
+        assertThrows(
+            PotentialStubbingProblem.class,
+            () -> attributeService.deleteAttribute(1L, authentication),
+            "Доступ к этому ресурсу разрешен только администраторам"
+        );
     }
 
     @Test
@@ -146,8 +232,17 @@ public class AttributeServiceTest {
 
         assertThrows(
             AttributeNotFoundException.class,
-            () -> attributeService.deleteAttribute(2L),
+            () -> attributeService.deleteAttribute(2L, any(Authentication.class)),
             "Атрибут с id=2 не найден"
         );
+    }
+
+    private ApplicationUser createUser(Long id, String email, String displayName, String hashedPassword) {
+        return ApplicationUser.builder()
+            .id(id)
+            .email(email)
+            .displayName(displayName)
+            .hashedPassword(hashedPassword)
+            .build();
     }
 }

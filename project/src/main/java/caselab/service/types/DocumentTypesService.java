@@ -8,6 +8,7 @@ import caselab.domain.entity.Document;
 import caselab.domain.entity.DocumentType;
 import caselab.domain.entity.document.type.to.attribute.DocumentTypeToAttribute;
 import caselab.domain.entity.document.type.to.attribute.DocumentTypeToAttributeId;
+import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.AttributeRepository;
 import caselab.domain.repository.DocumentRepository;
 import caselab.domain.repository.DocumentTypeToAttributeRepository;
@@ -16,10 +17,12 @@ import caselab.exception.DocumentTypeInUseException;
 import caselab.exception.entity.not_found.AttributeNotFoundException;
 import caselab.exception.entity.not_found.DocumentTypeNotFoundException;
 import caselab.service.types.mapper.DocumentTypeMapper;
+import caselab.service.util.UserUtilService;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -27,13 +30,19 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class DocumentTypesService {
 
-    private final DocumentTypeMapper documentTypeMapper;
+    private final UserUtilService userUtilService;
+
     private final DocumentRepository documentRepository;
     private final DocumentTypesRepository documentTypesRepository;
     private final AttributeRepository attributeRepository;
     private final DocumentTypeToAttributeRepository documentTypeToAttributeRepository;
 
-    public DocumentTypeResponse createDocumentType(DocumentTypeRequest request) {
+    private final DocumentTypeMapper documentTypeMapper;
+
+    public DocumentTypeResponse createDocumentType(DocumentTypeRequest request, Authentication authentication) {
+        userUtilService.checkUserGlobalPermission(
+            userUtilService.findUserByAuthentication(authentication), GlobalPermissionName.ADMIN);
+
         var documentType = documentTypeMapper.requestToEntity(request);
 
         validateAttributesExistence(request);
@@ -54,7 +63,13 @@ public class DocumentTypesService {
             .toList();
     }
 
-    public DocumentTypeResponse updateDocumentType(Long id, DocumentTypeRequest request) {
+    public DocumentTypeResponse updateDocumentType(
+        Long id, DocumentTypeRequest request,
+        Authentication authentication
+    ) {
+        userUtilService.checkUserGlobalPermission(
+            userUtilService.findUserByAuthentication(authentication), GlobalPermissionName.ADMIN);
+
         var documentType = findDocumentTypeById(id);
         var updatedDocumentType = documentTypeMapper.requestToEntity(request);
 
@@ -68,7 +83,10 @@ public class DocumentTypesService {
         return documentTypeMapper.entityToResponse(updatedDocumentType);
     }
 
-    public void deleteDocumentType(Long id) {
+    public void deleteDocumentType(Long id, Authentication authentication) {
+        userUtilService.checkUserGlobalPermission(
+            userUtilService.findUserByAuthentication(authentication), GlobalPermissionName.ADMIN);
+
         var documentType = findDocumentTypeById(id);
 
         List<Document> relatedDocuments = documentRepository.findByDocumentType(documentType);

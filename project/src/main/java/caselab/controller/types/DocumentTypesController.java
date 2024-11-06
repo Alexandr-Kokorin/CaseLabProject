@@ -16,6 +16,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -45,8 +46,11 @@ public class DocumentTypesController {
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @PostMapping
-    public DocumentTypeResponse createDocumentType(@Valid @RequestBody DocumentTypeRequest documentTypeRequest) {
-        return documentTypesService.createDocumentType(documentTypeRequest);
+    public DocumentTypeResponse createDocumentType(
+        Authentication authentication,
+        @Valid @RequestBody DocumentTypeRequest documentTypeRequest
+    ) {
+        return documentTypesService.createDocumentType(documentTypeRequest, authentication);
     }
 
     @Operation(summary = "Получить тип документа по id",
@@ -92,10 +96,11 @@ public class DocumentTypesController {
     })
     @PutMapping("/{id}")
     public DocumentTypeResponse updateDocumentType(
+        Authentication authentication,
         @PathVariable Long id,
         @Valid @RequestBody DocumentTypeRequest documentTypeRequest
     ) {
-        return documentTypesService.updateDocumentType(id, documentTypeRequest);
+        return documentTypesService.updateDocumentType(id, documentTypeRequest, authentication);
     }
 
     @Operation(summary = "Удалить тип документа по id",
@@ -109,8 +114,8 @@ public class DocumentTypesController {
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteDocumentTypeById(@PathVariable Long id) {
-        documentTypesService.deleteDocumentType(id);
+    public ResponseEntity<Void> deleteDocumentTypeById(Authentication authentication, @PathVariable Long id) {
+        documentTypesService.deleteDocumentType(id, authentication);
         return ResponseEntity.noContent().build();
     }
 }

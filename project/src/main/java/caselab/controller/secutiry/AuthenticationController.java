@@ -9,10 +9,12 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ProblemDetail;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,16 +31,16 @@ public class AuthenticationController {
     @Operation(summary = "Регистрация нового пользователя",
                description = "Регистрирует нового пользователя с предоставленной информацией")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Успешная регистрация",
-                     content = @Content(schema = @Schema(implementation = AuthenticationResponse.class))),
+        @ApiResponse(responseCode = "200", description = "Успешная регистрация"),
         @ApiResponse(responseCode = "400", description = "Неверный ввод",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
         @ApiResponse(responseCode = "409", description = "Пользователь уже существует",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
+    @SecurityRequirement(name = "JWT")
     @PostMapping("/register")
-    public AuthenticationResponse register(@Valid @RequestBody RegisterRequest request) {
-        return authenticationService.register(request);
+    public void register(Authentication authentication, @Valid @RequestBody RegisterRequest request) {
+        authenticationService.register(request, authentication);
     }
 
     @Operation(summary = "Аутентификация пользователя",

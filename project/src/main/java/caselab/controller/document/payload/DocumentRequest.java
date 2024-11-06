@@ -10,6 +10,7 @@ import java.util.List;
 import lombok.Builder;
 
 @Builder
+@Schema(description = "Запрос, содержащий информацию о документе")
 public record DocumentRequest(
     @JsonProperty("document_type_id")
     @NotNull(message = "{document.request.document.type.id.is_blank}")

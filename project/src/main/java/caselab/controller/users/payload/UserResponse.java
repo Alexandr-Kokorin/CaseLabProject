@@ -14,8 +14,8 @@ public record UserResponse(
     @JsonProperty("display_name")
     @Schema(description = "Отображаемое имя пользователя", example = "Иван Иванов")
     String displayName,
-    @JsonProperty("document_ids")
-    @Schema(description = "Список id документов пользователя", example = "[1,2,3]")
-    List<Long> documentIds
+    @JsonProperty("roles")
+    @Schema(description = "Роли пользователя", example = "[\"USER\"]")
+    List<String> roles
 ) {
 }

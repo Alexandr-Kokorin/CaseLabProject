@@ -46,7 +46,6 @@
 
     <modules>
         <module>project</module>
-        <module>update-consumer</module>
     </modules>
 
     <dependencyManagement>
