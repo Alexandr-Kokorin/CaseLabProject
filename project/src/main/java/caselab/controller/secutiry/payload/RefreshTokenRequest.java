@@ -8,7 +8,8 @@ import lombok.Builder;
 @Builder
 @Schema(description = "Запрос на обновление jwt токена пользователя")
 public record RefreshTokenRequest(
-    @Schema(description = "старый токен пользователя")
+    @Schema(description = "старый токен пользователя",
+            example = "d33fcba4-b8cf-44db-8641-b299421b3c26")
     @Size(min = 36, max = 36)
     @NotBlank(message = "user.token.is_blank")
     String token

@@ -113,7 +113,7 @@ public class AuthenticationServiceTest {
 
         assertAll(
             () -> assertThat(response).isNotNull(),
-            () -> assertThat(response.token()).isEqualTo("mocked-jwt-token"),
+            () -> assertThat(response.accessToken()).isEqualTo("mocked-jwt-token"),
             () -> verify(authenticationManager)
                 .authenticate(any(UsernamePasswordAuthenticationToken.class)),
             () -> verify(jwtService).generateToken(any(ApplicationUser.class))

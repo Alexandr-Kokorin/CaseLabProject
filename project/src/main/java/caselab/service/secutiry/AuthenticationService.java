@@ -5,10 +5,12 @@ import caselab.controller.secutiry.payload.AuthenticationResponse;
 import caselab.controller.secutiry.payload.RefreshTokenRequest;
 import caselab.controller.secutiry.payload.RegisterRequest;
 import caselab.domain.entity.ApplicationUser;
+import caselab.domain.entity.RefreshToken;
 import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.ApplicationUserRepository;
 import caselab.domain.repository.GlobalPermissionRepository;
 import caselab.exception.entity.already_exists.UserAlreadyExistsException;
+import caselab.exception.entity.not_found.UserNotFoundException;
 import caselab.service.notification.email.EmailNotificationDetails;
 import caselab.service.notification.email.EmailService;
 import caselab.service.util.UserUtilService;
@@ -37,6 +39,8 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
 
+    private final RefreshTokenService refreshTokenService;
+
     public void register(RegisterRequest request, Authentication authentication) {
         userUtilService.checkUserGlobalPermission(
             userUtilService.findUserByAuthentication(authentication), GlobalPermissionName.ADMIN);
@@ -63,13 +67,27 @@ public class AuthenticationService {
 
         var user = appUserRepository.findByEmail(request.email())
             .orElseThrow();
-        var jwtToken = jwtService.generateToken(user);
-        return new AuthenticationResponse(jwtToken);
+        var accessToken = jwtService.generateToken(user);
+        var refreshToken = refreshTokenService.create(user.getEmail());
+
+        return new AuthenticationResponse(accessToken, refreshToken);
     }
 
     public AuthenticationResponse refreshToken(RefreshTokenRequest request) {
-        //TODO доделать
-        return null;
+        RefreshToken token = refreshTokenService.getByToken(request.token());
+
+        refreshTokenService.verifyExpiration(token);
+
+        var user = appUserRepository.findByEmail(token.getApplicationUser().getEmail()).orElseThrow(
+            () -> new UserNotFoundException(token.getApplicationUser().getEmail())
+        );
+
+        refreshTokenService.delete(token);
+
+        String accessToken = jwtService.generateToken(user);
+        String refreshToken = refreshTokenService.create(user.getEmail());
+
+        return new AuthenticationResponse(accessToken, refreshToken);
     }
 
     public String encodePassword(String password) {

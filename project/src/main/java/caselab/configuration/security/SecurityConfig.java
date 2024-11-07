@@ -39,6 +39,7 @@ public class SecurityConfig {
                     .requestMatchers("/api/v1/auth/authenticate").permitAll() // запрос не требует аутентификации
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                     .requestMatchers("/actuator/**").permitAll()
+                    .requestMatchers("/api/v1/auth/refresh-token").permitAll()
                     .anyRequest().authenticated()) // запрос требует аутентификацию
             .sessionManagement(sessionManagementConfigurer ->
                 sessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

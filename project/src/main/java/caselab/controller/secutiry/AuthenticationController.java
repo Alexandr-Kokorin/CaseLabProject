@@ -59,6 +59,16 @@ public class AuthenticationController {
         return authenticationService.authenticate(request);
     }
 
+    @Operation(summary = "Обновление токена пользователя",
+               description = "Обновляет токен пользователя, если его старый уже устарел")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Успешное обновление",
+                     content = @Content(schema = @Schema(implementation = AuthenticationResponse.class))),
+        @ApiResponse(responseCode = "403", description = "Срок действия токена обновления истек",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+        @ApiResponse(responseCode = "404", description = "Токен обновления не найден",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
     @PostMapping("/refresh-token")
     public AuthenticationResponse refreshToken(@RequestBody RefreshTokenRequest request) {
         return authenticationService.refreshToken(request);

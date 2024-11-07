@@ -49,7 +49,7 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
             .andExpect(status().isOk())
             .andReturn();
 
-        return readValue(mvcResponse, AuthenticationResponse.class).token();
+        return readValue(mvcResponse, AuthenticationResponse.class).accessToken();
     }
 
     @BeforeEach

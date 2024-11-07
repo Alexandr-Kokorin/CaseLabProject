@@ -202,6 +202,6 @@ CREATE TABLE IF NOT EXISTS subscription
 CREATE TABLE IF NOT EXISTS refresh_tokens(
     id BIGSERIAL PRIMARY KEY,
     token VARCHAR(255) NOT NULL,
-    expiry_date TIMESTAMP WITH TIME ZONE NOT NULL,
+    expires_date TIMESTAMP WITH TIME ZONE NOT NULL,
     application_user_id BIGSERIAL NOT NULL REFERENCES application_user(id) ON DELETE CASCADE
 )

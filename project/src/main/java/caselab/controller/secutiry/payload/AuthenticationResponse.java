@@ -6,6 +6,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public record AuthenticationResponse(
     @Schema(description = "JWT токен для аутентифицированного пользователя",
             example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
-    String token
+    String accessToken,
+    @Schema(description = "Токен для обновления на новый JWT токен",
+            example = "d33fcba4-b8cf-44db-8641-b299421b3c26")
+    String refreshToken
 ) {
 }
