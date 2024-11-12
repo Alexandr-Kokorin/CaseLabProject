@@ -12,7 +12,9 @@ import org.springframework.boot.convert.DurationUnit;
 public record JwtProperties(
     String secret,
     @DurationUnit(ChronoUnit.MINUTES)
-    Duration ttl
+    Duration accessTokenTtl,
+    @DurationUnit(ChronoUnit.MINUTES)
+    Duration refreshTokenTtl
 ) {
 
     public SecretKey getSignInKey() {

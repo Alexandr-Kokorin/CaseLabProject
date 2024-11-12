@@ -192,7 +192,7 @@ public class SignatureControllerTest extends BaseControllerTest {
         @DisplayName("Should return 404 and error message when send request non-existent document version")
         @SneakyThrows
         public void createSignatureForNotExistDocumentVersion_notFound() {
-            var token = login().token();
+            var token = login().accessToken();
             documentVersionRepository.deleteAll();
 
             var signatureRequest = getSignatureCreateRequest();
@@ -292,7 +292,7 @@ public class SignatureControllerTest extends BaseControllerTest {
         @SneakyThrows
         @Test
         public void testNotMakeSignatureNotFound() {
-            var token = login().token();
+            var token = login().accessToken();
 
             mockMvc.perform(get(SIGN_URI + "/1")
                     .header("Authorization", "Bearer " + token)
@@ -310,7 +310,7 @@ public class SignatureControllerTest extends BaseControllerTest {
         @DisplayName("Should return all signatures for current user")
         @SneakyThrows
         public void findAllSignatures_success() {
-            var token = login().token();
+            var token = login().accessToken();
 
             var mvcResponse = mockMvc.perform(get(SIGN_URI + "/all")
                     .header("Authorization", "Bearer " + token)
@@ -337,7 +337,7 @@ public class SignatureControllerTest extends BaseControllerTest {
         @DisplayName("Should return all signatures for current user")
         @SneakyThrows
         public void findAllSignaturesWithUserThatNotExist_notFound() {
-            var token = login().token();
+            var token = login().accessToken();
 
             mockMvc.perform(get(SIGN_URI + "/all/2")
                     .header("Authorization", "Bearer " + token)

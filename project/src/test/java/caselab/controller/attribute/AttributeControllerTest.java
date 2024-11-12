@@ -108,7 +108,7 @@ public class AttributeControllerTest extends BaseControllerTest {
     @SneakyThrows
     @WithMockUser(username = "admin@gmail.com", roles = {"ADMIN"})
     public void testCreateAttribute_whenAttributeRequestIsValid_shouldReturnCreatedAttribute_forAdmin() {
-        var token = loginAdmin().token();
+        var token = loginAdmin().accessToken();
         var attributeRequest = AttributeRequest.builder()
             .name("name")
             .type("type")
@@ -139,7 +139,7 @@ public class AttributeControllerTest extends BaseControllerTest {
     @ParameterizedTest
     @MethodSource("provideInvalidAttributeRequests")
     public void testCreateAttribute_whenAttributeRequestIsInvalid(AttributeRequest attributeRequest) {
-        var token = loginAdmin().token();
+        var token = loginAdmin().accessToken();
 
         mockMvc.perform(post(ATTRIBUTE_URI)
                 .header("Authorization", "Bearer " + token) // Вставка токена в заголовок
@@ -156,7 +156,7 @@ public class AttributeControllerTest extends BaseControllerTest {
     @SneakyThrows
     @WithMockUser(username = "admin@gmail.com", roles = {"ADMIN"})
     public void testFindAttributeById_whenAttributeExists_shouldReturnAttributeById() {
-        var token = loginUser().token();
+        var token = loginUser().accessToken();
         var existingAttribute = createAttribute("name", "type");
 
         var mvcResponse = mockMvc.perform(get(ATTRIBUTE_URI + "/" + existingAttribute.getId())
@@ -184,7 +184,7 @@ public class AttributeControllerTest extends BaseControllerTest {
     @SneakyThrows
     @WithMockUser(username = "user@exmaple.com", roles = {"USER"})
     public void testFindAttributeById_whenAttributeNotFound() {
-        var token = loginUser().token();
+        var token = loginUser().accessToken();
         mockMvc.perform(get(ATTRIBUTE_URI + "/" + 1)
                 .header("Authorization", "Bearer " + token) // Вставка токена в заголовок
                 .accept(MediaType.APPLICATION_JSON))
@@ -252,7 +252,7 @@ public class AttributeControllerTest extends BaseControllerTest {
     @SneakyThrows
     @WithMockUser(username = "admin@gmail.com", roles = {"ADMIN"})
     public void testUpdateAttribute_whenAttributeExists_shouldReturnUpdatedAttribute() {
-        var token = loginAdmin().token();
+        var token = loginAdmin().accessToken();
         var existingAttribute = createAttribute("name", "type");
 
         var attributeRequest = AttributeRequest.builder()
@@ -287,7 +287,7 @@ public class AttributeControllerTest extends BaseControllerTest {
     @MethodSource("provideInvalidAttributeRequests")
     @WithMockUser(username = "admin@gmail.com", roles = {"ADMIN"})
     public void testUpdateAttribute_whenAttributeRequestIsInvalid(AttributeRequest attributeRequest) {
-        var token = loginAdmin().token();
+        var token = loginAdmin().accessToken();
         var existingAttribute = createAttribute("name", "type");
 
         mockMvc.perform(put(ATTRIBUTE_URI + "/" + existingAttribute.getId())
@@ -306,7 +306,7 @@ public class AttributeControllerTest extends BaseControllerTest {
     @SneakyThrows
     @WithMockUser(username = "admin@gmail.com", roles = {"ADMIN"})
     public void testUpdateAttribute_whenAttributeNotFound() {
-        var token = loginAdmin().token();
+        var token = loginAdmin().accessToken();
         var attributeRequest = AttributeRequest.builder()
             .name("name")
             .type("type")
@@ -341,7 +341,7 @@ public class AttributeControllerTest extends BaseControllerTest {
     @SneakyThrows
     @WithMockUser(username = "admin@gmail.com", roles = {"ADMIN"})
     public void testDeleteAttribute_whenAttributeNotFound() {
-        var token = loginAdmin().token();
+        var token = loginAdmin().accessToken();
         mockMvc.perform(delete(ATTRIBUTE_URI + "/1"))
             .andExpectAll(
                 status().isNotFound(),
@@ -352,7 +352,7 @@ public class AttributeControllerTest extends BaseControllerTest {
 
     @WithMockUser(username = "admin@gmail.com", roles = {"ADMIN"})
     private Attribute createAttribute(String name, String type) throws Exception {
-        var token = loginAdmin().token();
+        var token = loginAdmin().accessToken();
         var attributeRequest = AttributeRequest.builder()
             .name(name)
             .type(type)
