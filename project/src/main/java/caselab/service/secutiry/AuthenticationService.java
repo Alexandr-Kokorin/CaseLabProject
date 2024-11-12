@@ -87,7 +87,7 @@ public class AuthenticationService {
                 <html lang="ru">
                 <head>
                   <meta charset="UTF-8">
-                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                  <meta name="viewport" contentTag="width=device-width, initial-scale=1.0">
                   <title>Добро пожаловать</title>
                 </head>
                 <body style="font-family: Arial, sans-serif; color: #333;">
