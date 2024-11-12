@@ -1,7 +1,6 @@
 package caselab.service.document.template;
 
 import caselab.domain.entity.attribute.value.AttributeValue;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,7 +25,7 @@ import org.xml.sax.SAXException;
 public class DocxService {
     private final GenerateTemplateXmlService generateTemplateXmlService;
 
-    public InputStream insertXml(InputStream document, Stream<AttributeValue> values) throws Docx4JException {
+    public byte[] insertXml(InputStream document, Stream<AttributeValue> values) throws Docx4JException {
         InputStream customXml = generateTemplateXmlService.generateTemplate(values);
 
         Document customXmlDocument;
@@ -52,6 +51,6 @@ public class DocxService {
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         Docx4J.save(wordMLPackage, outputStream);
-        return new ByteArrayInputStream(outputStream.toByteArray());
+        return outputStream.toByteArray();
     }
 }
