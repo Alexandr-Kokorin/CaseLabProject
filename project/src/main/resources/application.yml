@@ -112,5 +112,5 @@ management:
 
 jwt:
   secret: ${JWT_SECRET:55d731c263e1ddb8e50eec214ccf010207b82cfb415c76976751a12f1f04c2ca}
-  ttl: 60 # in minutes, equals 1 hour
-  refresh: 1440 # in minutes, equals 1 day
+  accessTokenTtl: 60 # in minutes, equals 1 hour
+  refreshTokenTtl: 1440 # in minutes, equals 1 day

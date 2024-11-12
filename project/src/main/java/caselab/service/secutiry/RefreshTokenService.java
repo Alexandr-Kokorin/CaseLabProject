@@ -37,7 +37,7 @@ public class RefreshTokenService {
             .applicationUser(applicationUser)
             .expiresDate(
                 Instant
-                    .ofEpochMilli(System.currentTimeMillis() + jwtProperties.refresh().toMillis())
+                    .ofEpochMilli(System.currentTimeMillis() + jwtProperties.refreshTokenTtl().toMillis())
                     .atZone(ZoneId.systemDefault())
                     .toLocalDateTime()
             )
