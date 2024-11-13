@@ -139,15 +139,15 @@ class DocumentTypesServiceTest {
     @Test
     void getAllDocumentTypes_shouldReturnListOfDocumentTypeResponses() {
         Page<DocumentType> documentTypes = new PageImpl<>(List.of(documentType));
-        List<DocumentTypeResponse> documentTypeResponses = List.of(response);
+        DocumentTypeResponse documentTypeResponse = response;
 
         when(documentTypeRepository.findAll(any(Pageable.class))).thenReturn(documentTypes);
         when(documentTypeMapper.entityToResponse(documentType)).thenReturn(response);
 
-        Page<DocumentTypeResponse> result = documentTypesService.getAllDocumentTypes(null, null, null);
+        Page<DocumentTypeResponse> result = documentTypesService.getAllDocumentTypes(null, null, "desc");
 
-        assertThat(result.toList()).isEqualTo(documentTypeResponses);
-        verify(documentTypeRepository).findAll();
+        assertThat(result.getContent().get(0)).isEqualTo(documentTypeResponse);
+        verify(documentTypeRepository).findAll(any(Pageable.class));
         verify(documentTypeMapper).entityToResponse(documentType);
     }
 
