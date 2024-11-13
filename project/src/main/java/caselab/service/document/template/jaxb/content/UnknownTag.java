@@ -12,14 +12,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@XmlRootElement(name = Types.unknownType, namespace = Namespaces.templateNamespace)
+@XmlRootElement(name = Types.UNKNOWN_TYPE, namespace = Namespaces.TEMPLATE_NAMESPACE)
 @XmlAccessorType(XmlAccessType.NONE)
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class UnknownTag {
-    @XmlAttribute(namespace = Namespaces.templateNamespace)
+    @XmlAttribute(namespace = Namespaces.TEMPLATE_NAMESPACE)
     private String title;
     @XmlValue
     private String value;

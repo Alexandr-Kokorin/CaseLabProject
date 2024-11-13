@@ -15,11 +15,11 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/api/v1/document-template")
 @RequiredArgsConstructor
 public class TemplateController {
-    private static final String docxMimeType = "application/msword";
+    private static final String DOCX_MIME_TYPE = "application/msword";
 
     private final TemplateService templateService;
 
-    @GetMapping(value = "/{documentTypeId}", produces = docxMimeType)
+    @GetMapping(value = "/{documentTypeId}", produces = DOCX_MIME_TYPE)
     public byte[] getDocumentTemplate(
         @PathVariable("documentTypeId") Long documentTypeId,
         Authentication authentication
@@ -32,7 +32,7 @@ public class TemplateController {
         templateService.setTemplate(documentTypeId, file, authentication);
     }
 
-    @GetMapping(value = "/instantiate/{documentVersionId}", produces = docxMimeType)
+    @GetMapping(value = "/instantiate/{documentVersionId}", produces = DOCX_MIME_TYPE)
     public byte[] instantiateDocumentTemplate(@PathVariable Long documentVersionId, Authentication authentication) {
         return templateService.instantiateTemplate(documentVersionId, authentication);
     }

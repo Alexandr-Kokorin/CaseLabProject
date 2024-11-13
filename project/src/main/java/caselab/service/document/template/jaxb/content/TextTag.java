@@ -12,14 +12,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@XmlRootElement(name = Types.textType, namespace = Namespaces.templateNamespace)
+@XmlRootElement(name = Types.TEXT_TYPE, namespace = Namespaces.TEMPLATE_NAMESPACE)
 @XmlAccessorType(XmlAccessType.NONE)
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class TextTag {
-    @XmlAttribute(namespace = Namespaces.templateNamespace)
+    @XmlAttribute(namespace = Namespaces.TEMPLATE_NAMESPACE)
     private String title;
     @XmlValue
     private String text;

@@ -12,18 +12,18 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@XmlRootElement(name = "content", namespace = Namespaces.templateNamespace)
+@XmlRootElement(name = "content", namespace = Namespaces.TEMPLATE_NAMESPACE)
 @XmlAccessorType(XmlAccessType.NONE)
 @Getter
 @Setter
 @NoArgsConstructor
 public class ContentTag {
-    @XmlElement(name = Types.textType, namespace = Namespaces.templateNamespace)
+    @XmlElement(name = Types.TEXT_TYPE, namespace = Namespaces.TEMPLATE_NAMESPACE)
     List<TextTag> texts = new ArrayList<>();
-    @XmlElement(name = Types.floatType, namespace = Namespaces.templateNamespace)
+    @XmlElement(name = Types.FLOAT_TYPE, namespace = Namespaces.TEMPLATE_NAMESPACE)
     List<FloatTag> floats = new ArrayList<>();
-    @XmlElement(name = Types.intType, namespace = Namespaces.templateNamespace)
+    @XmlElement(name = Types.INT_TYPE, namespace = Namespaces.TEMPLATE_NAMESPACE)
     List<IntegerTag> integers = new ArrayList<>();
-    @XmlElement(name = Types.unknownType, namespace = Namespaces.templateNamespace)
+    @XmlElement(name = Types.UNKNOWN_TYPE, namespace = Namespaces.TEMPLATE_NAMESPACE)
     List<UnknownTag> unknowns = new ArrayList<>();
 }

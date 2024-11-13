@@ -12,14 +12,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@XmlRootElement(name = Types.intType, namespace = Namespaces.templateNamespace)
+@XmlRootElement(name = Types.INT_TYPE, namespace = Namespaces.TEMPLATE_NAMESPACE)
 @XmlAccessorType(XmlAccessType.NONE)
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class IntegerTag {
-    @XmlAttribute(namespace = Namespaces.templateNamespace)
+    @XmlAttribute(namespace = Namespaces.TEMPLATE_NAMESPACE)
     private String title;
     @XmlValue
     private int value;
