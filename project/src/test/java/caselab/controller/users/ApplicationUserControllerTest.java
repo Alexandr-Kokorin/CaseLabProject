@@ -68,7 +68,7 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
     @SneakyThrows
     @DisplayName("Should return list of all users")
     public void shouldReturnAllUsers() {
-        var token = login().token();
+        var token = login().accessToken();
 
         mockMvc.perform(get(URL + "/all")
                 .header("Authorization", "Bearer " + token))
@@ -90,7 +90,7 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
     @SneakyThrows
     @DisplayName("Should find user by email")
     public void shouldFindUserByEmail() {
-        var token = login().token();
+        var token = login().accessToken();
         String email = "auth@example.com";
 
         mockMvc.perform(get(URL)
@@ -108,7 +108,7 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
     @SneakyThrows
     @DisplayName("Should return 400 for invalid email")
     public void shouldReturn400ForInvalidEmail() {
-        var token = login().token();
+        var token = login().accessToken();
         String invalidEmail = "";
 
         mockMvc.perform(get(URL)
@@ -133,7 +133,7 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
     @SneakyThrows
     @DisplayName("Should return 404 for non-existing user email")
     public void shouldReturn404ForNonExistingUserEmail() {
-        var token = login().token();
+        var token = login().accessToken();
         String nonExistingEmail = "nonexistent@example.com";
 
         mockMvc.perform(get(URL)
@@ -147,7 +147,7 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
     @SneakyThrows
     @DisplayName("Should update user information successfully")
     public void shouldUpdateUser() {
-        var token = login().token();
+        var token = login().accessToken();
         var updateRequest = UserUpdateRequest.builder()
             .displayName("Updated name")
             .password("Updated password")
@@ -169,7 +169,7 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
     @SneakyThrows
     @DisplayName("Should return 400 for invalid user data in updateUser method")
     public void shouldReturn400ForInvalidUserDataInUpdateUser() {
-        var token = login().token();
+        var token = login().accessToken();
         var invalidUpdateRequest = UserUpdateRequest.builder()
             .displayName("")
             .password("short")
@@ -204,7 +204,7 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
     @DisplayName("Should delete user successfully")
     @WithMockUser(username = "admin@gmail.com",roles = "{ADMIN}")
     public void shouldDeleteUser() {
-        var token = login().token();
+        var token = login().accessToken();
 
         RegisterRequest registerRequest = RegisterRequest.builder()
             .email("test123@mail.ru")
@@ -237,7 +237,7 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
             response,
             AuthenticationResponse.class
         );
-        return authenticationResponse.token();
+        return authenticationResponse.accessToken();
     }
 
     @SneakyThrows
