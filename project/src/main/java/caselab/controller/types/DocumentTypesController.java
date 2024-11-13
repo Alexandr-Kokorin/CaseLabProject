@@ -4,6 +4,7 @@ import caselab.controller.types.payload.DocumentTypeRequest;
 import caselab.controller.types.payload.DocumentTypeResponse;
 import caselab.service.types.DocumentTypesService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -12,8 +13,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -78,8 +80,13 @@ public class DocumentTypesController {
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @GetMapping
-    public List<DocumentTypeResponse> getAllDocumentTypes() {
-        return documentTypesService.getAllDocumentTypes();
+    public Page<DocumentTypeResponse> getAllDocumentTypes(
+        @RequestParam(value = "pageNum", required = false) Integer pageNum,
+        @RequestParam(value = "pageSize", required = false) Integer pageSize,
+        @Parameter(description = "Значение может быть desc или asc")
+        @RequestParam(value = "sortStrategy", required = false, defaultValue = "desc") String sortStrategy
+    ) {
+        return documentTypesService.getAllDocumentTypes(pageNum, pageSize, sortStrategy);
     }
 
     @Operation(summary = "Обновить тип документа",

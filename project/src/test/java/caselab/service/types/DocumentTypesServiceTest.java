@@ -17,13 +17,12 @@ import caselab.domain.repository.DocumentTypeToAttributeRepository;
 import caselab.domain.repository.DocumentTypesRepository;
 import caselab.exception.DocumentTypeInUseException;
 import caselab.exception.PermissionDeniedException;
-import caselab.service.types.mapper.DocumentTypeMapper;
 import caselab.exception.entity.not_found.DocumentTypeNotFoundException;
+import caselab.service.types.mapper.DocumentTypeMapper;
+import caselab.service.util.UserUtilService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import caselab.service.users.ApplicationUserService;
-import caselab.service.util.UserUtilService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,6 +31,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.exceptions.misusing.PotentialStubbingProblem;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -39,7 +41,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -120,7 +121,7 @@ class DocumentTypesServiceTest {
 
         assertThrows(
             PotentialStubbingProblem.class,
-            ()-> documentTypesService.createDocumentType(request, authentication),
+            () -> documentTypesService.createDocumentType(request, authentication),
             "Доступ к этому ресурсу разрешен только администраторам"
         );
     }
@@ -137,15 +138,15 @@ class DocumentTypesServiceTest {
 
     @Test
     void getAllDocumentTypes_shouldReturnListOfDocumentTypeResponses() {
-        List<DocumentType> documentTypes = List.of(documentType);
+        Page<DocumentType> documentTypes = new PageImpl<>(List.of(documentType));
         List<DocumentTypeResponse> documentTypeResponses = List.of(response);
 
-        when(documentTypeRepository.findAll()).thenReturn(documentTypes);
+        when(documentTypeRepository.findAll(any(Pageable.class))).thenReturn(documentTypes);
         when(documentTypeMapper.entityToResponse(documentType)).thenReturn(response);
 
-        List<DocumentTypeResponse> result = documentTypesService.getAllDocumentTypes();
+        Page<DocumentTypeResponse> result = documentTypesService.getAllDocumentTypes(null, null, null);
 
-        assertThat(result).isEqualTo(documentTypeResponses);
+        assertThat(result.toList()).isEqualTo(documentTypeResponses);
         verify(documentTypeRepository).findAll();
         verify(documentTypeMapper).entityToResponse(documentType);
     }
@@ -192,7 +193,7 @@ class DocumentTypesServiceTest {
 
         assertThrows(
             PotentialStubbingProblem.class,
-            ()-> documentTypesService.createDocumentType(request, authentication),
+            () -> documentTypesService.createDocumentType(request, authentication),
             "Доступ к этому ресурсу разрешен только администраторам"
         );
     }
@@ -214,7 +215,7 @@ class DocumentTypesServiceTest {
 
         assertThrows(
             PotentialStubbingProblem.class,
-            ()-> documentTypesService.createDocumentType(request, authentication),
+            () -> documentTypesService.createDocumentType(request, authentication),
             "Доступ к этому ресурсу разрешен только администраторам"
         );
     }
@@ -224,8 +225,10 @@ class DocumentTypesServiceTest {
         when(documentTypeRepository.findById(DOCUMENT_TYPE_ID)).thenReturn(Optional.of(documentType));
         when(documentRepository.findByDocumentType(documentType)).thenReturn(List.of(new Document()));
 
-        assertThrows(DocumentTypeInUseException.class,
-            () -> documentTypesService.deleteDocumentType(DOCUMENT_TYPE_ID, authentication));
+        assertThrows(
+            DocumentTypeInUseException.class,
+            () -> documentTypesService.deleteDocumentType(DOCUMENT_TYPE_ID, authentication)
+        );
     }
 
     private DocumentType createDocumentType(Long id, String name) {

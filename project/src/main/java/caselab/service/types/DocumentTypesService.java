@@ -17,11 +17,15 @@ import caselab.exception.DocumentTypeInUseException;
 import caselab.exception.entity.not_found.AttributeNotFoundException;
 import caselab.exception.entity.not_found.DocumentTypeNotFoundException;
 import caselab.service.types.mapper.DocumentTypeMapper;
+import caselab.service.util.PageUtil;
 import caselab.service.util.UserUtilService;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
@@ -56,11 +60,15 @@ public class DocumentTypesService {
         return documentTypeMapper.entityToResponse(findDocumentTypeById(id));
     }
 
-    public List<DocumentTypeResponse> getAllDocumentTypes() {
-        return documentTypesRepository.findAll()
-            .stream()
-            .map(documentTypeMapper::entityToResponse)
-            .toList();
+    public Page<DocumentTypeResponse> getAllDocumentTypes(
+        Integer pageNum,
+        Integer pageSize,
+        String sortStrategy
+    ) {
+        Pageable pageable = PageUtil.toPageable(pageNum, pageSize, Sort.by("name"), sortStrategy);
+
+        return documentTypesRepository.findAll(pageable)
+            .map(documentTypeMapper::entityToResponse);
     }
 
     public DocumentTypeResponse updateDocumentType(
