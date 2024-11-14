@@ -1,10 +1,13 @@
 package caselab.controller.analytics;
 
+import caselab.controller.analytics.payload.ReportDocuments;
 import caselab.service.analytics.AnalyticsService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -15,6 +18,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class AnalyticsController {
 
     private final AnalyticsService analyticsService;
+
+    @GetMapping("/created_documents")
+    public ReportDocuments getCreatedDocuments(@RequestParam("period") String period) {
+        return analyticsService.getReportDocuments(period);
+    }
 
 
 }
