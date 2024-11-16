@@ -1,13 +1,22 @@
 package caselab.service.billing.tariff;
 
+import caselab.controller.billing.tariff.payload.CreateTariffRequest;
+import caselab.controller.billing.tariff.payload.TariffResponse;
 import caselab.domain.entity.Tariff;
+import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.TariffRepository;
+import caselab.service.billing.tariff.mapper.TariffMapper;
+import caselab.service.util.UserUtilService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import javax.validation.Valid;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Optional;
 
 @Service
@@ -16,5 +25,27 @@ import java.util.Optional;
 public class TariffService {
 
     private final TariffRepository tariffRepository;
+    private final UserUtilService userUtilService;
+    private final TariffMapper tariffMapper;
 
+    public TariffResponse createTariff(Authentication authentication, @Valid CreateTariffRequest tariffRequest) {
+        userUtilService.checkUserGlobalPermission(
+            userUtilService.findUserByAuthentication(authentication), GlobalPermissionName.ADMIN);
+
+        Tariff tariff = new Tariff();
+        tariff.setName(tariffRequest.name());
+        tariff.setPrice(tariffRequest.price());
+        tariff.setUserCount(tariffRequest.userCount());
+        tariff.setTariffDetails(tariffRequest.tariffDetails());
+        tariff.setCreatedAt(
+            Instant
+                .ofEpochMilli(System.currentTimeMillis())
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime()
+        );
+
+        var savedTariff = tariffRepository.save(tariff);
+
+        return tariffMapper.entityToResponse(tariff);
+    }
 }
