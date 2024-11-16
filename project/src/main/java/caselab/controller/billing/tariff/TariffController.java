@@ -1,0 +1,28 @@
+package caselab.controller.billing.tariff;
+
+import caselab.controller.billing.tariff.payload.CreateTariffRequest;
+import caselab.controller.billing.tariff.payload.TariffResponse;
+import caselab.service.billing.tariff.TariffService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import javax.validation.Valid;
+
+@RestController
+@RequestMapping("/api/v2/tariffs")
+@RequiredArgsConstructor
+@SecurityRequirement(name = "JWT")
+@Tag(name = "Тарифы", description = "API для взаимодействия с тарифами")
+public class TariffController {
+    private final TariffService tariffService;
+
+    public TariffResponse createTariff(
+        Authentication authentication,
+        @Valid @RequestBody CreateTariffRequest tariffRequest){
+        return tariffService.createTariff(authentication,tariffRequest);
+    }
+}
