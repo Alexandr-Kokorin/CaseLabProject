@@ -5,6 +5,7 @@ import caselab.controller.billing.tariff.payload.TariffResponse;
 import caselab.domain.entity.Tariff;
 import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.TariffRepository;
+import caselab.exception.entity.not_found.TariffNotFoundException;
 import caselab.service.billing.tariff.mapper.TariffMapper;
 import caselab.service.util.UserUtilService;
 import jakarta.transaction.Transactional;
@@ -47,5 +48,15 @@ public class TariffService {
         var savedTariff = tariffRepository.save(tariff);
 
         return tariffMapper.entityToResponse(tariff);
+    }
+
+    public TariffResponse findById(Long id) {
+        return tariffMapper.entityToResponse(findTariffById(id));
+    }
+
+
+    private Tariff findTariffById(Long id) {
+        return tariffRepository.findById(id)
+            .orElseThrow(()-> new TariffNotFoundException(id));
     }
 }
