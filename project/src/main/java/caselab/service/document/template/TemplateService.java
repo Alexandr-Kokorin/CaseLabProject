@@ -1,10 +1,13 @@
 package caselab.service.document.template;
 
+import caselab.domain.entity.DocumentVersion;
 import caselab.domain.entity.enums.DocumentPermissionName;
 import caselab.domain.entity.enums.GlobalPermissionName;
+import caselab.domain.repository.DocumentRepository;
 import caselab.domain.repository.DocumentTypesRepository;
 import caselab.domain.repository.DocumentVersionRepository;
 import caselab.domain.storage.FileStorage;
+import caselab.exception.entity.not_found.DocumentNotFoundException;
 import caselab.exception.entity.not_found.DocumentVersionNotFoundException;
 import caselab.exception.template.IllFormedTemplateException;
 import caselab.exception.template.NoTemplateException;
@@ -28,7 +31,7 @@ public class TemplateService {
     private final DocumentUtilService documentUtilService;
     private final FileStorage fileStorage;
     private final DocumentTypesRepository documentTypesRepository;
-    private final DocumentVersionRepository documentVersionRepository;
+    private final DocumentRepository documentRepository;
 
     @SneakyThrows
     public byte[] getTemplate(Long documentTypeId, Authentication auth) {
@@ -50,17 +53,22 @@ public class TemplateService {
         var user = userService.findUserByAuthentication(auth);
         userService.checkUserGlobalPermission(user, GlobalPermissionName.ADMIN);
         String filename = fileStorage.put(templateFile);
-        var docType = documentTypesRepository.findById(documentTypeId).orElseThrow(
-            () -> new DocumentVersionNotFoundException(documentTypeId)
-        );
+        var docType = documentTypesRepository.findById(documentTypeId)
+            .orElseThrow(() -> new DocumentVersionNotFoundException(documentTypeId));
         docType.setTemplateName(filename);
         documentTypesRepository.save(docType);
     }
 
-    public byte[] instantiateTemplate(Long documentVersionId, Authentication auth) {
-        var documentVersion = documentVersionRepository.findById(documentVersionId).orElseThrow(
-            () -> new DocumentVersionNotFoundException(documentVersionId)
-        );
+    public byte[] instantiateTemplate(Long documentId, Authentication auth) {
+        var version = documentRepository
+            .findById(documentId)
+            .orElseThrow(() -> new DocumentNotFoundException(documentId))
+            .getDocumentVersions()
+            .getLast();
+        return instantiateTemplateFromVersion(version, auth);
+    }
+
+    private byte[] instantiateTemplateFromVersion(DocumentVersion documentVersion, Authentication auth) {
         var user = userService.findUserByAuthentication(auth);
         documentUtilService.checkLacksPermission(user, documentVersion.getDocument(), DocumentPermissionName::canEdit);
 
