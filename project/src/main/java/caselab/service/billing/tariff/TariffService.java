@@ -8,13 +8,17 @@ import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.TariffRepository;
 import caselab.exception.entity.not_found.TariffNotFoundException;
 import caselab.service.billing.tariff.mapper.TariffMapper;
+import caselab.service.util.PageUtil;
 import caselab.service.util.UserUtilService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import javax.validation.Valid;
 import java.time.Instant;
@@ -57,7 +61,7 @@ public class TariffService {
 
     public TariffResponse updateTariff(
         Authentication authentication,
-        Long id,
+        @PathVariable Long id,
         UpdateTariffRequest tariffRequest
     ) {
         userUtilService.checkUserGlobalPermission(
@@ -70,6 +74,27 @@ public class TariffService {
         tariffRepository.save(updatedTariff);
 
         return tariffMapper.entityToResponse(updatedTariff);
+    }
+
+
+    public void deleteTariff(Authentication authentication, Long id) {
+
+        userUtilService.checkUserGlobalPermission(
+            userUtilService.findUserByAuthentication(authentication), GlobalPermissionName.ADMIN);
+
+        var tariff = findTariffById(id);
+
+        tariffRepository.delete(tariff);
+    }
+
+    public Page<TariffResponse> getAllTariffs(
+        Integer pageNum,
+        Integer pageSize,
+        String sortStrategy) {
+        Pageable pageable = PageUtil.toPageable(pageNum, pageSize, Sort.by("name"), sortStrategy);
+
+        return tariffRepository.findAll(pageable)
+            .map(tariffMapper::entityToResponse);
     }
 
     private Tariff findTariffById(Long id) {
