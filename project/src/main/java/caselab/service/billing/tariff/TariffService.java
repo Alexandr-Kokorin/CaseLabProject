@@ -2,6 +2,7 @@ package caselab.service.billing.tariff;
 
 import caselab.controller.billing.tariff.payload.CreateTariffRequest;
 import caselab.controller.billing.tariff.payload.TariffResponse;
+import caselab.controller.billing.tariff.payload.UpdateTariffRequest;
 import caselab.domain.entity.Tariff;
 import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.TariffRepository;
@@ -54,6 +55,22 @@ public class TariffService {
         return tariffMapper.entityToResponse(findTariffById(id));
     }
 
+    public TariffResponse updateTariff(
+        Authentication authentication,
+        Long id,
+        UpdateTariffRequest tariffRequest
+    ) {
+        userUtilService.checkUserGlobalPermission(
+            userUtilService.findUserByAuthentication(authentication), GlobalPermissionName.ADMIN);
+
+        var tariff = findTariffById(id);
+        var updatedTariff = tariffMapper.entityFromRequest(tariffRequest);
+
+        updatedTariff.setId(tariff.getId());
+        tariffRepository.save(updatedTariff);
+
+        return tariffMapper.entityToResponse(updatedTariff);
+    }
 
     private Tariff findTariffById(Long id) {
         return tariffRepository.findById(id)
