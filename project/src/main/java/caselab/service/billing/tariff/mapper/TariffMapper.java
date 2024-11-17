@@ -12,6 +12,8 @@ import org.mapstruct.ReportingPolicy;
         componentModel = "spring",
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface TariffMapper {
+
     TariffResponse entityToResponse(Tariff tariff);
+
     Tariff entityFromRequest(UpdateTariffRequest request);
 }

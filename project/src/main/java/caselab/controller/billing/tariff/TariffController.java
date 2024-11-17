@@ -7,6 +7,7 @@ import caselab.service.billing.tariff.TariffService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v2/tariffs")
@@ -40,7 +40,7 @@ public class TariffController {
     public TariffResponse createTariff(
         Authentication authentication,
         @Valid @RequestBody CreateTariffRequest tariffRequest) {
-        return tariffService.createTariff(authentication,tariffRequest);
+        return tariffService.createTariff(authentication, tariffRequest);
     }
 
     @PutMapping("/{id}")
@@ -48,14 +48,14 @@ public class TariffController {
         Authentication authentication,
         @PathVariable("id") Long id,
         @Valid @RequestBody UpdateTariffRequest tariffRequest) {
-        return tariffService.updateTariff(authentication,id, tariffRequest);
+        return tariffService.updateTariff(authentication, id, tariffRequest);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void>  deleteTariff(
         Authentication authentication,
         @PathVariable("id") Long id) {
-        tariffService.deleteTariff(authentication,id);
+        tariffService.deleteTariff(authentication, id);
         return ResponseEntity.noContent().build();
     }
 
@@ -65,7 +65,7 @@ public class TariffController {
         @RequestParam(value = "pageSize", required = false) Integer pageSize,
         @Parameter(description = "Значение может быть desc или asc")
         @RequestParam(value = "sortStrategy", required = false, defaultValue = "desc") String sortStrategy
-    ){
+    ) {
         return tariffService.getAllTariffs(pageNum, pageSize, sortStrategy);
     }
 }
