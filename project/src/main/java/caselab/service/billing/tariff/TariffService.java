@@ -100,9 +100,11 @@ public class TariffService {
         return tariffRepository.findById(id)
             .orElseThrow(() -> new TariffNotFoundException(id));
     }
+
     private void checkTariffExists(CreateTariffRequest tariffRequest) {
         var tariff = tariffRepository.findByName(tariffRequest.name());
-        if(tariff.isPresent())
+        if (tariff.isPresent()) {
             throw new TariffAlreadyExistsException(tariff.get().getId());
+        }
     }
 }
