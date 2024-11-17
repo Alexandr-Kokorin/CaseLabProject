@@ -17,13 +17,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-
 import javax.validation.Valid;
 import java.time.Instant;
 import java.time.ZoneId;
-import java.util.Optional;
 
 @Service
 @Transactional
@@ -52,7 +49,7 @@ public class TariffService {
 
         var savedTariff = tariffRepository.save(tariff);
 
-        return tariffMapper.entityToResponse(tariff);
+        return tariffMapper.entityToResponse(savedTariff);
     }
 
     public TariffResponse findById(Long id) {
