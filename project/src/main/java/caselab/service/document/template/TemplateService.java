@@ -5,7 +5,6 @@ import caselab.domain.entity.enums.DocumentPermissionName;
 import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.DocumentRepository;
 import caselab.domain.repository.DocumentTypesRepository;
-import caselab.domain.repository.DocumentVersionRepository;
 import caselab.domain.storage.FileStorage;
 import caselab.exception.entity.not_found.DocumentNotFoundException;
 import caselab.exception.entity.not_found.DocumentVersionNotFoundException;
