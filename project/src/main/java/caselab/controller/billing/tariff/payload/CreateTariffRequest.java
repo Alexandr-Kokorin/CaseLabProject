@@ -2,6 +2,7 @@ package caselab.controller.billing.tariff.payload;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Builder;
 
@@ -15,11 +16,11 @@ public record CreateTariffRequest(
     String tariffDetails,
     @Schema(description = "Цена тарифа", example = "1000")
     @PositiveOrZero(message = "tariff.price.is_negative")
-    @NotBlank(message = "tariff.price.is_blank")
+    @NotNull(message = "tariff.price.is_null")
     Double price,
     @Schema(description = "Количество пользователей для тарифа", example = "1000")
     @PositiveOrZero(message = "tariff.user.is_negative")
-    @NotBlank(message = "tariff.user.is_blank")
+    @NotNull(message = "tariff.user.is_null")
     Integer userCount
 ) {
 }
