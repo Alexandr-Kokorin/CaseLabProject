@@ -1,5 +1,6 @@
 package caselab.controller.analytics;
 
+import caselab.controller.analytics.payload.DocumentTrend;
 import caselab.controller.analytics.payload.DocumentTypesReport;
 import caselab.controller.analytics.payload.ReportDocuments;
 import caselab.controller.analytics.payload.UserSignaturesReport;
@@ -35,6 +36,11 @@ public class AnalyticsController {
     @GetMapping("/document_types")
     public List<DocumentTypesReport> getDocumentTypes() {
         return analyticsService.getDocumentTypesReport();
+    }
+
+    @GetMapping("/document_trends")
+    public List<DocumentTrend> getDocumentTrends(@RequestParam("period") String period) {
+        return analyticsService.getDocumentTrends(period);
     }
 
 }

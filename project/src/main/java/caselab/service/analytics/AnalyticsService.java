@@ -1,13 +1,17 @@
 package caselab.service.analytics;
 
+import caselab.controller.analytics.payload.DocumentTrend;
 import caselab.controller.analytics.payload.DocumentTypesReport;
 import caselab.controller.analytics.payload.ReportDocuments;
 import caselab.controller.analytics.payload.UserSignaturesReport;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.Document;
+import caselab.domain.entity.Signature;
+import caselab.domain.entity.enums.SignatureStatus;
 import caselab.domain.repository.ApplicationUserRepository;
 import caselab.domain.repository.DocumentRepository;
 import caselab.domain.repository.DocumentTypesRepository;
+import caselab.domain.repository.SignatureRepository;
 import jakarta.transaction.Transactional;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -24,10 +28,12 @@ public class AnalyticsService {
     private final Map<String, Integer> days = Map.of(
         "week", 7,
         "day", 1,
-        "month", 30);
+        "month", 30
+    );
     private final DocumentRepository documentRepository;
     private final ApplicationUserRepository appUserRepository;
     private final DocumentTypesRepository documentTypesRepository;
+    private final SignatureRepository signatureRepository;
 
     public List<ReportDocuments> getReportDocuments(String period) {
         var endDate = OffsetDateTime.now();
@@ -71,6 +77,37 @@ public class AnalyticsService {
                 .avgTime(getAngTimeForDocumentType(docType.getDocuments()))
                 .build())
             .toList();
+    }
+
+    public List<DocumentTrend> getDocumentTrends(String period) {
+        var endDate = OffsetDateTime.now();
+        var startDate = endDate.minusDays(days.get(period) != null ? days.get(period) : 1);
+        var signatures = signatureRepository.findAll();
+
+        List<DocumentTrend> trends = new ArrayList<>();
+
+        while (!startDate.isAfter(endDate)) {
+            trends.add(DocumentTrend
+                .builder()
+                .date(startDate.toLocalDate())
+                .countSigned(getCountSignedDocumentsByDay(signatures, startDate, SignatureStatus.SIGNED))
+                .countRefused(getCountSignedDocumentsByDay(signatures, startDate, SignatureStatus.REFUSED))
+                .build());
+            startDate = startDate.plusDays(1);
+        }
+
+        return trends;
+    }
+
+    private Long getCountSignedDocumentsByDay(
+        List<Signature> signatures,
+        OffsetDateTime startDate,
+        SignatureStatus status
+    ) {
+        return signatures.stream()
+            .filter(sgn -> sgn.getSentAt().toLocalDate().isEqual(startDate.toLocalDate()))
+            .filter(sgn -> sgn.getStatus().equals(status))
+            .count();
     }
 
     private Long getAngTimeForDocumentType(List<Document> documents) {
