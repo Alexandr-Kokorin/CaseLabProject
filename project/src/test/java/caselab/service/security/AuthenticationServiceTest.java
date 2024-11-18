@@ -12,26 +12,27 @@ import caselab.exception.entity.already_exists.UserAlreadyExistsException;
 import caselab.service.notification.email.EmailService;
 import caselab.service.secutiry.AuthenticationService;
 import caselab.service.secutiry.JwtService;
+import caselab.service.secutiry.RefreshTokenService;
 import caselab.service.util.UserUtilService;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class AuthenticationServiceTest {
@@ -51,6 +52,9 @@ public class AuthenticationServiceTest {
     private UserUtilService userUtilService;
     @Mock
     private EmailService emailService;
+
+    @Mock
+    private RefreshTokenService refreshTokenService;
 
     @Mock
     private JwtService jwtService;
@@ -91,8 +95,10 @@ public class AuthenticationServiceTest {
         when(appUserRepository.findByEmail(anyString())).thenReturn(Optional.of(mockApplicationUser()));
 
         assertAll(
-            () -> assertThrows(UserAlreadyExistsException.class,
-                () -> authenticationService.register(registerRequest, any(Authentication.class))),
+            () -> assertThrows(
+                UserAlreadyExistsException.class,
+                () -> authenticationService.register(registerRequest, any(Authentication.class))
+            ),
             () -> verify(appUserRepository).findByEmail(anyString()),
             () -> verify(appUserRepository, never()).save(any(ApplicationUser.class))
         );
@@ -113,7 +119,7 @@ public class AuthenticationServiceTest {
 
         assertAll(
             () -> assertThat(response).isNotNull(),
-            () -> assertThat(response.token()).isEqualTo("mocked-jwt-token"),
+            () -> assertThat(response.accessToken()).isEqualTo("mocked-jwt-token"),
             () -> verify(authenticationManager)
                 .authenticate(any(UsernamePasswordAuthenticationToken.class)),
             () -> verify(jwtService).generateToken(any(ApplicationUser.class))
