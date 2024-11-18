@@ -1,12 +1,11 @@
 package caselab.controller.analytics.payload;
 
+import java.time.LocalDate;
 import lombok.Builder;
 
 @Builder
 public record ReportDocuments(
-    Long created,
-    Long sentOnSigning,
-    Long signed,
-    Long notSigned
+    LocalDate date,
+    Long created
 ) {
 }
