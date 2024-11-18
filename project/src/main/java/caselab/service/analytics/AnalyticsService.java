@@ -1,11 +1,13 @@
 package caselab.service.analytics;
 
+import caselab.controller.analytics.payload.DocumentTypesReport;
 import caselab.controller.analytics.payload.ReportDocuments;
 import caselab.controller.analytics.payload.UserSignaturesReport;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.Document;
 import caselab.domain.repository.ApplicationUserRepository;
 import caselab.domain.repository.DocumentRepository;
+import caselab.domain.repository.DocumentTypesRepository;
 import jakarta.transaction.Transactional;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -25,6 +27,7 @@ public class AnalyticsService {
         "month", 30);
     private final DocumentRepository documentRepository;
     private final ApplicationUserRepository appUserRepository;
+    private final DocumentTypesRepository documentTypesRepository;
 
     public List<ReportDocuments> getReportDocuments(String period) {
         var endDate = OffsetDateTime.now();
@@ -57,6 +60,29 @@ public class AnalyticsService {
                 .avgTimeForSigning(getAvgTimeForUser(user, startDate))
                 .build())
             .toList();
+    }
+
+    public List<DocumentTypesReport> getDocumentTypesReport() {
+        var documentTypes = documentTypesRepository.findAll();
+
+        return documentTypes.stream()
+            .map(docType -> DocumentTypesReport.builder()
+                .name(docType.getName())
+                .avgTime(getAngTimeForDocumentType(docType.getDocuments()))
+                .build())
+            .toList();
+    }
+
+    private Long getAngTimeForDocumentType(List<Document> documents) {
+        return (long) documents.stream()
+            .filter(doc -> !doc.getDocumentVersions().getLast().getSignatures().isEmpty())
+            .filter(doc -> doc.getDocumentVersions().getLast().getSignatures().stream()
+                .anyMatch(sgn -> sgn.getSignedAt() != null))
+            .mapToLong(doc -> doc.getDocumentVersions().getLast().getSignatures().stream()
+                .findFirst().get().getSignedAt().toEpochSecond()
+                - doc.getDocumentVersions().getFirst().getCreatedAt().toEpochSecond())
+            .average()
+            .orElse(0);
     }
 
     private Long getAvgTimeForUser(ApplicationUser applicationUser, OffsetDateTime startDate) {
