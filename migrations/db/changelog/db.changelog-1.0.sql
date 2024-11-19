@@ -205,4 +205,23 @@ CREATE TABLE IF NOT EXISTS refresh_tokens(
     token TEXT NOT NULL,
     expires_date TIMESTAMP WITH TIME ZONE NOT NULL,
     application_user_id BIGSERIAL NOT NULL REFERENCES application_user(id) ON DELETE CASCADE
-)
+);
+
+-- changeset FkishDaneils:20
+CREATE TABLE IF NOT EXISTS tariff(
+     id BIGSERIAL PRIMARY KEY,
+     name TEXT NOT NULL,
+     price DECIMAL NOT NULL,
+     tariff_details TEXT NOT NULL,
+     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+     user_count INTEGER NOT NULL
+);
+
+-- changeset hottabych04:21
+CREATE TABLE IF NOT EXISTS bill(
+     id BIGSERIAL PRIMARY KEY,
+     tariff_id BIGINT NOT NULL REFERENCES tariff(id) ON DELETE CASCADE,
+--   заменить user на company в будущем
+     user_id BIGINT NOT NULL REFERENCES application_user(id) ON DELETE CASCADE,
+     issued_at TIMESTAMP WITH TIME ZONE NOT NULL
+);

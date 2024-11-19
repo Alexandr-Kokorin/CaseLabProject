@@ -8,6 +8,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.ObjectError;
@@ -30,7 +31,20 @@ public class ControllerExceptionHandler {
         );
     }
 
-    @ExceptionHandler(BindException.class)
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ProblemDetail> handleHttpMessageNotReadableException(
+        HttpMessageNotReadableException exception,
+        Locale locale
+    ) {
+        return createProblemDetailResponse(
+            HttpStatus.BAD_REQUEST,
+            "errors.400_title",
+            new Object[] {exception.getMessage()},
+            locale
+        );
+    }
+
+    @ExceptionHandler({BindException.class})
     public ResponseEntity<ProblemDetail> handleBindException(BindException exception, Locale locale) {
         var problemDetail = createProblemDetail(
             HttpStatus.BAD_REQUEST,
