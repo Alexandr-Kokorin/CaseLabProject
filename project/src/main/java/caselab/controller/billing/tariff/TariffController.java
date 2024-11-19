@@ -38,7 +38,7 @@ public class TariffController {
     private final TariffService tariffService;
 
     @Operation(summary = "Получить тарифф по id",
-               description = "Возвращает тарифф по его id")
+               description = "Возвращает тариф по его id")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Успешное получение",
                      content = @Content(schema = @Schema(implementation = TariffResponse.class))),

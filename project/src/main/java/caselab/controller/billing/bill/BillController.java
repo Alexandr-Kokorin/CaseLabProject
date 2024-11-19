@@ -11,11 +11,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -46,7 +46,7 @@ public class BillController {
     })
     @PostMapping
     public BillResponse createBill(
-        @Validated @RequestBody CreateBillRequest request,
+        @Valid @RequestBody CreateBillRequest request,
         Authentication authentication
     ) {
         return billService.createBill(request, authentication);
@@ -85,7 +85,7 @@ public class BillController {
     @PutMapping("/{id}")
     public BillResponse updateBillById(
         @PathVariable Long id,
-        @Validated @RequestBody UpdateBillRequest request,
+        @Valid @RequestBody UpdateBillRequest request,
         Authentication authentication
     ) {
         return billService.updateBill(id, request, authentication);

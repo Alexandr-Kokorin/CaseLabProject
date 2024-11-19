@@ -47,15 +47,15 @@ public class BillService {
 
     public BillResponse getBillById(Long id, Authentication auth) {
         checkPermission(auth);
-        Bill bill = findBillById(id);
+        var bill = findBillById(id);
         return billMapper.toResponse(bill);
     }
 
     public BillResponse updateBill(Long id, UpdateBillRequest req, Authentication auth) {
         checkPermission(auth);
 
-        Bill bill = findBillById(id);
-        Tariff tariff = findTariffById(req.tariffId());
+        var bill = findBillById(id);
+        var tariff = findTariffById(req.tariffId());
 
         bill.setTariff(tariff);
         billRepository.save(bill);
@@ -66,7 +66,7 @@ public class BillService {
     public void deleteBill(Long id, Authentication auth) {
         checkPermission(auth);
 
-        Bill bill = findBillById(id);
+        var bill = findBillById(id);
 
         billRepository.delete(bill);
     }

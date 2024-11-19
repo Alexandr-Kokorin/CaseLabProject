@@ -5,10 +5,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 
-@Schema(description = "Ответ, содержащий информациб о биллинге")
+@Schema(description = "Ответ, содержащий информацию о биллинге")
 public record BillResponse(
     @JsonProperty("id")
-    @Schema(description = "Айди биллинга", example = "1")
+    @Schema(description = "Id биллинга", example = "1")
     Long id,
     @JsonProperty("tariff")
     @Schema(description = "Тариф", example = "1")
