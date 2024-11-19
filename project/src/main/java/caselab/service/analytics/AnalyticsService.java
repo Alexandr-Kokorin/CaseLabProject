@@ -157,7 +157,7 @@ public class AnalyticsService {
     }
 
     /**
-     * График 6: Распределение типов документов
+     * График 5: Распределение типов документов
      */
     public List<DocumentTypeDistributionDTO> getDocumentTypeDistribution() {
         return documentRepository.findAll().stream()
@@ -171,7 +171,7 @@ public class AnalyticsService {
     }
 
     /**
-     * График 7: Среднее время на каждом этапе обработки документа
+     * График 6: Среднее время на каждом этапе обработки документа
      */
     public List<StageProcessingTimeDTO> getStageProcessingTimes() {
         List<StageProcessingTimeDTO> stages = new ArrayList<>();
@@ -231,7 +231,7 @@ public class AnalyticsService {
     }
 
     /**
-     * График 9: Распределение времени на голосование
+     * График 7: Распределение времени на голосование
      */
     public List<VotingTimeDistributionDTO> getVotingTimeDistribution() {
         return getRangeCounts().entrySet().stream()
@@ -273,7 +273,7 @@ public class AnalyticsService {
     }
 
     /**
-     * График 10: Нагрузка на систему по часам
+     * График 8: Нагрузка на систему по часам
      */
     public List<SystemLoadByHourDTO> getSystemLoadByHour() {
         List<OffsetDateTime> sentAtTimes = new ArrayList<>();
