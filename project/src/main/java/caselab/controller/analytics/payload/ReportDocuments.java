@@ -9,10 +9,10 @@ import lombok.Builder;
 @Schema(name = "Отчёт о количестве созданных документов за день")
 public record ReportDocuments(
     @JsonProperty("date")
-    @Schema(name = "Дата отчёта")
+    @Schema(description = "Дата отчёта")
     LocalDate date,
     @JsonProperty("created")
-    @Schema(name = "Количество созданных документов за день", example = "190")
+    @Schema(description = "Количество созданных документов за день", example = "190")
     Long created
 ) {
 }

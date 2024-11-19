@@ -8,10 +8,10 @@ import lombok.Builder;
 @Schema(name = "Отчёт о среднем времени обработки документов пользователем")
 public record UserSignaturesReport(
     @JsonProperty("email")
-    @Schema(name = "Адрес электронной почты пользователя", example = "user@example.com")
+    @Schema(description = "Адрес электронной почты пользователя", example = "user@example.com")
     String email,
     @JsonProperty("avg_time_for_signing")
-    @Schema(name = "Среднее время обработки документов", example = "140")
+    @Schema(description = "Среднее время обработки документов", example = "140")
     Long avgTimeForSigning
 ) {
 }

@@ -1,9 +1,13 @@
 package caselab.controller.analytics;
 
 import caselab.controller.analytics.payload.DocumentTrend;
+import caselab.controller.analytics.payload.DocumentTypeDistributionDTO;
 import caselab.controller.analytics.payload.DocumentTypesReport;
 import caselab.controller.analytics.payload.ReportDocuments;
+import caselab.controller.analytics.payload.StageProcessingTimeDTO;
+import caselab.controller.analytics.payload.SystemLoadByHourDTO;
 import caselab.controller.analytics.payload.UserSignaturesReport;
+import caselab.controller.analytics.payload.VotingTimeDistributionDTO;
 import caselab.service.analytics.AnalyticsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -42,7 +46,7 @@ public class AnalyticsController {
     })
     @GetMapping("/created_documents")
     public List<ReportDocuments> getCreatedDocuments(
-        @Parameter(name = "Период отчёта", example = "week")
+        @Parameter(description = "Период отчёта", example = "week")
         @RequestParam("period") String period
     ) {
         return analyticsService.getReportDocuments(period);
@@ -60,7 +64,7 @@ public class AnalyticsController {
     })
     @GetMapping("/users_signatures")
     public List<UserSignaturesReport> getUsersSignatures(
-        @Parameter(name = "Период отчёта", example = "week")
+        @Parameter(description = "Период отчёта", example = "week")
         @RequestParam("period") String period
     ) {
         return analyticsService.getUserSignaturesReport(period);
@@ -95,10 +99,81 @@ public class AnalyticsController {
     })
     @GetMapping("/document_trends")
     public List<DocumentTrend> getDocumentTrends(
-        @Parameter(name = "Период отчёта", example = "week")
+        @Parameter(description = "Период отчёта", example = "week")
         @RequestParam("period") String period
     ) {
         return analyticsService.getDocumentTrends(period);
     }
 
+    /**
+     * График 5: Распределение типов документов
+     */
+    @GetMapping("/document-type-distribution")
+    @Operation(summary = "Получить распределение типов документов",
+               description = "Возвращает количество документов каждого типа,"
+                   + " сгруппированных по названию типа документа.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Успешное получение распределения типов документов",
+                     content = @Content(
+                         array = @ArraySchema(schema = @Schema(implementation = DocumentTypeDistributionDTO.class)))),
+        @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    public List<DocumentTypeDistributionDTO> getDocumentTypeDistribution() {
+        return analyticsService.getDocumentTypeDistribution();
+    }
+
+    /**
+     * График 6: Среднее время на каждом этапе обработки документа
+     */
+    @GetMapping("/stage-processing-times")
+    @Operation(summary = "Получить среднее время на этапах обработки документа",
+               description = "Возвращает среднее время (в минутах) на каждом этапе обработки документов:"
+                   + " отправка, подпись, голосование.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Успешное получение средней продолжительности этапов",
+                     content = @Content(
+                         array = @ArraySchema(schema = @Schema(implementation = StageProcessingTimeDTO.class)))),
+        @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    public List<StageProcessingTimeDTO> getStageProcessingTimes() {
+        return analyticsService.getStageProcessingTimes();
+    }
+
+    /**
+     * График 7: Распределение времени на голосование
+     */
+    @GetMapping("/voting-time-distribution")
+    @Operation(summary = "Получить распределение времени на голосование",
+               description = "Возвращает количество процессов голосования,"
+                   + " распределенных по диапазонам времени (например, 0-1 час, 1-2 часа и т.д.).")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Успешное получение распределения времени на голосование",
+                     content = @Content(
+                         array = @ArraySchema(schema = @Schema(implementation = VotingTimeDistributionDTO.class)))),
+        @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    public List<VotingTimeDistributionDTO> getVotingTimeDistribution() {
+        return analyticsService.getVotingTimeDistribution();
+    }
+
+    /**
+     * График 8: Нагрузка на систему по часам
+     */
+    @GetMapping("/system-load-by-hour")
+    @Operation(summary = "Получить нагрузку на систему по часам",
+               description = "Возвращает количество документов, отправленных на подпись или голосование,"
+                   + " сгруппированных по часам дня (например, 09:00-10:00).")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Успешное получение нагрузки по часам",
+                     content = @Content(
+                         array = @ArraySchema(schema = @Schema(implementation = SystemLoadByHourDTO.class)))),
+        @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    public List<SystemLoadByHourDTO> getSystemLoadByHour() {
+        return analyticsService.getSystemLoadByHour();
+    }
 }
