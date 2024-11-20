@@ -33,6 +33,9 @@ public class DocumentType {
     @Column(nullable = false)
     private String name;
 
+    @Column(name = "template_name")
+    private String templateName;
+
     @OneToMany(mappedBy = "documentType")
     private List<Document> documents = new ArrayList<>();
 

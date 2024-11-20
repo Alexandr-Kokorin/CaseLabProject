@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS document_type
 (
     id   BIGSERIAL NOT NULL,
     name TEXT      NOT NULL,
+    template_name TEXT,
 
     PRIMARY KEY (id)
 );
