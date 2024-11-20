@@ -35,6 +35,9 @@ public class AnalyticsController {
 
     private final AnalyticsService analyticsService;
 
+    /**
+     * График 1: Количество созданных документов
+     */
     @Operation(summary = "Получить отчёт о количестве созданных документов за период (month, week, day)",
                description = "Возвращает отчёт о количестве созданных документов за период")
     @ApiResponses(value = {
@@ -52,6 +55,9 @@ public class AnalyticsController {
         return analyticsService.getReportDocuments(period);
     }
 
+    /**
+     * График 2: Среднее время обработки документов пользователями
+     */
     @Operation(summary = "Получить отчёт о среднем времени обработки документов пользователями",
                description = "Возвращает отчёт о среднем времени обработки документов пользователями")
     @ApiResponses(value = {
@@ -70,6 +76,9 @@ public class AnalyticsController {
         return analyticsService.getUserSignaturesReport(period);
     }
 
+    /**
+     * График 3: Среднее время обработки типов документов
+     */
     @Operation(summary = "Получить отчёт о среднем времени обработки типов документов",
                description = "Возвращает отчёт о среднем времени обработки типов документов")
     @ApiResponses(value = {
@@ -85,6 +94,9 @@ public class AnalyticsController {
         return analyticsService.getDocumentTypesReport();
     }
 
+    /**
+     * График 4: Количество подписанных и отклонённых документов
+     */
     @Operation(summary = "Получить отчёт о количестве подписанных и "
         + "отклонённых документов за период (month, week, day)",
                description = "Возвращает отчёт о количестве подписанных"
