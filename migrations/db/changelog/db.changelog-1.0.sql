@@ -14,9 +14,10 @@ CREATE TABLE IF NOT EXISTS application_user
 --changeset hottabych04:2
 CREATE TABLE IF NOT EXISTS attribute
 (
-    id   BIGSERIAL NOT NULL,
-    name TEXT      NOT NULL,
-    type TEXT      NOT NULL,
+    id        BIGSERIAL NOT NULL,
+    name      TEXT      NOT NULL,
+    type      TEXT      NOT NULL,
+    tenant_id TEXT      NOT NULL,
 
     PRIMARY KEY (id)
 );
@@ -24,8 +25,9 @@ CREATE TABLE IF NOT EXISTS attribute
 --changeset hottabych04:3
 CREATE TABLE IF NOT EXISTS document_type
 (
-    id   BIGSERIAL NOT NULL,
-    name TEXT      NOT NULL,
+    id        BIGSERIAL NOT NULL,
+    name      TEXT      NOT NULL,
+    tenant_id TEXT      NOT NULL,
 
     PRIMARY KEY (id)
 );
@@ -37,6 +39,7 @@ CREATE TABLE IF NOT EXISTS document
     document_type_id BIGINT    NOT NULL REFERENCES document_type (id),
     name             TEXT      NOT NULL,
     status           TEXT      NOT NULL,
+    tenant_id        TEXT      NOT NULL,
 
     PRIMARY KEY (id)
 );
@@ -44,11 +47,12 @@ CREATE TABLE IF NOT EXISTS document
 --changeset hottabych04:4
 CREATE TABLE IF NOT EXISTS document_version
 (
-    id           BIGSERIAL   NOT NULL,
-    name         TEXT        NOT NULL,
-    created_at   timestamptz NOT NULL,
-    content_name TEXT,
-    document_id  BIGINT      NOT NULL REFERENCES document (id) ON DELETE CASCADE,
+    id            BIGSERIAL   NOT NULL,
+    name          TEXT        NOT NULL,
+    created_at    timestamptz NOT NULL,
+    content_name  TEXT,
+    document_id   BIGINT      NOT NULL REFERENCES document (id) ON DELETE CASCADE,
+    tenant_id     TEXT        NOT NULL,
 
     PRIMARY KEY (id)
 );
@@ -59,6 +63,7 @@ CREATE TABLE IF NOT EXISTS user_to_document
     id                  BIGSERIAL NOT NULL,
     document_id         BIGINT    NOT NULL REFERENCES document (id) ON DELETE CASCADE,
     application_user_id BIGINT    NOT NULL REFERENCES application_user (id) ON DELETE CASCADE,
+    tenant_id           TEXT      NOT NULL,
 
     PRIMARY KEY (id)
 );
@@ -69,6 +74,8 @@ CREATE TABLE IF NOT EXISTS document_attribute_value
     document_version_id BIGINT NOT NULL REFERENCES document_version (id) ON DELETE CASCADE,
     attribute_id        BIGINT NOT NULL REFERENCES attribute (id) ON DELETE CASCADE,
     app_value           TEXT,
+    tenant_id           TEXT      NOT NULL,
+
     PRIMARY KEY (document_version_id, attribute_id)
 );
 
@@ -78,6 +85,7 @@ CREATE TABLE IF NOT EXISTS document_type_to_attribute
     document_type_id BIGINT  NOT NULL REFERENCES document_type (id) ON DELETE CASCADE,
     attribute_id     BIGINT  NOT NULL REFERENCES attribute (id) ON DELETE CASCADE,
     is_optional      BOOLEAN NOT NULL,
+    tenant_id        TEXT    NOT NULL,
 
     PRIMARY KEY (document_type_id, attribute_id)
 );
@@ -111,6 +119,7 @@ CREATE TABLE IF NOT EXISTS signature
     document_version_id BIGINT      NOT NULL REFERENCES document_version (id) ON DELETE CASCADE,
     application_user_id BIGINT      NOT NULL REFERENCES application_user (id) ON DELETE CASCADE,
     signature_data      TEXT,
+    tenant_id           TEXT        NOT NULL,
 
     PRIMARY KEY (id)
 );
@@ -134,6 +143,7 @@ CREATE TABLE IF NOT EXISTS voting_process
     created_at          timestamptz      NOT NULL,
     deadline            timestamptz,
     document_version_id BIGINT           NOT NULL REFERENCES document_version (id) ON DELETE CASCADE,
+    tenant_id           TEXT             NOT NULL,
 
     PRIMARY KEY (id)
 );
@@ -145,6 +155,7 @@ CREATE TABLE IF NOT EXISTS vote
     status              TEXT      NOT NULL,
     application_user_id BIGINT    NOT NULL REFERENCES application_user (id) ON DELETE CASCADE,
     voting_process_id   BIGINT    NOT NULL REFERENCES voting_process (id) ON DELETE CASCADE,
+    tenant_id           TEXT      NOT NULL,
 
     PRIMARY KEY (id)
 );
@@ -158,50 +169,56 @@ CREATE TABLE IF NOT EXISTS global_permission_to_user
     PRIMARY KEY (application_user_id, global_permission_id)
 );
 
--- changeset PAZderev:16
+--changeset PAZderev:16
 INSERT INTO document_permission (name)
 SELECT 'READ'
-WHERE NOT EXISTS (SELECT 1 FROM document_permission WHERE name = 'READ');
+    WHERE NOT EXISTS (SELECT 1 FROM document_permission WHERE name = 'READ');
 
 INSERT INTO document_permission (name)
 SELECT 'EDIT'
-WHERE NOT EXISTS (SELECT 1 FROM document_permission WHERE name = 'EDIT');
+    WHERE NOT EXISTS (SELECT 1 FROM document_permission WHERE name = 'EDIT');
 
 INSERT INTO document_permission (name)
 SELECT 'SEND_FOR_SIGNING'
-WHERE NOT EXISTS (SELECT 1 FROM document_permission WHERE name = 'SEND_FOR_SIGNING');
+    WHERE NOT EXISTS (SELECT 1 FROM document_permission WHERE name = 'SEND_FOR_SIGNING');
 
 INSERT INTO document_permission (name)
 SELECT 'SEND_FOR_VOTING'
-WHERE NOT EXISTS (SELECT 1 FROM document_permission WHERE name = 'SEND_FOR_VOTING');
+    WHERE NOT EXISTS (SELECT 1 FROM document_permission WHERE name = 'SEND_FOR_VOTING');
 
 INSERT INTO document_permission (name)
 SELECT 'CREATOR'
-WHERE NOT EXISTS (SELECT 1 FROM document_permission WHERE name = 'CREATOR');
+    WHERE NOT EXISTS (SELECT 1 FROM document_permission WHERE name = 'CREATOR');
 
--- changeset ???:17
-INSERT INTO global_permission(name)
-values ('USER');
-INSERT INTO global_permission(name)
-values ('ADMIN');
+--changeset ???:17
+INSERT INTO global_permission (name)
+VALUES ('USER');
 
-INSERT INTO application_user(email, display_name, hashed_password)
+INSERT INTO global_permission (name)
+VALUES ('ADMIN');
+
+INSERT INTO application_user (email, display_name, hashed_password)
 VALUES ('admin@gmail.com', 'Admin',
         '$2a$10$WFRQhlz7Ul85HsRjMg3XNutiB//3HLloe3vTuW6GDPD9eeXeYXiJe');
-INSERT INTO global_permission_to_user(application_user_id, global_permission_id)
+
+INSERT INTO global_permission_to_user (application_user_id, global_permission_id)
 VALUES (1, 2);
 
--- changeset ghostofendless:18
+--changeset ghostofendless:18
 CREATE TABLE IF NOT EXISTS subscription
 (
     id          BIGSERIAL PRIMARY KEY,
-    document_id BIGINT NOT NULL,
-    user_email  TEXT   NOT NULL
+    document_id BIGINT    NOT NULL,
+    user_email  TEXT      NOT NULL,
+    tenant_id   TEXT      NOT NULL
 );
--- changeset FkishDaniels:19
-CREATE TABLE IF NOT EXISTS refresh_tokens(
-    id BIGSERIAL PRIMARY KEY,
-    token TEXT NOT NULL,
-    expires_date TIMESTAMP WITH TIME ZONE NOT NULL,
-    application_user_id BIGSERIAL NOT NULL REFERENCES application_user(id) ON DELETE CASCADE
-)
+
+--changeset FkishDaniels:19
+CREATE TABLE IF NOT EXISTS refresh_tokens
+(
+    id                  BIGSERIAL PRIMARY KEY,
+    token               TEXT      NOT NULL,
+    expires_date        TIMESTAMP WITH TIME ZONE NOT NULL,
+    application_user_id BIGSERIAL NOT NULL REFERENCES application_user (id) ON DELETE CASCADE,
+    tenant_id           TEXT      NOT NULL
+);
