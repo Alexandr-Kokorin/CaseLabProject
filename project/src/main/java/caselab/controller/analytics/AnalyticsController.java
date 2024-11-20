@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@SuppressWarnings("linelength")
 @RestController
 @RequestMapping("/api/v2/analytics")
 @SecurityRequirement(name = "JWT")
@@ -42,8 +43,7 @@ public class AnalyticsController {
                description = "Возвращает отчёт о количестве созданных документов за период")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Успешное получение отчёта о созданных документах",
-                     content = @Content(
-                         array = @ArraySchema(schema = @Schema(implementation = ReportDocuments.class)))),
+                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = ReportDocuments.class)))),
         @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
@@ -63,8 +63,7 @@ public class AnalyticsController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200",
                      description = "Успешное получение отчёта о среднем времени обработки документов пользователями",
-                     content = @Content(
-                         array = @ArraySchema(schema = @Schema(implementation = UserSignaturesReport.class)))),
+                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserSignaturesReport.class)))),
         @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
@@ -84,8 +83,7 @@ public class AnalyticsController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200",
                      description = "Успешное получение отчёта о среднем времени обработки документов пользователями",
-                     content = @Content(
-                         array = @ArraySchema(schema = @Schema(implementation = DocumentTypesReport.class)))),
+                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = DocumentTypesReport.class)))),
         @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
@@ -104,8 +102,7 @@ public class AnalyticsController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200",
                      description = "Успешное получение отчёта о среднем времени обработки документов пользователями",
-                     content = @Content(
-                         array = @ArraySchema(schema = @Schema(implementation = DocumentTypesReport.class)))),
+                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = DocumentTypesReport.class)))),
         @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
@@ -126,8 +123,7 @@ public class AnalyticsController {
                    + " сгруппированных по названию типа документа.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Успешное получение распределения типов документов",
-                     content = @Content(
-                         array = @ArraySchema(schema = @Schema(implementation = DocumentTypeDistributionDTO.class)))),
+                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = DocumentTypeDistributionDTO.class)))),
         @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
@@ -144,8 +140,7 @@ public class AnalyticsController {
                    + " отправка, подпись, голосование.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Успешное получение средней продолжительности этапов",
-                     content = @Content(
-                         array = @ArraySchema(schema = @Schema(implementation = StageProcessingTimeDTO.class)))),
+                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = StageProcessingTimeDTO.class)))),
         @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
@@ -162,8 +157,7 @@ public class AnalyticsController {
                    + " распределенных по диапазонам времени (например, 0-1 час, 1-2 часа и т.д.).")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Успешное получение распределения времени на голосование",
-                     content = @Content(
-                         array = @ArraySchema(schema = @Schema(implementation = VotingTimeDistributionDTO.class)))),
+                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = VotingTimeDistributionDTO.class)))),
         @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
@@ -180,8 +174,7 @@ public class AnalyticsController {
                    + " сгруппированных по часам дня (например, 09:00-10:00).")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Успешное получение нагрузки по часам",
-                     content = @Content(
-                         array = @ArraySchema(schema = @Schema(implementation = SystemLoadByHourDTO.class)))),
+                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = SystemLoadByHourDTO.class)))),
         @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })

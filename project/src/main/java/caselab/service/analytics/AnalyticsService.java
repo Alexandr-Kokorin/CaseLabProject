@@ -256,20 +256,23 @@ public class AnalyticsService {
             if (start != null && end != null) {
                 long minutes = Duration.between(start, end).toMinutes();
                 double hours = minutes / 60.0;
-
-                if (hours <= 1) {
-                    rangeCounts.put("0-1 час", rangeCounts.get("0-1 час") + 1);
-                } else if (hours <= 2) {
-                    rangeCounts.put("1-2 часа", rangeCounts.get("1-2 часа") + 1);
-                } else if (hours <= 5) {
-                    rangeCounts.put("2-5 часов", rangeCounts.get("2-5 часов") + 1);
-                } else {
-                    rangeCounts.put("5+ часов", rangeCounts.get("5+ часов") + 1);
-                }
+                checkRangeCount(hours, rangeCounts);
             }
         });
 
         return rangeCounts;
+    }
+
+    private void checkRangeCount(double hours, Map<String, Long> rangeCounts) {
+        if (hours <= 1) {
+            rangeCounts.put("0-1 час", rangeCounts.get("0-1 час") + 1);
+        } else if (hours <= 2) {
+            rangeCounts.put("1-2 часа", rangeCounts.get("1-2 часа") + 1);
+        } else if (hours <= 5) {
+            rangeCounts.put("2-5 часов", rangeCounts.get("2-5 часов") + 1);
+        } else {
+            rangeCounts.put("5+ часов", rangeCounts.get("5+ часов") + 1);
+        }
     }
 
     /**
