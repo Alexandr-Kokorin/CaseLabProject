@@ -7,7 +7,7 @@ import caselab.domain.repository.DocumentRepository;
 import caselab.domain.repository.DocumentTypesRepository;
 import caselab.domain.storage.FileStorage;
 import caselab.exception.entity.not_found.DocumentNotFoundException;
-import caselab.exception.entity.not_found.DocumentVersionNotFoundException;
+import caselab.exception.entity.not_found.DocumentTypeNotFoundException;
 import caselab.exception.template.IllFormedTemplateException;
 import caselab.exception.template.NoTemplateException;
 import caselab.service.util.DocumentUtilService;
@@ -36,9 +36,8 @@ public class TemplateService {
     public byte[] getTemplate(Long documentTypeId, Authentication auth) {
         var user = userService.findUserByAuthentication(auth);
         userService.checkUserGlobalPermission(user, GlobalPermissionName.ADMIN);
-        var docType = documentTypesRepository.findById(documentTypeId).orElseThrow(
-            () -> new DocumentVersionNotFoundException(documentTypeId)
-        );
+        var docType = documentTypesRepository.findById(documentTypeId)
+            .orElseThrow(() -> new DocumentTypeNotFoundException(documentTypeId));
         if (docType.getTemplateName() == null) {
             throw new NoTemplateException(documentTypeId);
         }
@@ -53,7 +52,7 @@ public class TemplateService {
         userService.checkUserGlobalPermission(user, GlobalPermissionName.ADMIN);
         String filename = fileStorage.put(templateFile);
         var docType = documentTypesRepository.findById(documentTypeId)
-            .orElseThrow(() -> new DocumentVersionNotFoundException(documentTypeId));
+            .orElseThrow(() -> new DocumentTypeNotFoundException(documentTypeId));
         docType.setTemplateName(filename);
         documentTypesRepository.save(docType);
     }
@@ -89,9 +88,8 @@ public class TemplateService {
     public void deleteTemplate(Long documentTypeId, Authentication auth) {
         var user = userService.findUserByAuthentication(auth);
         userService.checkUserGlobalPermission(user, GlobalPermissionName.ADMIN);
-        var docType = documentTypesRepository.findById(documentTypeId).orElseThrow(
-            () -> new DocumentVersionNotFoundException(documentTypeId)
-        );
+        var docType = documentTypesRepository.findById(documentTypeId)
+            .orElseThrow(() -> new DocumentTypeNotFoundException(documentTypeId));
         fileStorage.delete(docType.getTemplateName());
         docType.setTemplateName(null);
         documentTypesRepository.save(docType);
