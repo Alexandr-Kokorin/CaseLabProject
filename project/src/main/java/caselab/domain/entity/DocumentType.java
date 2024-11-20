@@ -1,6 +1,7 @@
 package caselab.domain.entity;
 
 import caselab.domain.entity.document.type.to.attribute.DocumentTypeToAttribute;
+import caselab.multitenancy.domain.entity.TenantAwareEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -23,7 +24,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Entity
 @Table(name = "document_type")
-public class DocumentType {
+public class DocumentType extends TenantAwareEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

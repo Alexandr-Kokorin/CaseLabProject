@@ -2,6 +2,7 @@ package caselab.domain.entity.attribute.value;
 
 import caselab.domain.entity.Attribute;
 import caselab.domain.entity.DocumentVersion;
+import caselab.multitenancy.domain.entity.TenantAwareEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
@@ -24,7 +25,7 @@ import org.hibernate.annotations.OnDeleteAction;
 @AllArgsConstructor
 @Entity
 @Table(name = "document_attribute_value")
-public class AttributeValue {
+public class AttributeValue extends TenantAwareEntity {
 
     @EmbeddedId
     private AttributeValueId id = new AttributeValueId();

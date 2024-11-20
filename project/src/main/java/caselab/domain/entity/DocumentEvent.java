@@ -1,6 +1,7 @@
 package caselab.domain.entity;
 
 import caselab.domain.entity.enums.EventType;
+import caselab.multitenancy.domain.entity.TenantAwareEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,7 +15,7 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class DocumentEvent {
+public class DocumentEvent extends TenantAwareEntity {
 
     private Long documentId;
     private String userEmail;

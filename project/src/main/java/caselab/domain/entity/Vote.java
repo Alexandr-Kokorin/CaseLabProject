@@ -1,6 +1,7 @@
 package caselab.domain.entity;
 
 import caselab.domain.entity.enums.VoteStatus;
+import caselab.multitenancy.domain.entity.TenantAwareEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -26,7 +27,7 @@ import org.hibernate.annotations.OnDeleteAction;
 @AllArgsConstructor
 @Entity
 @Table(name = "vote")
-public class Vote {
+public class Vote extends TenantAwareEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

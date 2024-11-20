@@ -2,6 +2,7 @@ package caselab.domain.entity;
 
 import caselab.domain.entity.enums.DocumentStatus;
 import caselab.elastic.listener.DocumentEventListener;
+import caselab.multitenancy.domain.entity.TenantAwareEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -32,7 +33,7 @@ import lombok.ToString;
 @ToString
 @EntityListeners(DocumentEventListener.class)
 @Table(name = "document")
-public class Document {
+public class Document extends TenantAwareEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
