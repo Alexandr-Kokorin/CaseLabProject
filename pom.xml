@@ -230,6 +230,17 @@
                             <goals>
                                 <goal>report</goal>
                             </goals>
+                            <configuration>
+                                <excludes>
+                                    <exclude>caselab/configuration/**</exclude>
+                                    <exclude>caselab/domain/**</exclude>
+                                    <exclude>caselab/exception/**</exclude>
+                                    <exclude>caselab/controller/**/payload/**</exclude>
+                                    <exclude>caselab/elastic/entity/**</exclude>
+                                    <exclude>caselab/elastic/interfaces/**</exclude>
+                                    <exclude>caselab/elastic/repository/**</exclude>
+                                </excludes>
+                            </configuration>
                         </execution>
                     </executions>
                 </plugin>
