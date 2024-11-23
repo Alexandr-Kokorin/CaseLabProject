@@ -1,8 +1,7 @@
-package caselab.multitenancy.domain.entity;
+package caselab.domain.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
-import jakarta.validation.constraints.Size;
 import java.io.Serial;
 import java.io.Serializable;
 import lombok.AllArgsConstructor;
@@ -21,7 +20,6 @@ public abstract class TenantAwareEntity implements Serializable {
     @Serial private static final long serialVersionUID = 1L;
 
     @TenantId
-    @Size(max = 128)
     @Column(name = "tenant_id")
-    private String tenantId;
+    private Long tenantId;
 }

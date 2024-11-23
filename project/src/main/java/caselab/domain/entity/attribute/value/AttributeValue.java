@@ -2,7 +2,7 @@ package caselab.domain.entity.attribute.value;
 
 import caselab.domain.entity.Attribute;
 import caselab.domain.entity.DocumentVersion;
-import caselab.multitenancy.domain.entity.TenantAwareEntity;
+import caselab.domain.entity.TenantAwareEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
