@@ -6,14 +6,18 @@ import caselab.controller.billing.tariff.payload.TariffResponse;
 import caselab.controller.billing.tariff.payload.UpdateTariffRequest;
 import caselab.controller.secutiry.payload.AuthenticationRequest;
 import caselab.controller.secutiry.payload.AuthenticationResponse;
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
+import java.util.List;
+import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -22,7 +26,8 @@ public class TariffControllerTest extends BaseControllerTest {
 
     private final String TARIFF_URI = "/api/v2/tariffs";
 
-    private AuthenticationResponse token;
+    private AuthenticationResponse adminToken;
+    private AuthenticationResponse userToken;
 
 
     @Test
@@ -107,6 +112,93 @@ public class TariffControllerTest extends BaseControllerTest {
             () -> assertThat(updateResponse.price()).isEqualTo(2.),
             () -> assertThat(updateResponse.userCount()).isEqualTo(2)
         );
+
+        deleteRequest(createResponse.id(),token);
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Обычный пользователь не может обновить тарифф")
+    public void testUpdateTariffFail_UserUpdate() {
+        var tokenAdmin = loginAdmin().accessToken();
+        var tokenUser = loginUser().accessToken();
+        var createTariffRequest = createTariffRequest();
+        var mvcResponseCreate = createRequest(TARIFF_URI,objectMapper.writeValueAsString(createTariffRequest),tokenAdmin);
+        var createResponse = readValue(mvcResponseCreate, TariffResponse.class);
+        var updateTariffRequest = UpdateTariffRequest.builder()
+            .name("name new")
+            .tariffDetails("details new")
+            .price(2.)
+            .userCount(2)
+            .build();
+
+        var mvcResponseUpdate = mockMvc.perform(put(TARIFF_URI+"/"+createResponse.id())
+                .header("Authorization", "Bearer " + tokenUser)
+                .content(objectMapper.writeValueAsString(updateTariffRequest))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isForbidden())
+            .andReturn();
+
+        deleteRequest(createResponse.id(),tokenAdmin);
+    }
+    @Test
+    @SneakyThrows
+    @DisplayName("Админ безуспешно обновляет тариф без поля")
+    public void testUpdateTariffFail_AdminUpdate(){
+        var tokenAdmin = loginAdmin().accessToken();
+        var createTariffRequest = createTariffRequest();
+        var mvcResponse = createRequest(TARIFF_URI,objectMapper.writeValueAsString(createTariffRequest),tokenAdmin);
+
+        var response = readValue(mvcResponse, TariffResponse.class);
+
+        var tariffUpdateRequest = UpdateTariffRequest.builder()
+            .tariffDetails("details new")
+            .price(2.)
+            .userCount(2)
+            .build();
+
+        var updateMvc = mockMvc.perform(put(TARIFF_URI+"/"+response.id())
+                .header("Authorization", "Bearer " + tokenAdmin)
+                .content(objectMapper.writeValueAsString(tariffUpdateRequest))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andReturn();
+
+        deleteRequest(response.id(),tokenAdmin);
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Тест загружает список тарифов")
+    public void getAllTariffsSuccess() {
+        List<TariffResponse> tariffResponses = createTariffsForGetAll();
+        var adminToken = loginAdmin().accessToken();
+
+        var mvcResponse = mockMvc.perform(get(TARIFF_URI)
+                .header("Authorization", "Bearer " + adminToken)
+            .param("pageNum", "0")
+            .param("pageSize", "10")
+            .param("sortStrategy", "ASC"))
+            .andExpect(status().isOk())
+            .andReturn();
+
+
+        var responseMap = objectMapper.readValue(
+            mvcResponse.getResponse().getContentAsString(),
+            new TypeReference<Map<String, Object>>() {}
+        );
+        var tariffsContent = objectMapper.convertValue(
+            responseMap.get("content"),
+            new TypeReference<List<TariffResponse>>() {}
+        );
+
+        assertAll(
+            () -> assertThat(tariffsContent).hasSize(2),
+            () -> assertThat(tariffsContent.getFirst().name()).isEqualTo(tariffResponses.getFirst().name()),
+            () -> assertThat(tariffsContent.getLast().name()).isEqualTo(tariffResponses.getLast().name())
+        );
+
+        tariffResponses.forEach(tariff -> deleteRequest(tariff.id(), adminToken));
     }
 
     @SneakyThrows
@@ -144,8 +236,8 @@ public class TariffControllerTest extends BaseControllerTest {
 
     @SneakyThrows
     private AuthenticationResponse loginAdmin() {
-        if (token != null) {
-            return token;
+        if (adminToken != null) {
+            return adminToken;
         }
 
         var request = AuthenticationRequest.builder()
@@ -161,17 +253,17 @@ public class TariffControllerTest extends BaseControllerTest {
             )
             .andReturn();
 
-        token = objectMapper.readValue(
+        adminToken = objectMapper.readValue(
             mvcResponse.getResponse().getContentAsString(),
             AuthenticationResponse.class
         );
 
-        return token;
+        return adminToken;
     }
     @SneakyThrows
     private AuthenticationResponse loginUser() {
-        if (token != null) {
-            return token;
+        if (userToken != null) {
+            return userToken;
         }
 
         var request = AuthenticationRequest.builder()
@@ -187,11 +279,30 @@ public class TariffControllerTest extends BaseControllerTest {
             )
             .andReturn();
 
-        token = objectMapper.readValue(
+        userToken = objectMapper.readValue(
             mvcResponse.getResponse().getContentAsString(),
             AuthenticationResponse.class
         );
 
-        return token;
+        return userToken;
+    }
+
+    @SneakyThrows
+    private List<TariffResponse> createTariffsForGetAll(){
+        var adminToken = loginAdmin().accessToken();
+        var createRequest = createTariffRequest();
+        var createRequest2 = CreateTariffRequest.builder()
+            .name("name2")
+            .tariffDetails("details2")
+            .price(2.)
+            .userCount(2)
+            .build();
+
+        var mvcResponse1 = createRequest(TARIFF_URI,objectMapper.writeValueAsString(createRequest),adminToken);
+        var mvcResponse2 = createRequest(TARIFF_URI,objectMapper.writeValueAsString(createRequest2),adminToken);
+        var response1 = readValue(mvcResponse1, TariffResponse.class);
+        var response2 = readValue(mvcResponse2, TariffResponse.class);
+
+        return List.of(response1, response2);
     }
 }
