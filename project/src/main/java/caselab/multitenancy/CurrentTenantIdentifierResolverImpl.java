@@ -1,26 +1,22 @@
 package caselab.multitenancy;
 
-import caselab.multitenancy.util.TenantContext;
 import java.util.Map;
+import java.util.Objects;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernatePropertiesCustomizer;
 import org.springframework.stereotype.Component;
-import org.springframework.util.ObjectUtils;
 
 @Component
-class CurrentTenantIdentifierResolverImpl implements CurrentTenantIdentifierResolver<String>, HibernatePropertiesCustomizer {
+class CurrentTenantIdentifierResolverImpl
+    implements CurrentTenantIdentifierResolver<Long>, HibernatePropertiesCustomizer {
 
-    private static final String DEFAULT_TENANT = "default";
+    private static final Long DEFAULT_TENANT = 0L;
 
     @Override
-    public String resolveCurrentTenantIdentifier() {
-        String tenantId = TenantContext.getTenantId();
-        if (!ObjectUtils.isEmpty(tenantId)) {
-            return tenantId;
-        } else {
-            return DEFAULT_TENANT;
-        }
+    public Long resolveCurrentTenantIdentifier() {
+        Long tenantId = TenantContext.getTenantId();
+        return Objects.requireNonNullElse(tenantId, DEFAULT_TENANT);
     }
 
     @Override
