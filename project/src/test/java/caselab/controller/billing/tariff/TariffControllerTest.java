@@ -22,6 +22,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+
 public class TariffControllerTest extends BaseControllerTest {
 
     private final String TARIFF_URI = "/api/v2/tariffs";
@@ -199,6 +200,98 @@ public class TariffControllerTest extends BaseControllerTest {
         );
 
         tariffResponses.forEach(tariff -> deleteRequest(tariff.id(), adminToken));
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Админ удаляет тарифф успешно")
+    public void testDeleteTariffSuccess_AdminDelete() {
+        var adminToken = loginAdmin().accessToken();
+        var createTariffRequest = createTariffRequest();
+        var mvcResponse = createRequest(TARIFF_URI,objectMapper.writeValueAsString(createTariffRequest),adminToken);
+        var response = readValue(mvcResponse, TariffResponse.class);
+
+        var mvcDelete = mockMvc.perform(delete(TARIFF_URI + "/" + response.id())
+                .header("Authorization", "Bearer " + adminToken))
+            .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Пользователь не может удалить тарифф")
+    public void testDeleteTariffFail_UserDelete() {
+        var adminToken = loginAdmin().accessToken();
+        var userToken = loginUser().accessToken();
+
+        var createTariffRequest = createTariffRequest();
+        var mvcResponse = createRequest(TARIFF_URI,objectMapper.writeValueAsString(createTariffRequest),adminToken);
+        var response = readValue(mvcResponse, TariffResponse.class);
+
+        var mvcDelete = mockMvc.perform(delete(TARIFF_URI + "/" + response.id())
+                .header("Authorization", "Bearer " + userToken))
+            .andExpect(status().isForbidden());
+
+        deleteRequest(response.id(), adminToken);
+    }
+    @Test
+    @SneakyThrows
+    @DisplayName("Админ безуспешно удаляет тариф по неверному id")
+    public void testDeleteTariffFail_AdminDelete() {
+        var adminToken = loginAdmin().accessToken();
+        var createRequest = createTariffRequest();
+        var mvcResponse = createRequest(TARIFF_URI,objectMapper.writeValueAsString(createRequest),adminToken);
+        var response = readValue(mvcResponse, TariffResponse.class);
+
+        var mvcDelete = mockMvc.perform(delete(TARIFF_URI + "/" + response.id()+1)
+                .header("Authorization", "Bearer " + adminToken))
+            .andExpect(status().isNotFound());
+
+        deleteRequest(response.id(), adminToken);
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Поиск тарифа по id")
+    public void findTariffByIdSuccess() {
+        var userToken = loginUser().accessToken();
+        var adminToken = loginAdmin().accessToken();
+
+        var createTariffRequest = createTariffRequest();
+        var mvcResponse = createRequest(TARIFF_URI,objectMapper.writeValueAsString(createTariffRequest),adminToken);
+        var response = readValue(mvcResponse, TariffResponse.class);
+
+        var findMvcResponse = mockMvc.perform(get(TARIFF_URI + "/" + response.id())
+                .header("Authorization", "Bearer " + userToken))
+            .andExpect(status().isOk())
+            .andReturn();
+        var findResponse = readValue(findMvcResponse, TariffResponse.class);
+        assertAll(
+            () -> assertThat(findResponse.name()).isEqualTo(response.name()),
+            () -> assertThat(findResponse.tariffDetails()).isEqualTo(response.tariffDetails()),
+            () -> assertThat(findResponse.id()).isEqualTo(response.id()),
+            () -> assertThat(findResponse.price()).isEqualTo(response.price()),
+            () -> assertThat(findResponse.userCount()).isEqualTo(response.userCount())
+        );
+        deleteRequest(response.id(), adminToken);
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Не нашли тариф по айди")
+    public void testFindTariffByIdFail() {
+        var userToken = loginUser().accessToken();
+        var adminToken = loginAdmin().accessToken();
+
+        var createTariffRequest = createTariffRequest();
+        var mvcResponse = createRequest(TARIFF_URI,objectMapper.writeValueAsString(createTariffRequest),adminToken);
+        var response = readValue(mvcResponse, TariffResponse.class);
+
+        var findMvcResponse = mockMvc.perform(get(TARIFF_URI + "/" + response.id()+1)
+                .header("Authorization", "Bearer " + userToken))
+            .andExpect(status().isNotFound())
+            .andReturn();
+
+        deleteRequest(response.id(), adminToken);
     }
 
     @SneakyThrows
