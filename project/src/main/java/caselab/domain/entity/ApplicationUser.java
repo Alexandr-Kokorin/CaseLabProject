@@ -52,8 +52,8 @@ public class ApplicationUser extends TenantAwareEntity implements UserDetails {
     private List<UserToDocument> usersToDocuments;
 
     @ManyToOne
-    @JoinColumn(name = "department_id")
-    private Department department;
+    @JoinColumn(name = "organization_id")
+    private Organization organization;
 
     @OneToMany(mappedBy = "applicationUser")
     private List<Signature> signatures;

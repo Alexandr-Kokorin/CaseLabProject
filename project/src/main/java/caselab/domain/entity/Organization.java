@@ -38,11 +38,11 @@ public class Organization {
     @Column(nullable = false)
     private int inn;
 
-    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
-    private boolean active = true;
+    @Column(name = "is_active", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
+    private boolean isActive = true;
 
     @OneToMany(mappedBy = "organization", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Department> departments = new ArrayList<>();
+    private List<ApplicationUser> employees = new ArrayList<>();
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
