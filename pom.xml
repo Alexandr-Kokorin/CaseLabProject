@@ -21,7 +21,7 @@
         <skip.unit.tests>false</skip.unit.tests>
 
         <!-- Spring -->
-        <spring-boot.version>3.2.2</spring-boot.version>
+        <spring-boot.version>3.4.0</spring-boot.version>
         <spring-cloud.version>2023.0.0</spring-cloud.version>
 
         <!-- Other -->
