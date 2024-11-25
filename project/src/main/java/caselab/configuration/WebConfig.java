@@ -1,13 +1,11 @@
 package caselab.configuration;
 
-import caselab.multitenancy.interceptor.TenantInterceptor;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
@@ -17,13 +15,6 @@ public class WebConfig implements WebMvcConfigurer {
     private static final int PAGINATION_MAX_PAGE_SIZE = 50;
     private static final int DEFAULT_PAGE_NUMBER = 0;
     private static final int DEFAULT_PAGE_SIZE = 10;
-
-    private final TenantInterceptor tenantInterceptor;
-
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addWebRequestInterceptor(tenantInterceptor);
-    }
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
