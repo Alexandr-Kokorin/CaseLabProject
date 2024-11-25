@@ -70,6 +70,7 @@ public class TariffService {
         var updatedTariff = tariffMapper.entityFromRequest(tariffRequest);
 
         updatedTariff.setId(tariff.getId());
+        updatedTariff.setCreatedAt(tariff.getCreatedAt());
         tariffRepository.save(updatedTariff);
 
         return tariffMapper.entityToResponse(updatedTariff);
