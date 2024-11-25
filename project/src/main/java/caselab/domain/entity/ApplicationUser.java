@@ -9,6 +9,7 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.Collection;
@@ -28,10 +29,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(exclude = "id")
+@EqualsAndHashCode(exclude = "id", callSuper = false)
 @Entity
 @Table(name = "application_user", indexes = @Index(columnList = "login"))
-public class ApplicationUser implements UserDetails {
+public class ApplicationUser extends TenantAwareEntity implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -50,6 +51,10 @@ public class ApplicationUser implements UserDetails {
     @OneToMany(mappedBy = "applicationUser")
     private List<UserToDocument> usersToDocuments;
 
+    @ManyToOne
+    @JoinColumn(name = "department_id")
+    private Department department;
+
     @OneToMany(mappedBy = "applicationUser")
     private List<Signature> signatures;
 
@@ -60,6 +65,7 @@ public class ApplicationUser implements UserDetails {
         inverseJoinColumns = @JoinColumn(name = "global_permission_id", nullable = false)
     )
     private List<GlobalPermission> globalPermissions;
+
     @OneToMany(mappedBy = "applicationUser")
     private List<Vote> votes;
 
