@@ -1,6 +1,6 @@
 --liquibase formatted sql
 
---changeset dennKK:20
+--changeset DenisKarpov:22
 CREATE TABLE IF NOT EXISTS organization (
     id          BIGSERIAL       PRIMARY KEY,
     name        VARCHAR(255)    NOT NULL,
@@ -17,19 +17,16 @@ CREATE TABLE IF NOT EXISTS application_user
     email           TEXT      NOT NULL,
     display_name    TEXT      NOT NULL,
     hashed_password TEXT      NOT NULL,
-    organization_id BIGINT    DEFAULT NULL,
-    tenant_id       BIGINT    NOT NULL,
-    PRIMARY KEY (id),
-    FOREIGN KEY (organization_id) REFERENCES organization(id)
+
+    PRIMARY KEY (id)
 );
 
 --changeset hottabych04:2
 CREATE TABLE IF NOT EXISTS attribute
 (
-    id        BIGSERIAL NOT NULL,
-    name      TEXT      NOT NULL,
-    type      TEXT      NOT NULL,
-    tenant_id BIGINT    NOT NULL,
+    id   BIGSERIAL NOT NULL,
+    name TEXT      NOT NULL,
+    type TEXT      NOT NULL,
 
     PRIMARY KEY (id)
 );
@@ -37,9 +34,10 @@ CREATE TABLE IF NOT EXISTS attribute
 --changeset hottabych04:3
 CREATE TABLE IF NOT EXISTS document_type
 (
-    id        BIGSERIAL NOT NULL,
-    name      TEXT      NOT NULL,
-    tenant_id BIGINT    NOT NULL,
+    id            BIGSERIAL NOT NULL,
+    name          TEXT      NOT NULL,
+    template_name TEXT,
+    tenant_id     BIGINT    NOT NULL,
 
     PRIMARY KEY (id)
 );
@@ -59,12 +57,12 @@ CREATE TABLE IF NOT EXISTS document
 --changeset hottabych04:4
 CREATE TABLE IF NOT EXISTS document_version
 (
-    id            BIGSERIAL   NOT NULL,
-    name          TEXT        NOT NULL,
-    created_at    timestamptz NOT NULL,
-    content_name  TEXT,
-    document_id   BIGINT      NOT NULL REFERENCES document (id) ON DELETE CASCADE,
-    tenant_id     BIGINT      NOT NULL,
+    id           BIGSERIAL   NOT NULL,
+    name         TEXT        NOT NULL,
+    created_at   timestamptz NOT NULL,
+    content_name TEXT,
+    document_id  BIGINT      NOT NULL REFERENCES document (id) ON DELETE CASCADE,
+    tenant_id    BIGINT      NOT NULL,
 
     PRIMARY KEY (id)
 );
@@ -86,8 +84,6 @@ CREATE TABLE IF NOT EXISTS document_attribute_value
     document_version_id BIGINT NOT NULL REFERENCES document_version (id) ON DELETE CASCADE,
     attribute_id        BIGINT NOT NULL REFERENCES attribute (id) ON DELETE CASCADE,
     app_value           TEXT,
-    tenant_id           BIGINT NOT NULL,
-
     PRIMARY KEY (document_version_id, attribute_id)
 );
 
@@ -210,8 +206,11 @@ INSERT INTO global_permission (name)
 VALUES ('ADMIN');
 
 INSERT INTO application_user (email, display_name, hashed_password, organization_id, tenant_id)
-VALUES ('admin@gmail.com', 'Super Admin', '$2a$10$WFRQhlz7Ul85HsRjMg3XNutiB//3HLloe3vTuW6GDPD9eeXeYXiJe', NULL, 0);
+VALUES ('admin@gmail.com', 'SUPER ADMIN', '$2a$10$WFRQhlz7Ul85HsRjMg3XNutiB//3HLloe3vTuW6GDPD9eeXeYXiJe', NULL, 0);
 
+INSERT INTO global_permission_to_user(application_user_id, global_permission_id)
+
+--changeset DenisKarpov:23
 INSERT INTO organization (name, inn, is_active)
 VALUES
     ('Organization A', 123, TRUE),
@@ -236,16 +235,32 @@ CREATE TABLE IF NOT EXISTS subscription
 (
     id          BIGSERIAL PRIMARY KEY,
     document_id BIGINT    NOT NULL,
-    user_email  TEXT      NOT NULL,
-    tenant_id   BIGINT    NOT NULL
+    user_email  TEXT      NOT NULL
 );
 
 --changeset FkishDaniels:19
-CREATE TABLE IF NOT EXISTS refresh_tokens
-(
-    id                  BIGSERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS refresh_tokens(
+    id                  BIGSERIAL                PRIMARY KEY,
     token               TEXT                     NOT NULL,
     expires_date        TIMESTAMP WITH TIME ZONE NOT NULL,
-    application_user_id BIGSERIAL                NOT NULL REFERENCES application_user (id) ON DELETE CASCADE,
-    tenant_id           BIGINT                   NOT NULL
+    application_user_id BIGSERIAL                NOT NULL REFERENCES application_user(id) ON DELETE CASCADE
+);
+
+-- changeset FkishDaneils:20
+CREATE TABLE IF NOT EXISTS tariff(
+    id              BIGSERIAL                PRIMARY KEY,
+    name            TEXT                     NOT NULL,
+    price           DECIMAL                  NOT NULL,
+    tariff_details  TEXT                     NOT NULL,
+    created_at      TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    user_count      INTEGER                  NOT NULL
+);
+
+-- changeset hottabych04:21
+CREATE TABLE IF NOT EXISTS bill(
+    id          BIGSERIAL                PRIMARY KEY,
+    tariff_id   BIGINT                   NOT NULL REFERENCES tariff(id) ON DELETE CASCADE,
+--  заменить user на company в будущем
+    user_id     BIGINT                   NOT NULL REFERENCES application_user(id) ON DELETE CASCADE,
+    issued_at   TIMESTAMP WITH TIME ZONE NOT NULL
 );
