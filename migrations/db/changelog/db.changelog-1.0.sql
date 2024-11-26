@@ -225,3 +225,11 @@ CREATE TABLE IF NOT EXISTS bill(
      user_id BIGINT NOT NULL REFERENCES application_user(id) ON DELETE CASCADE,
      issued_at TIMESTAMP WITH TIME ZONE NOT NULL
 );
+
+-- changeset maksim25y:22
+CREATE TABLE IF NOT EXISTS substitution(
+                                   id BIGSERIAL PRIMARY KEY,
+    current_user_id BIGINT NOT NULL REFERENCES application_user(id) ON DELETE CASCADE,
+    substitution_user_id BIGINT NOT NULL REFERENCES application_user(id) ON DELETE CASCADE,
+    assigned TIMESTAMP WITH TIME ZONE NOT NULL
+);
