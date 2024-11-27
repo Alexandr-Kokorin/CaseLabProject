@@ -138,6 +138,10 @@ public class DepartmentService {
             .toList();
     }
 
+    public void deleteDepartment(Long id) {
+        depRepo.deleteById(id);
+    }
+
 
     private void departmentExistsWithNameAndSameParent(String name, Long parentId) {
         depRepo.findByNameAndParentDepartmentId(name, parentId)
