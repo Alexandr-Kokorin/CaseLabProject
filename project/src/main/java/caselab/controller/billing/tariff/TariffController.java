@@ -53,7 +53,7 @@ public class TariffController {
     }
 
     @Operation(summary = "Добавить тарифф",
-               description = "Добавляет тарифф в базу данных")
+               description = "Добавляет тариф в базу данных")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Успешное сохранение",
                      content = @Content(schema = @Schema(implementation = TariffResponse.class))),
@@ -70,7 +70,7 @@ public class TariffController {
     }
 
     @Operation(summary = "Обновить тарифф",
-               description = "Обновляет тарифф в базе данных")
+               description = "Обновляет тариф в базе данных")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Успешное обновление",
                      content = @Content(schema = @Schema(implementation = TariffResponse.class))),
