@@ -5,6 +5,7 @@ import caselab.controller.substitution.payload.SubstitutionResponse;
 import caselab.domain.entity.Substitution;
 import caselab.domain.repository.ApplicationUserRepository;
 import caselab.domain.repository.SubstitutionRepository;
+import caselab.exception.UserAlreadySubstituted;
 import caselab.exception.entity.not_found.UserNotFoundException;
 import caselab.service.util.UserUtilService;
 import lombok.RequiredArgsConstructor;
@@ -26,15 +27,17 @@ public class SubstitutionService {
         var substitutionUser = applicationUserRepository.findByEmail(substitutionRequest.substitutionUserEmail())
             .orElseThrow(() -> new UserNotFoundException(substitutionRequest.substitutionUserEmail()));
 
+        if (substitutionUser.getSubstitution() != null) {
+            throw new UserAlreadySubstituted(substitutionRequest.substitutionUserEmail());
+        }
+
         var substitution = new Substitution();
         substitution.setAssigned(substitutionRequest.assigned());
         substitution.setSubstitutionUserId(substitutionUser.getId());
         var savedSubstitution = substitutionRepository.save(substitution);
 
-        var currentUserEntity = applicationUserRepository.findByEmail(currentUser.getEmail())
-            .orElseThrow(() -> new UserNotFoundException(currentUser.getEmail()));;
-        currentUserEntity.setSubstitution(savedSubstitution);
-        applicationUserRepository.save(currentUserEntity);
+        currentUser.setSubstitution(savedSubstitution);
+        applicationUserRepository.save(currentUser);
 
         return SubstitutionResponse
             .builder()

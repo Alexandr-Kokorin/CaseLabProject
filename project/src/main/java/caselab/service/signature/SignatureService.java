@@ -10,6 +10,7 @@ import caselab.domain.repository.ApplicationUserRepository;
 import caselab.domain.repository.DocumentRepository;
 import caselab.domain.repository.SignatureRepository;
 import caselab.exception.SignatureAlreadySignedException;
+import caselab.exception.entity.not_found.ApplicationUserNotFoundException;
 import caselab.exception.entity.not_found.DocumentNotFoundException;
 import caselab.exception.entity.not_found.SignatureNotFoundException;
 import caselab.exception.entity.not_found.UserNotFoundException;
@@ -116,6 +117,13 @@ public class SignatureService {
 
         var userForSign = userRepository.findByEmail(signRequest.email())
             .orElseThrow(() -> new UserNotFoundException(signRequest.email()));
+
+        if (userForSign.getSubstitution() != null
+            && userForSign.getSubstitution().getAssigned().isAfter(OffsetDateTime.now())) {
+            var substitution = userForSign.getSubstitution();
+            userForSign = userRepository.findById(substitution.getSubstitutionUserId())
+                .orElseThrow(() -> new ApplicationUserNotFoundException(substitution.getSubstitutionUserId()));
+        }
 
         signature.setApplicationUser(userForSign);
         signature.setDocumentVersion(documentVersionForSign);

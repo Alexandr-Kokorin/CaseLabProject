@@ -16,6 +16,7 @@ import caselab.domain.repository.DocumentRepository;
 import caselab.domain.repository.VoteRepository;
 import caselab.domain.repository.VotingProcessRepository;
 import caselab.exception.VotingProcessIsOverException;
+import caselab.exception.entity.not_found.ApplicationUserNotFoundException;
 import caselab.exception.entity.not_found.DocumentNotFoundException;
 import caselab.exception.entity.not_found.UserNotFoundException;
 import caselab.exception.entity.not_found.VoteNotFoundException;
@@ -136,12 +137,32 @@ public class VotingProcessService {
         List<Vote> votes = new ArrayList<>();
         for (String email : emails) {
             if (!email.equals(user.getEmail())) {
+                var emailForVote = getEmailForUserWithSubscription(email);
                 documentFacadeService.grantPermission(
-                    votingProcess.getDocumentVersion().getDocument().getId(), email, authentication);
+                    votingProcess.getDocumentVersion().getDocument().getId(), emailForVote, authentication);
             }
         }
-        emails.forEach(email -> votes.add(createVoteById(email, votingProcess)));
+        emails.forEach(email -> {
+            var emailForVote = getEmailForUserWithSubscription(email);
+            votes.add(createVoteById(emailForVote, votingProcess));
+        });
         return voteRepository.saveAll(votes);
+    }
+
+    private String getEmailForUserWithSubscription(String email) {
+        var foundUser = applicationUserRepository.findByEmail(email)
+            .orElseThrow(() -> new UserNotFoundException(email));
+
+        String resultEmail = email;
+
+        if (foundUser.getSubstitution() != null
+            && foundUser.getSubstitution().getAssigned().isAfter(OffsetDateTime.now())) {
+            var substitution = foundUser.getSubstitution();
+            var substitutionUser = applicationUserRepository.findById(substitution.getSubstitutionUserId())
+                .orElseThrow(() -> new ApplicationUserNotFoundException(substitution.getSubstitutionUserId()));
+            resultEmail = substitutionUser.getEmail();
+        }
+        return resultEmail;
     }
 
     private Vote createVoteById(String email, VotingProcess votingProcess) {

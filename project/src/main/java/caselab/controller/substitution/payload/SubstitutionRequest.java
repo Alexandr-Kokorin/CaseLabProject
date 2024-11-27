@@ -1,7 +1,7 @@
 package caselab.controller.substitution.payload;
 
-import lombok.Builder;
 import java.time.OffsetDateTime;
+import lombok.Builder;
 
 @Builder
 public record SubstitutionRequest(
