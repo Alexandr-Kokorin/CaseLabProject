@@ -2,7 +2,6 @@ package caselab.domain.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -21,7 +20,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.ColumnDefault;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -49,17 +47,6 @@ public class ApplicationUser extends TenantAwareEntity implements UserDetails {
 
     @Column(nullable = false)
     private String hashedPassword;
-
-    @Column(name = "position", nullable = false)
-    private String position;
-
-    @Column(name = "is_working", nullable = false, columnDefinition = "boolean default true")
-    @ColumnDefault("true")
-    private Boolean isWorking = true;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "department_id", referencedColumnName = "id")
-    private Department department;
 
     @OneToMany(mappedBy = "applicationUser")
     private List<UserToDocument> usersToDocuments;
