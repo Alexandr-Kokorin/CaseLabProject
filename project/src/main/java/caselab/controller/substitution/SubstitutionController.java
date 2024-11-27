@@ -1,8 +1,9 @@
 package caselab.controller.substitution;
 
+import caselab.controller.substitution.payload.DelegationRequest;
 import caselab.controller.substitution.payload.SubstitutionRequest;
 import caselab.controller.substitution.payload.SubstitutionResponse;
-import caselab.service.delegation.SubstitutionService;
+import caselab.service.substitution.SubstitutionService;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -27,9 +28,9 @@ public class SubstitutionController {
 
     private final SubstitutionService substitutionService;
 
-    @PostMapping("/assign")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Успешное назначение замещения"),
+        @ApiResponse(responseCode = "200", description = "Успешное назначение замещения",
+                     content = @Content(schema = @Schema(implementation = SubstitutionResponse.class))),
         @ApiResponse(responseCode = "404", description = "Пользователь для замещения не найден",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
         @ApiResponse(responseCode = "400", description = "Ошибка ввода данных",
@@ -37,10 +38,28 @@ public class SubstitutionController {
         @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
-    public SubstitutionResponse getAllDelegations(
+    @PostMapping("/assign")
+    public SubstitutionResponse assignSubstitution(
         @Valid @RequestBody SubstitutionRequest substitutionRequest,
         Authentication authentication
     ) {
         return substitutionService.assignSubstitution(substitutionRequest, authentication);
+    }
+
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Успешное делегирование"),
+        @ApiResponse(responseCode = "404", description = "Пользователь для делегирования не найден",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+        @ApiResponse(responseCode = "400", description = "Ошибка ввода данных",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+        @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @PostMapping("/delegate")
+    public void delegate(
+        @Valid @RequestBody DelegationRequest delegationRequest,
+        Authentication authentication
+    ) {
+        substitutionService.delegate(delegationRequest, authentication);
     }
 }

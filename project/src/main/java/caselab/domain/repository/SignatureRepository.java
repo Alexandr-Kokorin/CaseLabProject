@@ -13,4 +13,6 @@ public interface SignatureRepository extends JpaRepository<Signature, Long> {
         ApplicationUser applicationUser,
         DocumentVersion documentVersion
     );
+
+    boolean existsByApplicationUserAndDocumentVersion(ApplicationUser applicationUser, DocumentVersion documentVersion);
 }
