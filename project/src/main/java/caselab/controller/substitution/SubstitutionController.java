@@ -1,7 +1,7 @@
-package caselab.controller.delegating;
+package caselab.controller.substitution;
 
-import caselab.controller.delegating.payload.SubstitutionRequest;
-import caselab.controller.delegating.payload.SubstitutionResponse;
+import caselab.controller.substitution.payload.SubstitutionRequest;
+import caselab.controller.substitution.payload.SubstitutionResponse;
 import caselab.service.delegation.SubstitutionService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;

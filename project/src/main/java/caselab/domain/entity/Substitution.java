@@ -28,12 +28,6 @@ public class Substitution {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column
     private OffsetDateTime assigned;
-    @OneToOne
-    @JoinColumn(name = "current_user_id")
-    private ApplicationUser currentUser;
-    @OneToOne
-    @JoinColumn(name = "substitution_user_id")
-    private ApplicationUser substitutionUser;
+    private Long substitutionUserId;
 }

@@ -1,5 +1,11 @@
 --liquibase formatted sql
 
+-- changeset maksim25y:22
+CREATE TABLE IF NOT EXISTS substitution(
+                                           id BIGSERIAL PRIMARY KEY,
+                                           substitution_user_id BIGINT,
+                                           assigned TIMESTAMP WITH TIME ZONE NOT NULL
+);
 --changeset hottabych04:1
 CREATE TABLE IF NOT EXISTS application_user
 (
@@ -7,6 +13,7 @@ CREATE TABLE IF NOT EXISTS application_user
     email           TEXT      NOT NULL,
     display_name    TEXT      NOT NULL,
     hashed_password TEXT      NOT NULL,
+    substitution_id BIGINT REFERENCES substitution(id) ON DELETE CASCADE,
 
     PRIMARY KEY (id)
 );
@@ -224,12 +231,4 @@ CREATE TABLE IF NOT EXISTS bill(
 --   заменить user на company в будущем
      user_id BIGINT NOT NULL REFERENCES application_user(id) ON DELETE CASCADE,
      issued_at TIMESTAMP WITH TIME ZONE NOT NULL
-);
-
--- changeset maksim25y:22
-CREATE TABLE IF NOT EXISTS substitution(
-                                   id BIGSERIAL PRIMARY KEY,
-    current_user_id BIGINT NOT NULL REFERENCES application_user(id) ON DELETE CASCADE,
-    substitution_user_id BIGINT NOT NULL REFERENCES application_user(id) ON DELETE CASCADE,
-    assigned TIMESTAMP WITH TIME ZONE NOT NULL
 );

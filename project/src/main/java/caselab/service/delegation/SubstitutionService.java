@@ -1,13 +1,12 @@
 package caselab.service.delegation;
 
-import caselab.controller.delegating.payload.SubstitutionRequest;
-import caselab.controller.delegating.payload.SubstitutionResponse;
+import caselab.controller.substitution.payload.SubstitutionRequest;
+import caselab.controller.substitution.payload.SubstitutionResponse;
 import caselab.domain.entity.Substitution;
 import caselab.domain.repository.ApplicationUserRepository;
 import caselab.domain.repository.SubstitutionRepository;
 import caselab.exception.entity.not_found.UserNotFoundException;
 import caselab.service.util.UserUtilService;
-import java.time.OffsetDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -16,7 +15,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class SubstitutionService {
 
-    private final SubstitutionRepository delegatingRepository;
+    private final SubstitutionRepository substitutionRepository;
     private final UserUtilService userUtilService;
     private final ApplicationUserRepository applicationUserRepository;
 
@@ -24,21 +23,25 @@ public class SubstitutionService {
         SubstitutionRequest substitutionRequest,
         Authentication authentication) {
         var currentUser = userUtilService.findUserByAuthentication(authentication);
-        var substitutionUser = applicationUserRepository.findByEmail(substitutionRequest.delegatingUserEmail())
-            .orElseThrow(() -> new UserNotFoundException(substitutionRequest.delegatingUserEmail()));
+        var substitutionUser = applicationUserRepository.findByEmail(substitutionRequest.substitutionUserEmail())
+            .orElseThrow(() -> new UserNotFoundException(substitutionRequest.substitutionUserEmail()));
 
-        var delegating = new Substitution();
-        delegating.setCurrentUser(currentUser);
-        delegating.setAssigned(OffsetDateTime.now());
-        delegating.setSubstitutionUser(substitutionUser);
+        var substitution = new Substitution();
+        substitution.setAssigned(substitutionRequest.assigned());
+        substitution.setSubstitutionUserId(substitutionUser.getId());
+        var savedSubstitution = substitutionRepository.save(substitution);
 
-        var savedDelegating = delegatingRepository.save(delegating);
+        var currentUserEntity = applicationUserRepository.findByEmail(currentUser.getEmail())
+            .orElseThrow(() -> new UserNotFoundException(currentUser.getEmail()));;
+        currentUserEntity.setSubstitution(savedSubstitution);
+        applicationUserRepository.save(currentUserEntity);
+
         return SubstitutionResponse
             .builder()
-            .id(savedDelegating.getId())
-            .assigned(savedDelegating.getAssigned())
-            .currentUserEmail(savedDelegating.getCurrentUser().getEmail())
-            .substitutionUserEmail(savedDelegating.getSubstitutionUser().getEmail())
+            .id(savedSubstitution.getId())
+            .assigned(savedSubstitution.getAssigned())
+            .currentUserEmail(currentUser.getEmail())
+            .substitutionUserEmail(substitutionUser.getEmail())
             .build();
     }
 }

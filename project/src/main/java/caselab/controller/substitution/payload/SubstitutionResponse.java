@@ -1,4 +1,4 @@
-package caselab.controller.delegating.payload;
+package caselab.controller.substitution.payload;
 
 import java.time.OffsetDateTime;
 import lombok.Builder;

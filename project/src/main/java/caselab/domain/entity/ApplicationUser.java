@@ -54,7 +54,8 @@ public class ApplicationUser implements UserDetails {
     @OneToMany(mappedBy = "applicationUser")
     private List<Signature> signatures;
 
-    @OneToOne(mappedBy = "currentUser")
+    @OneToOne
+    @JoinColumn(columnDefinition = "substitution_id")
     private Substitution substitution;
 
     @ManyToMany
