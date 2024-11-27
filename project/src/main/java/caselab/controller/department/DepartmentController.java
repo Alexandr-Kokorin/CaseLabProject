@@ -30,10 +30,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/department")
+@RequestMapping("/api/v1/departments")
 @SecurityRequirement(name = "JWT")
 @RequiredArgsConstructor
-@Tag(name = "Подразделения", description = "API взаимодействия с подразделения")
+@Tag(name = "Подразделения", description = "API взаимодействия с подразделениями")
 public class DepartmentController {
 
     private final DepartmentService depService;
@@ -46,6 +46,8 @@ public class DepartmentController {
         @ApiResponse(responseCode = "400", description = "Ошибка ввода",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
         @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+        @ApiResponse(responseCode = "409", description = "Конфликт при создании подразделения",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @PreAuthorize("hasAuthority('ADMIN')")
@@ -60,9 +62,9 @@ public class DepartmentController {
         @ApiResponse(responseCode = "200",
                      description = "Успешное получение подразделения",
                      content = @Content(schema = @Schema(implementation = DocumentVersionResponse.class))),
-        @ApiResponse(responseCode = "404", description = "Версия документа не найдена",
-                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
         @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+        @ApiResponse(responseCode = "404", description = "Версия документа не найдена",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @GetMapping({"/{id}","/{name}"})
@@ -96,8 +98,13 @@ public class DepartmentController {
         @ApiResponse(responseCode = "400", description = "Ошибка ввода",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
         @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+        @ApiResponse(responseCode = "404", description = "Подразделение не найдено",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+        @ApiResponse(responseCode = "409", description = "Конфликт при обновлении данных подразделения",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PatchMapping("/{id}")
     public DepartmentUpdateResponse updateDepartment(
         @PathVariable("id") Long id,
@@ -105,7 +112,22 @@ public class DepartmentController {
         return depService.updateDepartment(id, request);
     }
 
-    @DeleteMapping
+    @Schema(description = "Запрос, опциональный выбор варианта поиска - по наименование или по ID." +
+        "Как минимум один из атрибутов должен быть указан.")
+    @Operation(summary = "Обновить данные подразделения",
+               description = "Обновляет информацию о подразделении и возвращает его. Доступно только администратору")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Успешное обновление информации о документе",
+                     content = @Content(schema = @Schema(implementation = DepartmentUpdateResponse.class))),
+        @ApiResponse(responseCode = "400", description = "Ошибка ввода",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+        @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+        @ApiResponse(responseCode = "404", description = "Подразделение не найдено",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteDepartment(Long id)
     {
         depService.deleteDepartment(id);

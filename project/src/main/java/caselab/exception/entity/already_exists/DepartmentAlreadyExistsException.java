@@ -5,7 +5,7 @@ import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode(callSuper = true)
 public final class DepartmentAlreadyExistsException extends ApplicationConflictException {
-    public DepartmentAlreadyExistsException(String name, Long id) {
-        super("department.with.this.name.and.parent.already_exists", new Object[]{name,id});
+    public DepartmentAlreadyExistsException() {
+        super("department.with.this.name.and.parent.already_exists", new Object[]{});
     }
 }

@@ -5,7 +5,6 @@ import caselab.controller.department.payload.DepartmentCreateResponse;
 import caselab.controller.department.payload.DepartmentResponse;
 import caselab.controller.department.payload.DepartmentUpdateRequest;
 import caselab.controller.department.payload.DepartmentUpdateResponse;
-import caselab.controller.users.payload.UserResponse;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.Department;
 import caselab.domain.repository.ApplicationUserRepository;
@@ -18,10 +17,8 @@ import caselab.exception.entity.already_exists.DepartmentAlreadyExistsException;
 import caselab.exception.entity.not_found.DepartmentNotFoundException;
 import caselab.exception.entity.not_found.UserNotFoundException;
 import caselab.service.department.mapper.DepartmentMapper;
-import caselab.service.users.mapper.UserMapper;
 import jakarta.transaction.Transactional;
 import java.util.List;
-import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -33,58 +30,49 @@ public class DepartmentService {
     private final ApplicationUserRepository userRepo;
     private final DepartmentRepository depRepo;
     private final DepartmentMapper departmentMapper;
-    private final UserMapper userMapper;
 
     public DepartmentCreateResponse createDepartment(DepartmentCreateRequest request) {
-
-        parentAndTopParamCheck(request.parentDepartment(), request.topDepartment());
-
-       departmentExistsWithNameAndSameParent(request.name(), request.parentDepartment());
-
-       Department parent = null;
-       if(request.parentDepartment() != null) {
-           parent = findDepartment(request.parentDepartment());
-       }
-
-       ApplicationUser user = null;
-       if(request.headOfDepartment() != null){
-           //user = findUser(request.headOfDepartment());
-           checkUserIsNotAHeadOfAnotherDepartment(user.getEmail());
-       }
-
        var department = departmentMapper.createRequestToEntity(request);
-           department.setIsActive(true);
+        department.setIsActive(true);
+        parentAndTopParamCheckToCreate(request.parentDepartment(), request.topDepartment());
+
+        departmentExistsWithNameAndSameParent(request.name(), request.parentDepartment());
+
+       if(request.parentDepartment() != null) {
+           Department parent = findDepartmentByIdOrName(request.parentDepartment(), null);
            department.setParentDepartment(parent);
+       }
+
+       if(request.headOfDepartment() != null){
+           ApplicationUser user = findUserByEmail(request.headOfDepartment());
+           checkUserIsNotAHeadOfAnotherDepartment(user.getEmail());
            department.setHeadOfDepartment(user);
-
+       }
         depRepo.save(department);
-
         return departmentMapper.entityToCreateResponse(department);
     }
 
     public DepartmentResponse getDepartment(Long id, String name) {
-        Department dep = findDepartmentWithIdOrName(id, name);
-
+        Department dep = findDepartmentByIdOrName(id, name);
         ApplicationUser user = getHeadOfDepartmentIfExists(dep);
-
-       return DepartmentResponse.builder()
+        String userInfo = user != null ? user.getDisplayName() + " [" + user.getPosition() + "]" : "No head of department";
+        return DepartmentResponse.builder()
             .id(dep.getId())
             .name(dep.getName())
             .isActive(dep.getIsActive())
             .topDepartment(dep.getTopDepartment())
             .parentDepartment(dep.getParentDepartment() != null ? dep.getParentDepartment().getId() : null)
-            .headOfDepartment(user.getDisplayName()+user.getEmail())
+            .headOfDepartment(userInfo)
             .employees(dep.getEmployees().stream().map(departmentMapper::toEmployeeResponse).toList())
             .build();
     }
 
     public DepartmentUpdateResponse updateDepartment(Long id, DepartmentUpdateRequest request) {
-        Department dep = findDepartment(id);
+        Department dep = findDepartmentByIdOrName(id, null);
         Department definedParent = dep.getParentDepartment();
         departmentMapper.patchRequestToEntity(dep, request);
-        Department parentToUpdate = null;
         if (request.parentDepartment() != null) {
-            parentToUpdate = findDepartment(request.parentDepartment());
+            Department parentToUpdate = findDepartmentByIdOrName(request.parentDepartment(), null);
             if(parentToUpdate != definedParent){
                 dep.setParentDepartment(parentToUpdate);
             } else {
@@ -94,28 +82,17 @@ public class DepartmentService {
             dep.setParentDepartment(definedParent);
         }
         if (request.headOfDepartment() != null) {
-           ApplicationUser user = userRepo.findByEmail(request.headOfDepartment())
-                .orElseThrow(() -> new UserNotFoundException("User with email: "
-                    + request.headOfDepartment()+" not found"));
-
+           ApplicationUser user = findUserByEmail(request.headOfDepartment());
             if(user != null && (user.getEmail()!=null && !user.getEmail().isEmpty()))
             {
                 checkUserIsNotAHeadOfAnotherDepartment(user.getEmail());
                 dep.setHeadOfDepartment(user);
-                String userInfo = user.getDisplayName()+" ["+user.getPosition()+"]";
             }
         } else {
             dep.setHeadOfDepartment(null);
         }
 
-        if(request.parentDepartment() == null && (request.topDepartment() != null && !request.topDepartment())) {
-            throw new DepartmentIllegalParamsException();
-            /*throw new IllegalArgumentException("Impossible to proceed. Parent department is " +
-                "not specified and top param set as false.");*/
-        }
-        else if(request.parentDepartment() != null && (request.topDepartment() != null && request.topDepartment())) {
-            throw new DepartmentIllegalParamsException(request.topDepartment());
-        }
+        parentAndTopParamCheckToUpdate(request.parentDepartment(), request.topDepartment());
 
         depRepo.save(dep);
         return departmentMapper.entityToUpdateResponse(dep);
@@ -142,10 +119,9 @@ public class DepartmentService {
         depRepo.deleteById(id);
     }
 
-
     private void departmentExistsWithNameAndSameParent(String name, Long parentId) {
-        depRepo.findByNameAndParentDepartmentId(name, parentId)
-            .orElseThrow(()->new DepartmentAlreadyExistsException(name, parentId));
+       depRepo.findByNameAndParentDepartmentId(name, parentId)
+           .ifPresent((dep)-> {throw new DepartmentAlreadyExistsException();});
     }
 
     private void checkUserIsNotAHeadOfAnotherDepartment(String email) {
@@ -155,40 +131,40 @@ public class DepartmentService {
        }
     }
 
-    private void parentAndTopParamCheck(Long parentDepId, Boolean topDep) {
-        if (parentDepId != null && (topDep != null && topDep.equals(true))) {
-            throw new RuntimeException("Unable to set Top department = true" +
-                "parent department is specified");
+    private void parentAndTopParamCheckToCreate(Long parentDepId, Boolean topDep) {
+        if (parentDepId != null && (topDep != null && !topDep)) {
+            throw new DepartmentIllegalParamsException(topDep);
         }
-        else if (parentDepId == null && (topDep == null || topDep.equals(false))) {
-            throw new RuntimeException("No parent department nor top department is specified, or also. Must at least one.");
+        else if (parentDepId == null && (topDep == null || !topDep)) {
+            throw new DepartmentIllegalParamsException();
         }
     }
 
-    private Department findDepartment(Long parentDepId) {
-        return depRepo.findById(parentDepId)
-            .orElseThrow(() -> new DepartmentNotFoundException(parentDepId));
+    private void parentAndTopParamCheckToUpdate(Long parentDepId, Boolean topDep) {
+        if(parentDepId == null && (topDep != null && !topDep)) {
+            throw new DepartmentIllegalParamsException();
+        }
+        else if(parentDepId != null && (topDep != null && topDep)) {
+            throw new DepartmentIllegalParamsException(topDep);
+        }
     }
 
-    public List<UserResponse> findUser(String email) {
-        ApplicationUser user = userRepo.findByEmail(email)
-            .orElseThrow(() -> new UserNotFoundException(email));
-       return Stream.of(user).map(userMapper::entityToResponse).toList();
-    }
-    private Department findDepartmentWithIdOrName(Long id, String name) {
-        if (id != null) {
-            return depRepo.findById(id).orElseThrow(() -> new DepartmentNotFoundException(id));
+    private Department findDepartmentByIdOrName(Long depId, String name) {
+        if (depId != null) {
+            return depRepo.findById(depId).orElseThrow(() -> new DepartmentNotFoundException(depId));
         } else if (name != null && !name.isEmpty()) {
             return depRepo.findByName(name).orElseThrow(() -> new DepartmentNotFoundException(name));
-        } else {
-            throw new DepartmentMissedParamsException();
-        }
+        } else throw new DepartmentMissedParamsException();
+    }
+
+    public ApplicationUser findUserByEmail(String email) {
+        return userRepo.findByEmail(email)
+            .orElseThrow(() -> new UserNotFoundException("User with email "
+                + email +" not found"));
     }
 
     private ApplicationUser getHeadOfDepartmentIfExists(Department dep) {
         return dep.getHeadOfDepartment() != null ?
-            userRepo.findByEmail(dep.getHeadOfDepartment().getEmail())
-            .orElseThrow(() -> new UserNotFoundException("No user found with email: "
-                + dep.getHeadOfDepartment().getEmail())) : null;
+           findUserByEmail(dep.getHeadOfDepartment().getEmail()) : null;
     }
 }

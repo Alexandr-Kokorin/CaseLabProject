@@ -226,7 +226,7 @@ CREATE TABLE IF NOT EXISTS bill(
      issued_at TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
--- changeset seshxyz:22
+--changeset seshxyz:22
 CREATE TABLE IF NOT EXISTS department(
     id                     BIGSERIAL PRIMARY KEY,
     name                   TEXT NOT NULL UNIQUE,
@@ -238,29 +238,9 @@ CREATE TABLE IF NOT EXISTS department(
     CONSTRAINT parent_id_is_not_the_same CHECK (id IS DISTINCT FROM department.parent_department_id)
 );
 
--- changeset seshxyz:23
+--changeset seshxyz:23
 ALTER TABLE application_user
     ADD COLUMN is_working       BOOLEAN NOT NULL DEFAULT TRUE,
     ADD COLUMN position         TEXT,
     ADD COLUMN department_id    BIGINT REFERENCES department(id) ON DELETE NO ACTION;
 
--- changeset seshxyz:24
-INSERT INTO department(name, is_active, is_top_department, head_id_of_department, parent_department_id)
-VALUES ('Отдел поддержки', TRUE, TRUE, 1, NULL);
-
-INSERT INTO application_user(email, display_name, hashed_password, position, organization_id, tenant_id)
-VALUES
-    ('user1@test.com', 'Борисов Борис Борисович', '$2a$10$WFRQhlz7Ul85HsRjMg3XNutiB//3HLloe3vTuW6GDPD9eeXeYXiJe', 'Старший инженер', 1, 1),
-    ('user2@test.com', 'Иванов Иван Иванович', '$2a$10$WFRQhlz7Ul85HsRjMg3XNutiB//3HLloe3vTuW6GDPD9eeXeYXiJe', 'Начальник отдела', 1, 1),
-    ('user3@test.com', 'Петров Петр Петрович', '$2a$10$WFRQhlz7Ul85HsRjMg3XNutiB//3HLloe3vTuW6GDPD9eeXeYXiJe', 'Инженер', 1, 1);
-
-INSERT INTO department(name, is_active, is_top_department, head_id_of_department, parent_department_id)
-VALUES   ('Отдел сопровождения', TRUE, FALSE, 1, 1),
-         ('Отдел разработки', TRUE, FALSE, 3, NULL);
-
--- changeset seshxyz:25
-UPDATE application_user SET department_id = 1, position = 'Администратор' WHERE id = 1;
-
--- changeset seshxyz:26
---ALTER TABLE application_user
---    ALTER COLUMN position SET NOT NULL;
