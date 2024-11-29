@@ -9,14 +9,17 @@ import caselab.domain.entity.Organization;
 import caselab.domain.entity.Tariff;
 import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.BillRepository;
+import caselab.domain.repository.OrganizationRepository;
 import caselab.domain.repository.TariffRepository;
 import caselab.exception.entity.not_found.BillNotFoundException;
+import caselab.exception.entity.not_found.OrganizationNotFoundException;
 import caselab.exception.entity.not_found.TariffNotFoundException;
 import caselab.service.billing.bill.mapper.BillMapper;
 import caselab.service.util.UserUtilService;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,12 +27,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class BillService {
 
     private final BillRepository billRepository;
     private final TariffRepository tariffRepository;
     private final UserUtilService userUtilService;
     private final BillMapper billMapper;
+    private final OrganizationRepository organizationRepository;
 
     public BillResponse createBill(CreateBillRequest req, Authentication auth) {
         ApplicationUser user = checkPermission(auth);
@@ -111,4 +116,27 @@ public class BillService {
 
     }
 
+    //Метод для восстановления организации в статус активной
+    public void activateOrganization(Long organizationId, Authentication authentication) {
+        ApplicationUser user = userUtilService.findUserByAuthentication(authentication);
+        userUtilService.checkUserGlobalPermission(user, GlobalPermissionName.ADMIN);
+
+        Organization organization = findOrganizationById(organizationId);
+        organization.setActive(true);
+        organizationRepository.save(organization);
+
+        Bill bill = billRepository.findByUserOrganizationId(organizationId)
+            .orElseThrow(() -> new BillNotFoundException(organizationId));
+
+        bill.setPaidUntil(LocalDateTime.now().plusDays(30));
+        billRepository.save(bill);
+
+        log.info("Организация с ID {} активирована, срок действия счета продлен до {}",
+            organizationId, bill.getPaidUntil());
+    }
+
+    private Organization findOrganizationById(Long id) {
+        return organizationRepository.findById(id)
+           .orElseThrow(() -> new OrganizationNotFoundException(id));
+    }
 }

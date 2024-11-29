@@ -16,10 +16,7 @@ import org.springframework.stereotype.Service;
 import javax.imageio.ImageIO;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -60,7 +57,7 @@ public class BillCheckService {
             "Bill ID: %d\nOrganization: %s\nAmount: %s\nDue Date: %s",
             bill.getId(),
             bill.getUser().getOrganization().getName(),
-            bill.getTariff().getPrice(), // Предполагается, что у тарифа есть цена
+            bill.getTariff().getPrice(),
             bill.getPaidUntil()
         );
 

@@ -110,4 +110,27 @@ public class BillController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Обновить статус организации на активный",
+               description = "Устанавливает статус организации как активный после успешной оплаты")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Статус успешно обновлен",
+                     content = @Content(schema = @Schema(implementation = BillResponse.class))),
+        @ApiResponse(responseCode = "404", description = "Организация с указанным id не найдена",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+        @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @PostMapping("/payment-success/{organization_id}")
+    public ResponseEntity<Void> setOrganizationActive(
+        @PathVariable("organization_id") Long organizationId,
+        Authentication authentication
+    ) {
+
+        // Изменяем статус организации
+        billService.activateOrganization(organizationId,authentication);
+
+        return ResponseEntity.ok().build();
+    }
+
+
 }
