@@ -35,9 +35,12 @@ public class Bill {
     private Tariff tariff;
 
     @OneToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "organization_id ", nullable = false)
     private ApplicationUser user;
 
     @Column(nullable = false)
     private LocalDateTime issuedAt;
+
+    @Column(nullable = false)
+    private Boolean isPaid;
 }
