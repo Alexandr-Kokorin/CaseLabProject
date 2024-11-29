@@ -5,6 +5,7 @@ import caselab.controller.billing.bill.payload.CreateBillRequest;
 import caselab.controller.billing.bill.payload.UpdateBillRequest;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.Bill;
+import caselab.domain.entity.Organization;
 import caselab.domain.entity.Tariff;
 import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.BillRepository;
@@ -14,6 +15,7 @@ import caselab.exception.entity.not_found.TariffNotFoundException;
 import caselab.service.billing.bill.mapper.BillMapper;
 import caselab.service.util.UserUtilService;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -85,6 +87,28 @@ public class BillService {
     private Tariff findTariffById(Long id) {
         return tariffRepository.findById(id)
             .orElseThrow(() -> new TariffNotFoundException(id));
+    }
+
+    //метод для создания счета при создании организации
+    public BillResponse createBillForOrganization(ApplicationUser user, Organization organization){
+        int employeeCount = organization.getEmployees().size();
+
+        Tariff tariff = tariffRepository.findAll().stream()
+            .filter(t -> t.getUserCount() >= employeeCount)
+            .min(Comparator.comparingInt(Tariff::getUserCount))
+            .orElseThrow(() -> new TariffNotFoundException(organization.getId()));
+
+        Bill bill = Bill.builder()
+            .tariff(tariff)
+            .user(user)
+            .issuedAt(LocalDateTime.now())
+            .paidUntil(LocalDateTime.now().plusDays(31))
+            .build();
+
+        Bill saved = billRepository.save(bill);
+
+        return billMapper.toResponse(saved);
+
     }
 
 }
