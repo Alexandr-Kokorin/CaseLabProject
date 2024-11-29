@@ -22,7 +22,7 @@ public record DepartmentUpdateRequest(
         @JsonProperty(value = "is_top_department")
         Boolean topDepartment,
 
-        @Schema(description = "Идентификатор нового родительского подразделения", example = "1")
+        @Schema(description = "id нового родительского подразделения", example = "1")
         @JsonProperty("parent_department_id")
         Long parentDepartment,
 

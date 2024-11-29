@@ -22,7 +22,9 @@ public record DepartmentCreateRequest(
     @NotNull(message = "{department.top_department.is_null}")
     Boolean topDepartment,
 
-    @Schema(description = "Идентификатор родительского подразделения\n(указывается при значении параметра is_top_department = false)", example = "1")
+    @Schema(description = "Идентификатор родительского подразделения"
+        + "\n(указывается при значении параметра is_top_department = false)",
+            example = "1")
     @JsonProperty("parent_department_id")
     @Digits(message = "{department.parent_id.invalid}", integer = 5, fraction = 0)
     Long parentDepartment,

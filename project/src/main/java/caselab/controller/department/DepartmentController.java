@@ -56,21 +56,20 @@ public class DepartmentController {
         return depService.createDepartment(request);
     }
 
-    @Operation(summary = "Получить подразделение по id или name",
-               description = "Возвращает подразделение по указанному параметру")
+    @Operation(summary = "Получить подразделение по id",
+               description = "Возвращает подразделение по его id")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200",
                      description = "Успешное получение подразделения",
                      content = @Content(schema = @Schema(implementation = DocumentVersionResponse.class))),
         @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
-        @ApiResponse(responseCode = "404", description = "Версия документа не найдена",
+        @ApiResponse(responseCode = "404", description = "Подразделение не найдено",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
-    @GetMapping({"/{id}","/{name}"})
-    DepartmentResponse getDepartment(@PathVariable(value = "id", required = false) Long id,
-        @PathVariable(value = "name", required = false) String name) {
-        return depService.getDepartment(id, name);
+    @GetMapping("/{id}")
+    DepartmentResponse getDepartment(@PathVariable("id") Long id) {
+        return depService.getDepartment(id);
     }
 
     @Operation(summary = "Отображение подразделений",
@@ -78,8 +77,6 @@ public class DepartmentController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Успешное получение по индексу",
                      content = @Content(schema = @Schema(implementation = DepartmentResponse.class))),
-        @ApiResponse(responseCode = "404", description = "Подразделений не обнаружено",
-                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
         @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
@@ -88,10 +85,8 @@ public class DepartmentController {
         return depService.getAllDepartmentsHierarchy();
     }
 
-    @Schema(description = "Запрос, опциональный выбор варианта поиска - по наименование или по ID." +
-        "Как минимум один из атрибутов должен быть указан.")
     @Operation(summary = "Обновить данные подразделения",
-               description = "Обновляет информацию о подразделении и возвращает его. Доступно только администратору")
+               description = "Обновляет информацию о подразделении")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Успешное обновление информации о документе",
                      content = @Content(schema = @Schema(implementation = DepartmentUpdateResponse.class))),
@@ -108,16 +103,15 @@ public class DepartmentController {
     @PatchMapping("/{id}")
     public DepartmentUpdateResponse updateDepartment(
         @PathVariable("id") Long id,
-        @RequestBody DepartmentUpdateRequest request){
+        @RequestBody DepartmentUpdateRequest request
+    ) {
         return depService.updateDepartment(id, request);
     }
 
-    @Schema(description = "Запрос, опциональный выбор варианта поиска - по наименование или по ID." +
-        "Как минимум один из атрибутов должен быть указан.")
-    @Operation(summary = "Обновить данные подразделения",
-               description = "Обновляет информацию о подразделении и возвращает его. Доступно только администратору")
+    @Operation(summary = "Удалить подразделение",
+               description = "Удаляет информацию о подразделении")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Успешное обновление информации о документе",
+        @ApiResponse(responseCode = "200", description = "Успешное удаление информации о документе",
                      content = @Content(schema = @Schema(implementation = DepartmentUpdateResponse.class))),
         @ApiResponse(responseCode = "400", description = "Ошибка ввода",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
@@ -128,8 +122,7 @@ public class DepartmentController {
     })
     @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteDepartment(Long id)
-    {
+    public ResponseEntity<Void> deleteDepartment(@PathVariable("id") Long id) {
         depService.deleteDepartment(id);
         return ResponseEntity.noContent().build();
     }

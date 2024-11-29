@@ -2,6 +2,7 @@ package caselab.domain.entity;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -46,7 +47,7 @@ public class Department {
     @Column(name = "is_top_department", nullable = false)
     private Boolean topDepartment;
 
-    @OneToOne//(fetch = FetchType.LAZY)
+    @OneToOne
     @JoinColumn(name = "head_id_of_department")
     private ApplicationUser headOfDepartment;
 
@@ -54,9 +55,9 @@ public class Department {
     @JoinColumn(name = "parent_department_id")
     private Department parentDepartment;
 
-    @OneToMany(mappedBy = "parentDepartment", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "parentDepartment", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Department> childDepartments;
 
-    @OneToMany(mappedBy = "department" ,fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "department", fetch = FetchType.LAZY)
     private List<ApplicationUser> employees;
 }
