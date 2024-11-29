@@ -8,6 +8,8 @@ import caselab.domain.entity.GlobalPermission;
 import caselab.domain.entity.Tariff;
 import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.TariffRepository;
+import caselab.exception.PermissionDeniedException;
+import caselab.exception.entity.not_found.EntityNotFoundException;
 import caselab.service.billing.tariff.mapper.TariffMapper;
 import caselab.service.util.UserUtilService;
 import org.junit.jupiter.api.DisplayName;
@@ -16,15 +18,20 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.exceptions.misusing.PotentialStubbingProblem;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import java.util.List;
+import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -69,6 +76,21 @@ public class TariffServiceTest {
         verify(tariffMapper).entityToResponse(tariff);
 
     }
+    @Test
+    @DisplayName("Ошибка при создании тарифа: недостаточно прав")
+    public void createTariffWithoutAdminPermission() {
+        var createRequest = createTariffRequest();
+        Authentication authentication = Mockito.mock(Authentication.class);
+
+        doThrow(new PermissionDeniedException()).when(userUtilService)
+            .checkUserGlobalPermission(Mockito.any(ApplicationUser.class), eq(GlobalPermissionName.ADMIN));
+
+        assertThrows(
+            PotentialStubbingProblem.class,
+            () -> tariffService.createTariff(authentication, createRequest),
+            "Доступ к этому ресурсу разрешен только администраторам"
+        );
+    }
 
     @Test
     @DisplayName("Поиск тарифа по ID")
@@ -91,6 +113,39 @@ public class TariffServiceTest {
 
         verify(tariffRepository).findById(1L);
         verify(tariffMapper).entityToResponse(tariff);
+    }
+    @Test
+    @DisplayName("Ошибка при поиске тарифа: не найден по ID")
+    public void findTariffByIdNotFound() {
+        long tariffId = 999L;
+
+        when(tariffRepository.findById(tariffId)).thenReturn(Optional.empty());
+
+        assertThrows(
+            EntityNotFoundException.class,
+            () -> tariffService.findById(tariffId),
+            "Тариф не существует"
+        );
+
+        verify(tariffRepository).findById(tariffId);
+    }
+
+    @Test
+    @DisplayName("Ошибка при обновлении тарифа: недостаточно прав")
+    public void updateTariffWithoutAdminPermission() {
+        var createRequest = createUpdateTariffRequest();
+        var tariff = createTariff();
+
+        Authentication authentication = Mockito.mock(Authentication.class);
+
+        doThrow(new PermissionDeniedException()).when(userUtilService)
+            .checkUserGlobalPermission(Mockito.any(ApplicationUser.class), eq(GlobalPermissionName.ADMIN));
+
+        assertThrows(
+            PotentialStubbingProblem.class,
+            () -> tariffService.updateTariff(authentication,tariff.getId(), createRequest),
+            "Доступ к этому ресурсу разрешен только администраторам"
+        );
     }
 
     @Test
@@ -128,7 +183,7 @@ public class TariffServiceTest {
     }
 
     @Test
-    @DisplayName("Удаление тарифа")
+    @DisplayName("Успешное удаление тарифа")
     public void deleteTariff() {
         var tariff = createTariff();
         var user = createUser();
@@ -146,7 +201,7 @@ public class TariffServiceTest {
     }
 
     @Test
-    @DisplayName("Получение всех тарифов")
+    @DisplayName("Успешное получение всех тарифов")
     public void getAllTariffs() {
         var tariffs = List.of(createTariff());
         var tariffResponses = List.of(createTariffResponse());

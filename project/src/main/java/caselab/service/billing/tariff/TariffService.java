@@ -71,6 +71,7 @@ public class TariffService {
 
         updatedTariff.setId(tariff.getId());
         updatedTariff.setCreatedAt(tariff.getCreatedAt());
+
         tariffRepository.save(updatedTariff);
 
         return tariffMapper.entityToResponse(updatedTariff);
