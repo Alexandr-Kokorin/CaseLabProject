@@ -268,6 +268,7 @@ CREATE TABLE IF NOT EXISTS bill(
 --  заменить user на company в будущем
     user_id   BIGINT                   NOT NULL REFERENCES application_user(id) ON DELETE CASCADE,
     issued_at   TIMESTAMP WITH TIME ZONE NOT NULL,
-    is_paid BOOLEAN DEFAULT FALSE NOT NULL
+    is_paid BOOLEAN DEFAULT FALSE NOT NULL,
+    paid_until TIMESTAMP WITH TIME ZONE NOT NULL
 );
 --

@@ -294,6 +294,12 @@
             <artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
             <version>11.5.0</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>core</artifactId>
+            <version>3.5.3</version>
+        </dependency>
     </dependencies>
 
     <build>
