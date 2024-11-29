@@ -240,7 +240,7 @@ CREATE TABLE IF NOT EXISTS department(
 
 --changeset seshxyz:23
 ALTER TABLE application_user
-    ADD COLUMN is_working       BOOLEAN NOT NULL DEFAULT TRUE,
+    ADD COLUMN is_working       BOOLEAN NOT NULL DEFAULT FALSE,
     ADD COLUMN position         TEXT,
     ADD COLUMN department_id    BIGINT REFERENCES department(id) ON DELETE NO ACTION;
 

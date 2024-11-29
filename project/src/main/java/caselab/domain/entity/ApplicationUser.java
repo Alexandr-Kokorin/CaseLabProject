@@ -53,9 +53,8 @@ public class ApplicationUser implements UserDetails {
     @Column(name = "position", nullable = false)
     private String position;
 
-    @Column(name = "is_working", nullable = false, columnDefinition = "boolean default true")
-    @ColumnDefault("true")
-    private Boolean isWorking = true;
+    @Column(name = "is_working", nullable = false, columnDefinition = "boolean default false")
+    private Boolean isWorking;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id", referencedColumnName = "id")
