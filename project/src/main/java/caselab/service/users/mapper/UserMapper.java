@@ -17,6 +17,7 @@ import org.mapstruct.ReportingPolicy;
 public interface UserMapper {
 
     @Mapping(target = "roles", source = "globalPermissions", qualifiedByName = "globalPermissionsToRoles")
+    @Mapping(source = "department.id", target = "departmentId")
     UserResponse entityToResponse(ApplicationUser user);
 
     @Named("globalPermissionsToRoles")

@@ -1,4 +1,4 @@
-package caselab.service.secutiry;
+package caselab.service.security;
 
 import caselab.configuration.security.JwtProperties;
 import caselab.domain.entity.ApplicationUser;

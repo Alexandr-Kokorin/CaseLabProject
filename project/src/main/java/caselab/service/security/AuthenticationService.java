@@ -1,4 +1,4 @@
-package caselab.service.secutiry;
+package caselab.service.security;
 
 import caselab.controller.secutiry.payload.AuthenticationRequest;
 import caselab.controller.secutiry.payload.AuthenticationResponse;
@@ -53,6 +53,7 @@ public class AuthenticationService {
             .displayName(request.displayName())
             .globalPermissions(List.of(globalPermission))
             .hashedPassword(encodePassword(request.password()))
+            .isWorking(false)
             .build();
         appUserRepository.save(user);
         sendMessage(request);
