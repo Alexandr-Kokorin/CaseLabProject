@@ -1,10 +1,8 @@
 package caselab.controller.department;
 
 import caselab.controller.department.payload.DepartmentCreateRequest;
-import caselab.controller.department.payload.DepartmentCreateResponse;
 import caselab.controller.department.payload.DepartmentResponse;
 import caselab.controller.department.payload.DepartmentUpdateRequest;
-import caselab.controller.department.payload.DepartmentUpdateResponse;
 import caselab.controller.document.version.payload.DocumentVersionResponse;
 import caselab.service.department.DepartmentService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,7 +40,7 @@ public class DepartmentController {
                description = "Возвращает созданное подразделение, доступно только администратору")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Успешное создание подразделения",
-                     content = @Content(schema = @Schema(implementation = DepartmentCreateResponse.class))),
+                     content = @Content(schema = @Schema(implementation = DepartmentResponse.class))),
         @ApiResponse(responseCode = "400", description = "Ошибка ввода",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
         @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
@@ -52,7 +50,7 @@ public class DepartmentController {
     })
     @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping("/")
-    DepartmentCreateResponse createDepartment(@Valid @RequestBody DepartmentCreateRequest request) {
+    DepartmentResponse createDepartment(@Valid @RequestBody DepartmentCreateRequest request) {
         return depService.createDepartment(request);
     }
 
@@ -89,7 +87,7 @@ public class DepartmentController {
                description = "Обновляет информацию о подразделении")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Успешное обновление информации о документе",
-                     content = @Content(schema = @Schema(implementation = DepartmentUpdateResponse.class))),
+                     content = @Content(schema = @Schema(implementation = DepartmentResponse.class))),
         @ApiResponse(responseCode = "400", description = "Ошибка ввода",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
         @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
@@ -101,7 +99,7 @@ public class DepartmentController {
     })
     @PreAuthorize("hasAuthority('ADMIN')")
     @PatchMapping("/{id}")
-    public DepartmentUpdateResponse updateDepartment(
+    public DepartmentResponse updateDepartment(
         @PathVariable("id") Long id,
         @RequestBody DepartmentUpdateRequest request
     ) {
@@ -112,7 +110,7 @@ public class DepartmentController {
                description = "Удаляет информацию о подразделении")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Успешное удаление информации о документе",
-                     content = @Content(schema = @Schema(implementation = DepartmentUpdateResponse.class))),
+                     content = @Content(schema = @Schema(implementation = DepartmentResponse.class))),
         @ApiResponse(responseCode = "400", description = "Ошибка ввода",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
         @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",

@@ -3,6 +3,7 @@ package caselab.controller.department.payload;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -14,6 +15,7 @@ public record DepartmentCreateRequest(
 
     @Schema(description = "Наименование подразделения", example = "Отдел отделов")
     @JsonProperty(value = "name", required = true)
+    @NotBlank
     @Size(min = 2, max = 75, message = "{department.name.invalid_size}")
     String name,
 
@@ -22,7 +24,7 @@ public record DepartmentCreateRequest(
     @NotNull(message = "{department.top_department.is_null}")
     Boolean topDepartment,
 
-    @Schema(description = "Идентификатор родительского подразделения"
+    @Schema(description = "Id родительского подразделения"
         + "\n(указывается при значении параметра is_top_department = false)",
             example = "1")
     @JsonProperty("parent_department_id")
@@ -33,6 +35,7 @@ public record DepartmentCreateRequest(
     @Pattern(message = "{user.email.invalid}",
              regexp = "^[\\w-.]+@([\\w-]+\\.)+[\\w-]{2,4}$")
     @JsonProperty("department_head_email")
+    @NotBlank
     String headOfDepartment
 
 ) {

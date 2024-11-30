@@ -36,11 +36,6 @@ public record DepartmentResponse(
     String headOfDepartment,
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    @JsonProperty("employees")
-    @OrderBy("name ASC")
-    List<EmployeeResponse> employees,
-
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     @JsonProperty("child_departments")
     @OrderBy("id ASC")
     List<DepartmentResponse> childDepartments

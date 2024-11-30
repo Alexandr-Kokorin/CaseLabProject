@@ -18,10 +18,6 @@ public record DepartmentUpdateRequest(
         @JsonProperty(value = "is_active")
         Boolean isActive,
 
-        @Schema(description = "Является ли подразделение верхнеуровневым", example = "false")
-        @JsonProperty(value = "is_top_department")
-        Boolean topDepartment,
-
         @Schema(description = "id нового родительского подразделения", example = "1")
         @JsonProperty("parent_department_id")
         Long parentDepartment,
@@ -29,6 +25,5 @@ public record DepartmentUpdateRequest(
         @Schema(description = "Адрес электронной почты нового руководителя подразделения", example = "user@example.com")
         @JsonProperty("department_head")
         String headOfDepartment
-
 ) {
 }
