@@ -5,6 +5,7 @@ import caselab.controller.secutiry.payload.AuthenticationResponse;
 import caselab.controller.secutiry.payload.RefreshTokenRequest;
 import caselab.controller.secutiry.payload.RegisterRequest;
 import caselab.domain.entity.ApplicationUser;
+import caselab.domain.entity.Organization;
 import caselab.domain.entity.RefreshToken;
 import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.ApplicationUserRepository;
@@ -41,19 +42,28 @@ public class AuthenticationService {
 
     private final RefreshTokenService refreshTokenService;
 
-    public void register(RegisterRequest request, Authentication authentication) {
-        userUtilService.checkUserGlobalPermission(
-            userUtilService.findUserByAuthentication(authentication), GlobalPermissionName.ADMIN);
+    public void registerUser(RegisterRequest request, Authentication authentication) {
+        var admin = userUtilService.findUserByAuthentication(authentication);
+        userUtilService.checkUserGlobalPermission(admin, GlobalPermissionName.ADMIN);
+        register(request, GlobalPermissionName.USER, admin.getOrganization());
+    }
 
+    public void registerOrgAdmin(RegisterRequest request, Organization organization) {
+        register(request, GlobalPermissionName.ADMIN, organization);
+    }
+
+    private void register(RegisterRequest request, GlobalPermissionName permission, Organization organization) {
         checkEmail(request.email());
+        var globalPermission = globalPermissionRepository.findByName(permission);
 
-        var globalPermission = globalPermissionRepository.findByName(GlobalPermissionName.USER);
         var user = ApplicationUser.builder()
             .email(request.email())
             .displayName(request.displayName())
             .globalPermissions(List.of(globalPermission))
             .hashedPassword(encodePassword(request.password()))
+            .organization(organization)
             .build();
+
         appUserRepository.save(user);
         sendMessage(request);
     }

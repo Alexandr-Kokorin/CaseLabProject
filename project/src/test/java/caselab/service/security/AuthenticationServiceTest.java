@@ -76,7 +76,7 @@ public class AuthenticationServiceTest {
         when(appUserRepository.save(any(ApplicationUser.class)))
             .thenReturn(null); // Ничего не возвращаем, просто сохраняем
 
-        authenticationService.register(registerRequest, any(Authentication.class));
+        authenticationService.registerUser(registerRequest, any(Authentication.class));
 
         assertAll(
             () -> verify(appUserRepository).save(any(ApplicationUser.class))
@@ -97,7 +97,7 @@ public class AuthenticationServiceTest {
         assertAll(
             () -> assertThrows(
                 UserAlreadyExistsException.class,
-                () -> authenticationService.register(registerRequest, any(Authentication.class))
+                () -> authenticationService.registerUser(registerRequest, any(Authentication.class))
             ),
             () -> verify(appUserRepository).findByEmail(anyString()),
             () -> verify(appUserRepository, never()).save(any(ApplicationUser.class))

@@ -41,7 +41,7 @@ public class AuthenticationController {
     @SecurityRequirement(name = "JWT")
     @PostMapping("/register")
     public void register(Authentication authentication, @Valid @RequestBody RegisterRequest request) {
-        authenticationService.register(request, authentication);
+        authenticationService.registerUser(request, authentication);
     }
 
     @Operation(summary = "Аутентификация пользователя",
