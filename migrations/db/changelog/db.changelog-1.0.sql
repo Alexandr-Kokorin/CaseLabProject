@@ -2,14 +2,21 @@
 
 --changeset seshxyz:22
 CREATE TABLE IF NOT EXISTS department(
-                                         id                     BIGSERIAL PRIMARY KEY,
-                                         name                   TEXT NOT NULL UNIQUE,
-                                         is_active              BOOLEAN NOT NULL DEFAULT TRUE,
-                                         is_top_department      BOOLEAN NOT NULL,
-                                         head_email_of_department TEXT,
-    parent_department_id   BIGINT REFERENCES department(id) ON DELETE CASCADE,
+    id                       BIGSERIAL PRIMARY KEY,
+    name                     TEXT NOT NULL UNIQUE,
+    is_active                BOOLEAN NOT NULL DEFAULT TRUE,
+    is_top_department        BOOLEAN NOT NULL,
+    head_email_of_department TEXT,
+    parent_department_id     BIGINT REFERENCES department(id) ON DELETE CASCADE,
 
     CONSTRAINT parent_id_is_not_the_same CHECK (id IS DISTINCT FROM department.parent_department_id)
+);
+
+-- changeset maksim25y:22
+CREATE TABLE IF NOT EXISTS substitution(
+    id                   BIGSERIAL PRIMARY KEY,
+    substitution_user_id BIGINT,
+    assigned             TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
 --changeset hottabych04:1
@@ -19,9 +26,10 @@ CREATE TABLE IF NOT EXISTS application_user
     email           TEXT      NOT NULL,
     display_name    TEXT      NOT NULL,
     hashed_password TEXT      NOT NULL,
-    position         TEXT,
-    is_working       BOOLEAN NOT NULL DEFAULT FALSE,
-    department_id    BIGINT REFERENCES department(id) ON DELETE SET NULL,
+    position        TEXT,
+    is_working      BOOLEAN NOT NULL DEFAULT FALSE,
+    department_id   BIGINT REFERENCES department(id) ON DELETE SET NULL,
+    substitution_id BIGINT REFERENCES substitution(id) ON DELETE SET NULL,
 
     PRIMARY KEY (id)
 );

@@ -12,6 +12,7 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.Collection;
 import java.util.List;
@@ -64,6 +65,10 @@ public class ApplicationUser implements UserDetails {
 
     @OneToMany(mappedBy = "applicationUser")
     private List<Signature> signatures;
+
+    @OneToOne
+    @JoinColumn(columnDefinition = "substitution_id")
+    private Substitution substitution;
 
     @ManyToMany
     @JoinTable(
