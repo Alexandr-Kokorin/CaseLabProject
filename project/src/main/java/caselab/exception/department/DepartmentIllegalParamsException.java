@@ -9,8 +9,4 @@ public final class DepartmentIllegalParamsException extends ApplicationBadReques
     public DepartmentIllegalParamsException() {
         super("department.both.parent_and_top_specified.as.null_and_false", new Object[]{});
     }
-
-    public DepartmentIllegalParamsException(Boolean result) {
-        super("department.parent_specified.and.top_specified_as_true", new Object[]{result});
-    }
 }

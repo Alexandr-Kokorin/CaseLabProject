@@ -233,7 +233,7 @@ CREATE TABLE IF NOT EXISTS department(
     is_active              BOOLEAN NOT NULL DEFAULT TRUE,
     is_top_department      BOOLEAN NOT NULL,
     head_id_of_department  BIGINT REFERENCES application_user(id) ON DELETE NO ACTION,
-    parent_department_id   BIGINT REFERENCES department(id) ON DELETE RESTRICT,
+    parent_department_id   BIGINT REFERENCES department(id) ON DELETE CASCADE,
 
     CONSTRAINT parent_id_is_not_the_same CHECK (id IS DISTINCT FROM department.parent_department_id)
 );

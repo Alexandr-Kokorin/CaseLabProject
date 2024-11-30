@@ -78,9 +78,9 @@ public class DepartmentService {
     }
 
     public List<DepartmentResponse> getAllDepartmentsHierarchy() {
-        List<Department> departments = depRepo.findAllByOrderByIdAsc();
+        var departments = depRepo.findAllByOrderByIdAsc();
 
-        List<Long> childDepartmentIds = departments.stream()
+        var childDepartmentIds = departments.stream()
             .flatMap(dep -> dep.getChildDepartments().stream())
             .map(Department::getId)
             .toList();
@@ -102,7 +102,7 @@ public class DepartmentService {
     private void departmentExistsWithNameAndSameParent(String name, Long parentId) {
         depRepo.findByNameAndParentDepartmentId(name, parentId)
             .ifPresent((dep) -> {
-                throw new DepartmentAlreadyExistsException();
+                throw new DepartmentAlreadyExistsException(name, parentId);
             });
     }
 
@@ -110,7 +110,7 @@ public class DepartmentService {
         var dep = depRepo.findByHeadOfDepartmentEmail(email);
 
         if (dep.isPresent()) {
-            throw new UserAlreadyAHeadOfDepartment(dep.get().getHeadOfDepartment().getDisplayName(), email);
+            throw new UserAlreadyAHeadOfDepartment(email);
         }
     }
 
@@ -119,7 +119,7 @@ public class DepartmentService {
 
         if (dep.isPresent()) {
             if (!Objects.equals(dep.get().getId(), id)) {
-                throw new UserAlreadyAHeadOfDepartment(dep.get().getHeadOfDepartment().getDisplayName(), email);
+                throw new UserAlreadyAHeadOfDepartment(email);
             }
         }
     }
