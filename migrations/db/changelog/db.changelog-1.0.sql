@@ -261,12 +261,21 @@ CREATE TABLE IF NOT EXISTS tariff(
     created_at      TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     user_count      INTEGER                  NOT NULL
 );
+-- Добавляем записи в таблицу tariff
+INSERT INTO tariff(name, price, tariff_details, created_at, user_count) VALUES
+('Basic Plan', 10000, 'Основной тариф для небольших организаций.', DEFAULT, 100),
+('Standard Plan', 25000, 'Стандартный тариф для малых и средних компаний.', DEFAULT, 1000),
+('Premium Plan', 50000, 'Расширенный тариф для крупных команд и организаций.', DEFAULT, 10000),
+('Business Plan', 100000, 'Тариф для бизнеса с масштабируемыми решениями.', DEFAULT, 20000),
+('Enterprise Plan', 250000, 'Корпоративный тариф с поддержкой больших объемов данных.', DEFAULT, 50000);
 
 -- changeset hottabych04:21
 CREATE TABLE IF NOT EXISTS bill(
     id          BIGSERIAL                PRIMARY KEY,
     tariff_id   BIGINT                   NOT NULL REFERENCES tariff(id) ON DELETE CASCADE,
 --  заменить user на company в будущем
-    user_id     BIGINT                   NOT NULL REFERENCES application_user(id) ON DELETE CASCADE,
-    issued_at   TIMESTAMP WITH TIME ZONE NOT NULL
+    user_id   BIGINT                   NOT NULL REFERENCES application_user(id) ON DELETE CASCADE,
+    issued_at   TIMESTAMP WITH TIME ZONE NOT NULL,
+    is_paid BOOLEAN DEFAULT FALSE NOT NULL,
+    paid_until TIMESTAMP WITH TIME ZONE NOT NULL
 );

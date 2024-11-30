@@ -40,4 +40,10 @@ public class Bill {
 
     @Column(nullable = false)
     private LocalDateTime issuedAt;
+
+    @Column(nullable = false)
+    private Boolean isPaid;
+
+    @Column(nullable = false)
+    private LocalDateTime paidUntil;
 }
