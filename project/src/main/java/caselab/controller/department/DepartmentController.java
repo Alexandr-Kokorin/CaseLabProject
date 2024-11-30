@@ -3,7 +3,9 @@ package caselab.controller.department;
 import caselab.controller.department.payload.DepartmentCreateRequest;
 import caselab.controller.department.payload.DepartmentResponse;
 import caselab.controller.department.payload.DepartmentUpdateRequest;
+import caselab.controller.department.payload.EmployeeRequest;
 import caselab.controller.document.version.payload.DocumentVersionResponse;
+import caselab.controller.users.payload.UserResponse;
 import caselab.service.department.DepartmentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -123,5 +125,64 @@ public class DepartmentController {
     public ResponseEntity<Void> deleteDepartment(@PathVariable("id") Long id) {
         depService.deleteDepartment(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Добавить работника в подразделение",
+               description = "Добавляет работника в подразделение")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Успешное добавление работника в подразделение",
+                     content = @Content(schema = @Schema(implementation = UserResponse.class))),
+        @ApiResponse(responseCode = "400", description = "Ошибка ввода",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+        @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+        @ApiResponse(responseCode = "404", description = "Работник не найден",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @PostMapping("/{id}/add_employee")
+    public UserResponse addEmployeeToDepartment(
+        @PathVariable("id") Long id,
+        @Valid @RequestBody EmployeeRequest addEmployeeRequest
+    ) {
+        return depService.addEmployeeToDepartment(id, addEmployeeRequest);
+    }
+
+    @Operation(summary = "Удалить работника из подразделения",
+               description = "Удаляет работника из подразделения")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Успешное удаление работника из подразделения",
+                     content = @Content(schema = @Schema(implementation = UserResponse.class))),
+        @ApiResponse(responseCode = "400", description = "Ошибка ввода",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+        @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+        @ApiResponse(responseCode = "404", description = "Работник не найден",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @PostMapping("/delete_employee")
+    public UserResponse deleteEmployeeFromDepartment(
+        @Valid @RequestBody EmployeeRequest addEmployeeRequest
+    ) {
+        return depService.deleteEmployeeFromDepartment(addEmployeeRequest);
+    }
+
+    @Operation(summary = "Получить всех работников подразделения",
+               description = "Возвращает всех работников подразделения")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Успешное получение всех работников подразделения",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+        @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+        @ApiResponse(responseCode = "404", description = "Подразделение не найдено",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @PostMapping("/{id}/employees")
+    public List<UserResponse> getAllEmployeesForDepartment(
+        @PathVariable("id") Long id
+    ) {
+        return depService.getAllEmployeesForDepartment(id);
     }
 }
