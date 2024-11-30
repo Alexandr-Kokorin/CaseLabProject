@@ -2,6 +2,7 @@ package caselab.controller.types;
 
 import caselab.controller.types.payload.DocumentTypeRequest;
 import caselab.controller.types.payload.DocumentTypeResponse;
+import caselab.domain.entity.search.SearchRequest;
 import caselab.service.types.DocumentTypesService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ProblemDetail;
@@ -124,5 +126,25 @@ public class DocumentTypesController {
     public ResponseEntity<Void> deleteDocumentTypeById(Authentication authentication, @PathVariable Long id) {
         documentTypesService.deleteDocumentType(id, authentication);
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Получить список типов документов по фильтрам",
+               description = "Возвращает список типов документов по фильтрам")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Успешное получение",
+                     content = @Content(
+                         array = @ArraySchema(schema = @Schema(implementation = DocumentTypeResponse.class)))),
+        @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @PostMapping("/advanced_search")
+    public Page<DocumentTypeResponse> getAllDocumentTypesWithFilters(
+        @RequestParam(value = "pageNum", required = false) Integer pageNum,
+        @RequestParam(value = "pageSize", required = false) Integer pageSize,
+        @Parameter(description = "Значение может быть desc или asc")
+        @RequestParam(value = "sortStrategy", required = false, defaultValue = "desc") String sortStrategy,
+        @NotNull(message = "{search.request.is_null}") @RequestBody SearchRequest searchRequest
+    ) {
+        return documentTypesService.getAllDocumentTypes(pageNum, pageSize, sortStrategy, searchRequest);
     }
 }
