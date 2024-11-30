@@ -35,14 +35,17 @@ public class Organization {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
-    private int inn;
+    @Column(nullable = false, length = 10, unique = true)
+    private String inn;
 
-    @Column(name = "is_active", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
+    @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
 
     @OneToMany(mappedBy = "organization", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ApplicationUser> employees = new ArrayList<>();
+
+    @Column(name = "tenant_id", unique = true, nullable = false)
+    private String tenantId;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
