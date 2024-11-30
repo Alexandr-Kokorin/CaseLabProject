@@ -12,7 +12,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -47,9 +46,8 @@ public class Department {
     @Column(name = "is_top_department", nullable = false)
     private Boolean topDepartment;
 
-    @OneToOne
-    @JoinColumn(name = "head_id_of_department")
-    private ApplicationUser headOfDepartment;
+    @Column(name = "head_email_of_department")
+    private String headEmailOfDepartment;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_department_id")

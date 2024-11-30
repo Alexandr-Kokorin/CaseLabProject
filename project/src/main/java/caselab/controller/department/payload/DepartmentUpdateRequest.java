@@ -23,7 +23,7 @@ public record DepartmentUpdateRequest(
         Long parentDepartment,
 
         @Schema(description = "Адрес электронной почты нового руководителя подразделения", example = "user@example.com")
-        @JsonProperty("department_head")
-        String headOfDepartment
+        @JsonProperty("head_email_of_department")
+        String headEmailOfDepartment
 ) {
 }

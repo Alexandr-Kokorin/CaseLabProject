@@ -32,8 +32,8 @@ public record DepartmentResponse(
     Long parentDepartment,
 
     @Schema(description = "email руководителя", example = "user@example.com")
-    @JsonProperty("head_of_department")
-    String headOfDepartment,
+    @JsonProperty("head_email_of_department")
+    String headEmailOfDepartment,
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     @JsonProperty("child_departments")

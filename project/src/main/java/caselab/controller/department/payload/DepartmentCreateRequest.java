@@ -34,9 +34,9 @@ public record DepartmentCreateRequest(
     @Schema(description = "Адрес электронной почты руководителя подразделения", example = "user@example.com")
     @Pattern(message = "{user.email.invalid}",
              regexp = "^[\\w-.]+@([\\w-]+\\.)+[\\w-]{2,4}$")
-    @JsonProperty("department_head_email")
+    @JsonProperty("head_email_of_department")
     @NotBlank
-    String headOfDepartment
+    String headEmailOfDepartment
 
 ) {
 }

@@ -43,11 +43,14 @@ public class DepartmentService {
             }
         }
 
-        var user = findUserByEmail(request.headOfDepartment());
+        var user = findUserByEmail(request.headEmailOfDepartment());
         checkUserIsNotAHeadOfAnotherDepartment(user.getEmail());
-        department.setHeadOfDepartment(user);
+        department.setHeadEmailOfDepartment(user.getEmail());
 
         var savedDep = depRepo.save(department);
+        user.setIsWorking(true);
+        user.setDepartment(savedDep);
+        userRepo.save(user);
         return departmentMapper.entityToResponseWithNotHierarchy(savedDep);
     }
 
@@ -59,10 +62,20 @@ public class DepartmentService {
     public DepartmentResponse updateDepartment(Long id, DepartmentUpdateRequest request) {
         var dep = findDepartmentById(id);
 
-        if (request.headOfDepartment() != null) {
-            checkUserIsNotAHeadOfAnotherDepartmentForUpdate(id, request.headOfDepartment());
-            var user = findUserByEmail(request.headOfDepartment());
-            dep.setHeadOfDepartment(user);
+        if (request.headEmailOfDepartment() != null) {
+            checkUserIsNotAHeadOfAnotherDepartmentForUpdate(id, request.headEmailOfDepartment());
+
+            var lastHead = findUserByEmail(dep.getHeadEmailOfDepartment());
+            lastHead.setDepartment(null);
+            lastHead.setIsWorking(false);
+            userRepo.save(lastHead);
+
+            var headForUpdating = findUserByEmail(request.headEmailOfDepartment());
+            headForUpdating.setIsWorking(true);
+            headForUpdating.setDepartment(dep);
+            userRepo.save(headForUpdating);
+            dep.setHeadEmailOfDepartment(headForUpdating.getEmail());
+            depRepo.save(dep);
         }
 
         dep.setIsActive(request.isActive() != null && request.isActive());
@@ -95,7 +108,10 @@ public class DepartmentService {
     }
 
     public void deleteDepartment(Long id) {
-        findDepartmentById(id);
+        var dep = findDepartmentById(id);
+        var headOfDep = findUserByEmail(dep.getHeadEmailOfDepartment());
+        headOfDep.setIsWorking(false);
+        userRepo.save(headOfDep);
         depRepo.deleteById(id);
     }
 
@@ -107,7 +123,7 @@ public class DepartmentService {
     }
 
     private void checkUserIsNotAHeadOfAnotherDepartment(String email) {
-        var dep = depRepo.findByHeadOfDepartmentEmail(email);
+        var dep = depRepo.findByHeadEmailOfDepartment(email);
 
         if (dep.isPresent()) {
             throw new UserAlreadyAHeadOfDepartment(email);
@@ -115,7 +131,7 @@ public class DepartmentService {
     }
 
     private void checkUserIsNotAHeadOfAnotherDepartmentForUpdate(Long id, String email) {
-        var dep = depRepo.findByHeadOfDepartmentEmail(email);
+        var dep = depRepo.findByHeadEmailOfDepartment(email);
 
         if (dep.isPresent()) {
             if (!Objects.equals(dep.get().getId(), id)) {

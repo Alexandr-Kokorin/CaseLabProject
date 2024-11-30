@@ -20,13 +20,13 @@ public interface DepartmentMapper {
         @Mapping(source = "name", target = "name"),
         @Mapping(source = "topDepartment", target = "topDepartment"),
         @Mapping(target = "parentDepartment", ignore = true),
-        @Mapping(target = "headOfDepartment", ignore = true)
+        @Mapping(target = "headEmailOfDepartment", ignore = true)
     })
     Department createRequestToEntity(DepartmentCreateRequest request);
 
     @Mappings({
         @Mapping(source = "parentDepartment.id", target = "parentDepartment"),
-        @Mapping(source = "headOfDepartment.email", target = "headOfDepartment"),
+        @Mapping(source = "headEmailOfDepartment", target = "headEmailOfDepartment"),
         @Mapping(target = "childDepartments", expression = "java(mapChildDepartments(department))")
     })
     DepartmentResponse entityToResponse(Department department);
@@ -36,7 +36,7 @@ public interface DepartmentMapper {
         @Mapping(source = "topDepartment", target = "topDepartment"),
         @Mapping(source = "isActive", target = "isActive"),
         @Mapping(source = "parentDepartment.id", target = "parentDepartment"),
-        @Mapping(source = "headOfDepartment.email", target = "headOfDepartment"),
+        @Mapping(source = "headEmailOfDepartment", target = "headEmailOfDepartment"),
         @Mapping(target = "childDepartments", ignore = true)
     })
     DepartmentResponse entityToResponseWithNotHierarchy(Department department);

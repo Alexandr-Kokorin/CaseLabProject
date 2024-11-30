@@ -1,5 +1,17 @@
 --liquibase formatted sql
 
+--changeset seshxyz:22
+CREATE TABLE IF NOT EXISTS department(
+                                         id                     BIGSERIAL PRIMARY KEY,
+                                         name                   TEXT NOT NULL UNIQUE,
+                                         is_active              BOOLEAN NOT NULL DEFAULT TRUE,
+                                         is_top_department      BOOLEAN NOT NULL,
+                                         head_email_of_department TEXT,
+    parent_department_id   BIGINT REFERENCES department(id) ON DELETE CASCADE,
+
+    CONSTRAINT parent_id_is_not_the_same CHECK (id IS DISTINCT FROM department.parent_department_id)
+);
+
 --changeset hottabych04:1
 CREATE TABLE IF NOT EXISTS application_user
 (
@@ -7,6 +19,9 @@ CREATE TABLE IF NOT EXISTS application_user
     email           TEXT      NOT NULL,
     display_name    TEXT      NOT NULL,
     hashed_password TEXT      NOT NULL,
+    position         TEXT,
+    is_working       BOOLEAN NOT NULL DEFAULT FALSE,
+    department_id    BIGINT REFERENCES department(id) ON DELETE SET NULL,
 
     PRIMARY KEY (id)
 );
@@ -226,21 +241,4 @@ CREATE TABLE IF NOT EXISTS bill(
      issued_at TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
---changeset seshxyz:22
-CREATE TABLE IF NOT EXISTS department(
-    id                     BIGSERIAL PRIMARY KEY,
-    name                   TEXT NOT NULL UNIQUE,
-    is_active              BOOLEAN NOT NULL DEFAULT TRUE,
-    is_top_department      BOOLEAN NOT NULL,
-    head_id_of_department  BIGINT REFERENCES application_user(id) ON DELETE NO ACTION,
-    parent_department_id   BIGINT REFERENCES department(id) ON DELETE CASCADE,
-
-    CONSTRAINT parent_id_is_not_the_same CHECK (id IS DISTINCT FROM department.parent_department_id)
-);
-
---changeset seshxyz:23
-ALTER TABLE application_user
-    ADD COLUMN is_working       BOOLEAN NOT NULL DEFAULT FALSE,
-    ADD COLUMN position         TEXT,
-    ADD COLUMN department_id    BIGINT REFERENCES department(id) ON DELETE NO ACTION;
 
