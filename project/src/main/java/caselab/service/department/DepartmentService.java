@@ -24,6 +24,7 @@ import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+@SuppressWarnings("MultipleStringLiterals")
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -74,11 +75,13 @@ public class DepartmentService {
 
             var lastHead = findUserByEmail(dep.getHeadEmailOfDepartment());
             lastHead.setDepartment(null);
+            lastHead.setPosition(null);
             lastHead.setIsWorking(false);
             userRepo.save(lastHead);
 
             var headForUpdating = findUserByEmail(request.headEmailOfDepartment());
             headForUpdating.setIsWorking(true);
+            headForUpdating.setPosition("Начальник отдела");
             headForUpdating.setDepartment(dep);
             userRepo.save(headForUpdating);
             dep.setHeadEmailOfDepartment(headForUpdating.getEmail());
