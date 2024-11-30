@@ -6,8 +6,8 @@ import jakarta.validation.constraints.Email;
 import lombok.Builder;
 
 @Builder
-@Schema(description = "Запрос на работу с работником в рамках подразделения")
-public record EmployeeRequest(
+@Schema(description = "Запрос на удаление работника")
+public record DeleteEmployeeRequest(
     @Schema(description = "Адрес электронной почты пользователя", example = "user@example.com")
     @Email(message = "{user.email.invalid}")
     @JsonProperty("user_email")

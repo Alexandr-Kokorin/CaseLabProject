@@ -14,6 +14,9 @@ public record UserResponse(
     @JsonProperty("display_name")
     @Schema(description = "Отображаемое имя пользователя", example = "Иван Иванов")
     String displayName,
+    @Schema(description = "Должность пользователя", example = "Программист")
+    @JsonProperty("position")
+    String position,
     @Schema(description = "Работает ли пользователь (true/false)", example = "true")
     @JsonProperty("is_working")
     Boolean isWorking,

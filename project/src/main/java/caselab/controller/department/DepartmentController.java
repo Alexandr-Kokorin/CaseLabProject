@@ -1,13 +1,14 @@
 package caselab.controller.department;
 
+import caselab.controller.department.payload.AddEmployeeRequest;
+import caselab.controller.department.payload.DeleteEmployeeRequest;
 import caselab.controller.department.payload.DepartmentCreateRequest;
 import caselab.controller.department.payload.DepartmentResponse;
 import caselab.controller.department.payload.DepartmentUpdateRequest;
-import caselab.controller.department.payload.EmployeeRequest;
-import caselab.controller.document.version.payload.DocumentVersionResponse;
 import caselab.controller.users.payload.UserResponse;
 import caselab.service.department.DepartmentService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -61,7 +62,7 @@ public class DepartmentController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200",
                      description = "Успешное получение подразделения",
-                     content = @Content(schema = @Schema(implementation = DocumentVersionResponse.class))),
+                     content = @Content(schema = @Schema(implementation = DepartmentResponse.class))),
         @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
         @ApiResponse(responseCode = "404", description = "Подразделение не найдено",
@@ -76,7 +77,8 @@ public class DepartmentController {
                description = "Возвращает структуру подразделений")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Успешное получение по индексу",
-                     content = @Content(schema = @Schema(implementation = DepartmentResponse.class))),
+                     content = @Content(
+                         array = @ArraySchema(schema = @Schema(implementation = DepartmentResponse.class)))),
         @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
@@ -111,8 +113,8 @@ public class DepartmentController {
     @Operation(summary = "Удалить подразделение",
                description = "Удаляет информацию о подразделении")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Успешное удаление информации о документе",
-                     content = @Content(schema = @Schema(implementation = DepartmentResponse.class))),
+        @ApiResponse(responseCode = "204", description = "Успешное удаление информации о документе",
+                     content = @Content),
         @ApiResponse(responseCode = "400", description = "Ошибка ввода",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
         @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
@@ -143,7 +145,7 @@ public class DepartmentController {
     @PostMapping("/{id}/add_employee")
     public UserResponse addEmployeeToDepartment(
         @PathVariable("id") Long id,
-        @Valid @RequestBody EmployeeRequest addEmployeeRequest
+        @Valid @RequestBody AddEmployeeRequest addEmployeeRequest
     ) {
         return depService.addEmployeeToDepartment(id, addEmployeeRequest);
     }
@@ -163,16 +165,16 @@ public class DepartmentController {
     @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping("/delete_employee")
     public UserResponse deleteEmployeeFromDepartment(
-        @Valid @RequestBody EmployeeRequest addEmployeeRequest
+        @Valid @RequestBody DeleteEmployeeRequest deleteEmployeeRequest
     ) {
-        return depService.deleteEmployeeFromDepartment(addEmployeeRequest);
+        return depService.deleteEmployeeFromDepartment(deleteEmployeeRequest);
     }
 
     @Operation(summary = "Получить всех работников подразделения",
                description = "Возвращает всех работников подразделения")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Успешное получение всех работников подразделения",
-                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserResponse.class)))),
         @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
         @ApiResponse(responseCode = "404", description = "Подразделение не найдено",

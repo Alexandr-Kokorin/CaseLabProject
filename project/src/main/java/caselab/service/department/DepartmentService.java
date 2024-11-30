@@ -1,9 +1,10 @@
 package caselab.service.department;
 
+import caselab.controller.department.payload.AddEmployeeRequest;
+import caselab.controller.department.payload.DeleteEmployeeRequest;
 import caselab.controller.department.payload.DepartmentCreateRequest;
 import caselab.controller.department.payload.DepartmentResponse;
 import caselab.controller.department.payload.DepartmentUpdateRequest;
-import caselab.controller.department.payload.EmployeeRequest;
 import caselab.controller.users.payload.UserResponse;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.Department;
@@ -54,6 +55,7 @@ public class DepartmentService {
 
         var savedDep = depRepo.save(department);
         user.setIsWorking(true);
+        user.setPosition("Начальник отдела");
         user.setDepartment(savedDep);
         userRepo.save(user);
         return departmentMapper.entityToResponseWithNotHierarchy(savedDep);
@@ -120,7 +122,7 @@ public class DepartmentService {
         depRepo.deleteById(id);
     }
 
-    public UserResponse addEmployeeToDepartment(Long departmentId, EmployeeRequest addEmployeeRequest) {
+    public UserResponse addEmployeeToDepartment(Long departmentId, AddEmployeeRequest addEmployeeRequest) {
         var dep = findDepartmentById(departmentId);
         var userForAdding = findUserByEmail(addEmployeeRequest.userEmail());
 
@@ -129,15 +131,17 @@ public class DepartmentService {
         }
 
         userForAdding.setIsWorking(true);
+        userForAdding.setPosition(addEmployeeRequest.position());
         userForAdding.setDepartment(dep);
         var employee = userRepo.save(userForAdding);
         return userMapper.entityToResponse(employee);
     }
 
-    public UserResponse deleteEmployeeFromDepartment(EmployeeRequest addEmployeeRequest) {
-        var userForDeletingDepartment = findUserByEmail(addEmployeeRequest.userEmail());
+    public UserResponse deleteEmployeeFromDepartment(DeleteEmployeeRequest deleteEmployeeRequest) {
+        var userForDeletingDepartment = findUserByEmail(deleteEmployeeRequest.userEmail());
 
         userForDeletingDepartment.setIsWorking(false);
+        userForDeletingDepartment.setPosition(null);
         userForDeletingDepartment.setDepartment(null);
 
         var employee = userRepo.save(userForDeletingDepartment);
