@@ -39,8 +39,7 @@ public class ApplicationUserController {
                description = "Возвращает список всех пользователей")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Успешное получение",
-                     content = @Content(
-                         array = @ArraySchema(schema = @Schema(implementation = UserResponse.class)))),
+                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserResponse.class)))),
         @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
@@ -54,7 +53,7 @@ public class ApplicationUserController {
                description = "Возвращает информацию о текущем пользователе исходя из контекста аутентификации")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Успешное получение",
-                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+                     content = @Content(schema = @Schema(implementation = UserResponse.class))),
         @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })

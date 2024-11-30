@@ -1,29 +1,15 @@
 package caselab.controller.security;
 
 import caselab.controller.BaseControllerTest;
-import caselab.controller.secutiry.payload.AuthenticationRequest;
-import caselab.controller.secutiry.payload.AuthenticationResponse;
-import caselab.controller.secutiry.payload.RegisterRequest;
-import caselab.service.notification.email.EmailNotificationDetails;
 import caselab.service.notification.email.EmailService;
-import caselab.service.secutiry.ClaimsExtractorService;
-import lombok.SneakyThrows;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import caselab.service.security.ClaimsExtractorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MvcResult;
 
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 public class AuthenticationControllerTest extends BaseControllerTest {
 
