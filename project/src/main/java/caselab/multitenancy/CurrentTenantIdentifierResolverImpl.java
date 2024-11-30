@@ -8,14 +8,14 @@ import org.springframework.boot.autoconfigure.orm.jpa.HibernatePropertiesCustomi
 import org.springframework.stereotype.Component;
 
 @Component
-class CurrentTenantIdentifierResolverImpl
-    implements CurrentTenantIdentifierResolver<Long>, HibernatePropertiesCustomizer {
+public class CurrentTenantIdentifierResolverImpl
+    implements CurrentTenantIdentifierResolver<String>, HibernatePropertiesCustomizer {
 
-    private static final Long DEFAULT_TENANT = 0L;
+    private final String DEFAULT_TENANT = "default";
 
     @Override
-    public Long resolveCurrentTenantIdentifier() {
-        Long tenantId = TenantContext.getTenantId();
+    public String resolveCurrentTenantIdentifier() {
+        String tenantId = TenantContext.getTenantId();
         return Objects.requireNonNullElse(tenantId, DEFAULT_TENANT);
     }
 

@@ -37,20 +37,17 @@ public class TenantFilter extends OncePerRequestFilter {
         var tenantHeader = request.getHeader("X-TENANT-ID");
 
         if (tenantHeader != null && !tenantHeader.isEmpty()) {
-            try {
-                TenantContext.setTenantId(Long.valueOf(tenantHeader));
-                log.debug("TenantID is set in the context and is equal: {}", TenantContext.getTenantId());
-            } catch (NumberFormatException e) {
-                log.error("Invalid tenant ID provided: {}", tenantHeader, e);
-                addProblemDetailToResponse(
-                    request,
-                    response,
-                    new Object[] {tenantHeader}
-                );
-                return;
-            }
+
+            TenantContext.setTenantId(tenantHeader);
+            log.debug("TenantID is set in the context and is equal: {}", TenantContext.getTenantId());
         } else {
+            addProblemDetailToResponse(
+                request,
+                response,
+                new Object[] {tenantHeader}
+            );
             log.warn("X-TENANT-ID header is missing or empty.");
+            return;
         }
 
         try {

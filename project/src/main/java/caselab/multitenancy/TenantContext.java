@@ -8,14 +8,14 @@ public final class TenantContext {
     private TenantContext() {
     }
 
-    private static final ThreadLocal<Long> currentTenant = new ThreadLocal<>();
+    private static final ThreadLocal<String> currentTenant = new ThreadLocal<>();
 
-    public static void setTenantId(Long tenantId) {
+    public static void setTenantId(String tenantId) {
         log.debug("Setting tenantId to {}", tenantId);
         currentTenant.set(tenantId);
     }
 
-    public static Long getTenantId() {
+    public static String getTenantId() {
         return currentTenant.get();
     }
 

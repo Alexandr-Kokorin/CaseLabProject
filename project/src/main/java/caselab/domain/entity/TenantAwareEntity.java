@@ -20,6 +20,6 @@ public abstract class TenantAwareEntity implements Serializable {
     @Serial private static final long serialVersionUID = 1L;
 
     @TenantId
-    @Column(name = "tenant_id")
-    private Long tenantId;
+    @Column(name = "tenant_id", unique = true)
+    private String tenantId;
 }

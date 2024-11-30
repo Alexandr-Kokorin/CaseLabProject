@@ -4,8 +4,9 @@
 CREATE TABLE IF NOT EXISTS organization (
     id          BIGSERIAL       PRIMARY KEY,
     name        VARCHAR(255)    NOT NULL,
-    inn         INT             NOT NULL,
+    inn         VARCHAR(10)     NOT NULL,
     is_active   BOOLEAN         DEFAULT TRUE NOT NULL,
+    tenant_id   TEXT            NOT NULL,
     created_at  TIMESTAMP       DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at  TIMESTAMP       DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
@@ -18,7 +19,7 @@ CREATE TABLE IF NOT EXISTS application_user
     display_name    TEXT      NOT NULL,
     hashed_password TEXT      NOT NULL,
     organization_id BIGINT    DEFAULT NULL,
-    tenant_id       BIGINT    NOT NULL,
+    tenant_id       TEXT      NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (organization_id) REFERENCES organization(id)
 );
@@ -26,10 +27,10 @@ CREATE TABLE IF NOT EXISTS application_user
 --changeset hottabych04:2
 CREATE TABLE IF NOT EXISTS attribute
 (
-    id   BIGSERIAL NOT NULL,
-    name TEXT      NOT NULL,
-    type TEXT      NOT NULL,
-    tenant_id   BIGINT    NOT NULL,
+    id         BIGSERIAL NOT NULL,
+    name       TEXT      NOT NULL,
+    type       TEXT      NOT NULL,
+    tenant_id  TEXT      NOT NULL,
 
     PRIMARY KEY (id)
 );
@@ -40,7 +41,7 @@ CREATE TABLE IF NOT EXISTS document_type
     id            BIGSERIAL NOT NULL,
     name          TEXT      NOT NULL,
     template_name TEXT,
-    tenant_id     BIGINT    NOT NULL,
+    tenant_id     TEXT      NOT NULL,
 
     PRIMARY KEY (id)
 );
@@ -52,7 +53,7 @@ CREATE TABLE IF NOT EXISTS document
     document_type_id BIGINT    NOT NULL REFERENCES document_type (id),
     name             TEXT      NOT NULL,
     status           TEXT      NOT NULL,
-    tenant_id        BIGINT    NOT NULL,
+    tenant_id        TEXT      NOT NULL,
 
     PRIMARY KEY (id)
 );
@@ -65,7 +66,7 @@ CREATE TABLE IF NOT EXISTS document_version
     created_at   timestamptz NOT NULL,
     content_name TEXT,
     document_id  BIGINT      NOT NULL REFERENCES document (id) ON DELETE CASCADE,
-    tenant_id    BIGINT      NOT NULL,
+    tenant_id    TEXT        NOT NULL,
 
     PRIMARY KEY (id)
 );
@@ -76,7 +77,7 @@ CREATE TABLE IF NOT EXISTS user_to_document
     id                  BIGSERIAL NOT NULL,
     document_id         BIGINT    NOT NULL REFERENCES document (id) ON DELETE CASCADE,
     application_user_id BIGINT    NOT NULL REFERENCES application_user (id) ON DELETE CASCADE,
-    tenant_id           BIGINT    NOT NULL,
+    tenant_id           TEXT      NOT NULL,
 
     PRIMARY KEY (id)
 );
@@ -87,7 +88,7 @@ CREATE TABLE IF NOT EXISTS document_attribute_value
     document_version_id BIGINT NOT NULL REFERENCES document_version (id) ON DELETE CASCADE,
     attribute_id        BIGINT NOT NULL REFERENCES attribute (id) ON DELETE CASCADE,
     app_value           TEXT,
-    tenant_id   BIGINT    NOT NULL,
+    tenant_id           TEXT   NOT NULL,
 
     PRIMARY KEY (document_version_id, attribute_id)
 );
@@ -98,7 +99,7 @@ CREATE TABLE IF NOT EXISTS document_type_to_attribute
     document_type_id BIGINT  NOT NULL REFERENCES document_type (id) ON DELETE CASCADE,
     attribute_id     BIGINT  NOT NULL REFERENCES attribute (id) ON DELETE CASCADE,
     is_optional      BOOLEAN NOT NULL,
-    tenant_id        BIGINT  NOT NULL,
+    tenant_id        TEXT    NOT NULL,
 
     PRIMARY KEY (document_type_id, attribute_id)
 );
@@ -132,7 +133,7 @@ CREATE TABLE IF NOT EXISTS signature
     document_version_id BIGINT      NOT NULL REFERENCES document_version (id) ON DELETE CASCADE,
     application_user_id BIGINT      NOT NULL REFERENCES application_user (id) ON DELETE CASCADE,
     signature_data      TEXT,
-    tenant_id           BIGINT      NOT NULL,
+    tenant_id           TEXT        NOT NULL,
 
     PRIMARY KEY (id)
 );
@@ -156,7 +157,7 @@ CREATE TABLE IF NOT EXISTS voting_process
     created_at          timestamptz      NOT NULL,
     deadline            timestamptz,
     document_version_id BIGINT           NOT NULL REFERENCES document_version (id) ON DELETE CASCADE,
-    tenant_id           BIGINT           NOT NULL,
+    tenant_id           TEXT             NOT NULL,
 
     PRIMARY KEY (id)
 );
@@ -168,7 +169,7 @@ CREATE TABLE IF NOT EXISTS vote
     status              TEXT      NOT NULL,
     application_user_id BIGINT    NOT NULL REFERENCES application_user (id) ON DELETE CASCADE,
     voting_process_id   BIGINT    NOT NULL REFERENCES voting_process (id) ON DELETE CASCADE,
-    tenant_id           BIGINT    NOT NULL,
+    tenant_id           TEXT      NOT NULL,
 
     PRIMARY KEY (id)
 );
@@ -217,15 +218,15 @@ INSERT INTO global_permission_to_user (application_user_id, global_permission_id
 VALUES (1, 2);
 
 --changeset DenisKarpov:23
-INSERT INTO organization (name, inn, is_active)
+INSERT INTO organization (name, inn, is_active, tenant_id)
 VALUES
-    ('Organization A', 123, TRUE),
-    ('Organization B', 321, TRUE);
+    ('Organization A', '0123456789', TRUE, 'Org A'),
+    ('Organization B', '9876543210', TRUE, 'Org B');
 
 INSERT INTO application_user (email, display_name, hashed_password, organization_id, tenant_id)
 VALUES
-    ('orgA_admin@gmail.com', 'Org A Admin', '$2a$10$WFRQhlz7Ul85HsRjMg3XNutiB//3HLloe3vTuW6GDPD9eeXeYXiJe', 1, 1),
-    ('orgB_admin@gmail.com', 'Org B Admin', '$2a$10$WFRQhlz7Ul85HsRjMg3XNutiB//3HLloe3vTuW6GDPD9eeXeYXiJe', 2, 2);
+    ('orgA_admin@gmail.com', 'Org A Admin', '$2a$10$WFRQhlz7Ul85HsRjMg3XNutiB//3HLloe3vTuW6GDPD9eeXeYXiJe', 1, 'Org A'),
+    ('orgB_admin@gmail.com', 'Org B Admin', '$2a$10$WFRQhlz7Ul85HsRjMg3XNutiB//3HLloe3vTuW6GDPD9eeXeYXiJe', 2, 'Org B');
 
 INSERT INTO global_permission_to_user (application_user_id, global_permission_id)
 VALUES (2, 2);
@@ -239,7 +240,7 @@ CREATE TABLE IF NOT EXISTS subscription
     id          BIGSERIAL PRIMARY KEY,
     document_id BIGINT    NOT NULL,
     user_email  TEXT      NOT NULL,
-    tenant_id   BIGINT    NOT NULL
+    tenant_id   TEXT      NOT NULL
 );
 
 --changeset FkishDaniels:19
@@ -248,7 +249,7 @@ CREATE TABLE IF NOT EXISTS refresh_tokens(
     token               TEXT                     NOT NULL,
     expires_date        TIMESTAMP WITH TIME ZONE NOT NULL,
     application_user_id BIGSERIAL                NOT NULL REFERENCES application_user(id) ON DELETE CASCADE,
-    tenant_id           BIGINT    NOT NULL
+    tenant_id           TEXT                     NOT NULL
 );
 
 -- changeset FkishDaneils:20
