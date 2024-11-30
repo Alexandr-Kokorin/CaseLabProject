@@ -23,6 +23,9 @@ public record UserResponse(
     @Schema(description = "id подразделения пользователя", example = "2")
     @JsonProperty("department_id")
     Long departmentId,
+    @Schema(description = "id заменяющего", example = "2")
+    @JsonProperty("substitution_id")
+    Long substitutionId,
     @JsonProperty("roles")
     @Schema(description = "Роли пользователя", example = "[\"USER\"]")
     List<String> roles

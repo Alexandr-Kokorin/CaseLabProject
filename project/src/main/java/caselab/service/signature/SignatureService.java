@@ -133,9 +133,9 @@ public class SignatureService {
         signature.getDocumentVersion().getDocument().setStatus(DocumentStatus.SIGNATURE_IN_PROGRESS);
         var savedSignature = signatureRepository.save(signature);
 
-        if (!signRequest.email().equals(user.getEmail())) {
+        if (!userForSign.getEmail().equals(user.getEmail())) {
             documentFacadeService.grantPermission(
-                documentVersionForSign.getDocument().getId(), signRequest.email(), auth);
+                documentVersionForSign.getDocument().getId(), userForSign.getEmail(), auth);
         }
 
         return signatureMapper.entityToResponse(savedSignature);

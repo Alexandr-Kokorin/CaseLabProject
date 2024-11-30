@@ -19,11 +19,14 @@ import caselab.domain.repository.SubstitutionRepository;
 import caselab.domain.repository.UserToDocumentRepository;
 import caselab.domain.repository.VoteRepository;
 import caselab.exception.InvalidDocumentForDelegationException;
+import caselab.exception.OnlyYourDepartmentException;
 import caselab.exception.UserAlreadySubstituted;
 import caselab.exception.entity.already_exists.SignatureAlreadyExistsException;
 import caselab.exception.entity.already_exists.VoteAlreadyExistsException;
+import caselab.exception.entity.not_found.ApplicationUserNotFoundException;
 import caselab.exception.entity.not_found.DocumentNotFoundException;
 import caselab.exception.entity.not_found.SignatureNotFoundException;
+import caselab.exception.entity.not_found.SubstitutionNotFoundException;
 import caselab.exception.entity.not_found.UserNotFoundException;
 import caselab.exception.entity.not_found.VoteNotFoundException;
 import caselab.exception.status.StatusIncorrectForDelegationException;
@@ -32,6 +35,7 @@ import caselab.service.util.UserUtilService;
 import jakarta.transaction.Transactional;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -54,10 +58,13 @@ public class SubstitutionService {
 
     public SubstitutionResponse assignSubstitution(
         SubstitutionRequest substitutionRequest,
-        Authentication authentication) {
+        Authentication authentication
+    ) {
         var currentUser = userUtilService.findUserByAuthentication(authentication);
         var substitutionUser = applicationUserRepository.findByEmail(substitutionRequest.substitutionUserEmail())
             .orElseThrow(() -> new UserNotFoundException(substitutionRequest.substitutionUserEmail()));
+
+        checkDepartment(currentUser, substitutionUser);
 
         if (substitutionUser.getSubstitution() != null) {
             throw new UserAlreadySubstituted(substitutionRequest.substitutionUserEmail());
@@ -80,10 +87,23 @@ public class SubstitutionService {
             .build();
     }
 
+    public SubstitutionRequest getSubstitution(Long id) {
+        var substitution = substitutionRepository.findById(id)
+            .orElseThrow(() -> new SubstitutionNotFoundException(id));
+        var substitutionUser = applicationUserRepository.findById(substitution.getSubstitutionUserId())
+            .orElseThrow(() -> new ApplicationUserNotFoundException(substitution.getSubstitutionUserId()));
+        return SubstitutionRequest.builder()
+            .substitutionUserEmail(substitutionUser.getEmail())
+            .assigned(substitution.getAssigned())
+            .build();
+    }
+
     public void delegate(DelegationRequest delegationRequest, Authentication authentication) {
         var currentUser = userUtilService.findUserByAuthentication(authentication);
         var delegateUser = applicationUserRepository.findByEmail(delegationRequest.delegateEmail())
             .orElseThrow(() -> new UserNotFoundException(delegationRequest.delegateEmail()));
+
+        checkDepartment(currentUser, delegateUser);
 
         var document = documentRepository.findById(delegationRequest.documentId())
             .orElseThrow(() -> new DocumentNotFoundException(delegationRequest.documentId()));
@@ -143,5 +163,12 @@ public class SubstitutionService {
         userToDocument.setDocument(document);
         userToDocument.setDocumentPermissions(List.of(permission));
         userToDocumentRepository.save(userToDocument);
+    }
+
+    private void checkDepartment(ApplicationUser currentUser, ApplicationUser delegateUser) {
+        if (!currentUser.getIsWorking() || !delegateUser.getIsWorking()
+            || !Objects.equals(currentUser.getDepartment().getId(), delegateUser.getDepartment().getId())) {
+            throw new OnlyYourDepartmentException();
+        }
     }
 }

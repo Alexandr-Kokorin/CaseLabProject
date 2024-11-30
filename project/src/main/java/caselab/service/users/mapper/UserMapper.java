@@ -18,6 +18,7 @@ public interface UserMapper {
 
     @Mapping(target = "roles", source = "globalPermissions", qualifiedByName = "globalPermissionsToRoles")
     @Mapping(source = "department.id", target = "departmentId")
+    @Mapping(source = "substitution.id", target = "substitutionId")
     UserResponse entityToResponse(ApplicationUser user);
 
     @Named("globalPermissionsToRoles")
