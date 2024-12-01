@@ -38,6 +38,7 @@ public class Organization {
     @Column(nullable = false, length = 10, unique = true)
     private String inn;
 
+    @Builder.Default
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
 

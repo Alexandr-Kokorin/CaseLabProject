@@ -4,7 +4,7 @@
 CREATE TABLE IF NOT EXISTS organization (
     id          BIGSERIAL       PRIMARY KEY,
     name        VARCHAR(255)    NOT NULL,
-    inn         VARCHAR(10)     NOT NULL,
+    inn         VARCHAR(10)     NOT NULL UNIQUE,
     is_active   BOOLEAN         DEFAULT TRUE NOT NULL,
     tenant_id   TEXT            NOT NULL,
     created_at  TIMESTAMP       DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -210,29 +210,6 @@ VALUES ('USER');
 
 INSERT INTO global_permission (name)
 VALUES ('ADMIN');
-
-INSERT INTO application_user (email, display_name, hashed_password, organization_id, tenant_id)
-VALUES ('admin@gmail.com', 'SUPER ADMIN', '$2a$10$WFRQhlz7Ul85HsRjMg3XNutiB//3HLloe3vTuW6GDPD9eeXeYXiJe', NULL, 0);
-
-INSERT INTO global_permission_to_user (application_user_id, global_permission_id)
-VALUES (1, 2);
-
---changeset DenisKarpov:23
-INSERT INTO organization (name, inn, is_active, tenant_id)
-VALUES
-    ('Organization A', '0123456789', TRUE, 'Org A'),
-    ('Organization B', '9876543210', TRUE, 'Org B');
-
-INSERT INTO application_user (email, display_name, hashed_password, organization_id, tenant_id)
-VALUES
-    ('orgA_admin@gmail.com', 'Org A Admin', '$2a$10$WFRQhlz7Ul85HsRjMg3XNutiB//3HLloe3vTuW6GDPD9eeXeYXiJe', 1, 'Org A'),
-    ('orgB_admin@gmail.com', 'Org B Admin', '$2a$10$WFRQhlz7Ul85HsRjMg3XNutiB//3HLloe3vTuW6GDPD9eeXeYXiJe', 2, 'Org B');
-
-INSERT INTO global_permission_to_user (application_user_id, global_permission_id)
-VALUES (2, 2);
-
-INSERT INTO global_permission_to_user (application_user_id, global_permission_id)
-VALUES (3, 2);
 
 --changeset ghostofendless:18
 CREATE TABLE IF NOT EXISTS subscription

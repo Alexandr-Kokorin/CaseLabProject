@@ -5,6 +5,7 @@ import caselab.controller.organization.payload.OrganizationResponse;
 import caselab.controller.organization.payload.UpdateOrganizationRequest;
 import caselab.domain.entity.Organization;
 import org.mapstruct.Mapper;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 
@@ -16,5 +17,5 @@ public interface OrganizationMapper {
 
     Organization createRequestToEntity(CreateOrganizationRequest request);
 
-    Organization updateRequestToEntity(UpdateOrganizationRequest request);
+    void updateEntityFromRequest(@MappingTarget Organization target, UpdateOrganizationRequest source);
 }

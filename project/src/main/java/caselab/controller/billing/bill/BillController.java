@@ -127,10 +127,8 @@ public class BillController {
     ) {
 
         // Изменяем статус организации
-        billService.activateOrganization(organizationId,authentication);
+        billService.activateOrganization(organizationId, authentication);
 
         return ResponseEntity.ok().build();
     }
-
-
 }

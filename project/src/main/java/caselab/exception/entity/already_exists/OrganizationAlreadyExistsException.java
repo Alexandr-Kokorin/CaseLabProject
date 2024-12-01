@@ -5,7 +5,7 @@ import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode(callSuper = true)
 public class OrganizationAlreadyExistsException extends ApplicationConflictException {
-    public OrganizationAlreadyExistsException(String id) {
-        super("organization.already_exists", new Object[]{id});
+    public OrganizationAlreadyExistsException(String field, String id) {
+        super("organization.already_exists", new Object[] {field, id});
     }
 }

@@ -4,8 +4,8 @@ import caselab.exception.base.ApplicationNotFoundException;
 import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode(callSuper = true)
-public class OrganizationNotFoundException extends EntityNotFoundException {
+public class OrganizationNotFoundException extends ApplicationNotFoundException {
     public OrganizationNotFoundException(Long id) {
-        super("organization.not_found", id);
+        super("organization.not_found", new Object[] {id});
     }
 }

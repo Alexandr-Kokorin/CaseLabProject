@@ -95,7 +95,7 @@ public class BillService {
     }
 
     //метод для создания счета при создании организации
-    public BillResponse createBillForOrganization(ApplicationUser user, Organization organization){
+    public BillResponse createBillForOrganization(ApplicationUser user, Organization organization) {
         int employeeCount = organization.getEmployees().size();
 
         Tariff tariff = tariffRepository.findAll().stream()
@@ -132,11 +132,12 @@ public class BillService {
         billRepository.save(bill);
 
         log.info("Организация с ID {} активирована, срок действия счета продлен до {}",
-            organizationId, bill.getPaidUntil());
+            organizationId, bill.getPaidUntil()
+        );
     }
 
     private Organization findOrganizationById(Long id) {
         return organizationRepository.findById(id)
-           .orElseThrow(() -> new OrganizationNotFoundException(id));
+            .orElseThrow(() -> new OrganizationNotFoundException(id));
     }
 }

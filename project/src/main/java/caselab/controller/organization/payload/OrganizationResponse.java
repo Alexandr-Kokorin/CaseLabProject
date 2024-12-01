@@ -1,5 +1,6 @@
 package caselab.controller.organization.payload;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,4 +20,7 @@ public class OrganizationResponse {
 
     @Schema(description = "ИНН организации")
     private String inn;
+
+    @JsonProperty("tenant_id")
+    private String tenantId;
 }

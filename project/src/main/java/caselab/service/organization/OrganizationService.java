@@ -11,11 +11,11 @@ import caselab.exception.entity.already_exists.OrganizationAlreadyExistsExceptio
 import caselab.service.organization.mapper.OrganizationMapper;
 import caselab.service.secutiry.AuthenticationService;
 import caselab.service.util.UserUtilService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -30,10 +30,15 @@ public class OrganizationService {
 
     public OrganizationResponse createOrganization(CreateOrganizationRequest request, String tenantId) {
         Organization organization = orgMapper.createRequestToEntity(request);
+
         checkOrganizationExistenceByTenantId(tenantId);
+        checkInnUniqueness(request.inn(), null);
+
         organization.setTenantId(tenantId);
         organization = orgRepository.save(organization);
+
         registerOrganizationAdmin(request, organization);
+
         return orgMapper.entityToResponse(organization);
     }
 
@@ -48,11 +53,12 @@ public class OrganizationService {
         userUtilService.checkUserGlobalPermission(
             user, GlobalPermissionName.ADMIN);
 
-        Organization org = user.getOrganization();
-        var updatedOrg = orgMapper.updateRequestToEntity(request);
-        updatedOrg.setId(org.getId());
-        updatedOrg.setTenantId(org.getTenantId());
-        return orgMapper.entityToResponse(orgRepository.save(updatedOrg));
+        var currentOrg = user.getOrganization();
+        checkInnUniqueness(request.inn(), currentOrg.getInn());
+
+        orgMapper.updateEntityFromRequest(currentOrg, request);
+
+        return orgMapper.entityToResponse(orgRepository.save(currentOrg));
     }
 
     public void deleteOrganization(Authentication auth) {
@@ -75,9 +81,15 @@ public class OrganizationService {
         authService.registerOrgAdmin(registerRequest, organization);
     }
 
+    private void checkInnUniqueness(String inn, String currentInn) {
+        if (!inn.equals(currentInn) && orgRepository.existsByInn(inn)) {
+            throw new OrganizationAlreadyExistsException("ИНН", inn);
+        }
+    }
+
     private void checkOrganizationExistenceByTenantId(String tenantId) {
         if (orgRepository.existsByTenantId(tenantId)) {
-            throw new OrganizationAlreadyExistsException(tenantId);
+            throw new OrganizationAlreadyExistsException("id арендатора", tenantId);
         }
     }
 }

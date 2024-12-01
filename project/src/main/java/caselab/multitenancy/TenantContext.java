@@ -8,19 +8,19 @@ public final class TenantContext {
     private TenantContext() {
     }
 
-    private static final ThreadLocal<String> currentTenant = new ThreadLocal<>();
+    private static final ThreadLocal<String> CURRENT_TENANT = new ThreadLocal<>();
 
     public static void setTenantId(String tenantId) {
         log.debug("Setting tenantId to {}", tenantId);
-        currentTenant.set(tenantId);
+        CURRENT_TENANT.set(tenantId);
     }
 
     public static String getTenantId() {
-        return currentTenant.get();
+        return CURRENT_TENANT.get();
     }
 
     public static void clear() {
         log.debug("Clearing the tenant ID from the context.");
-        currentTenant.remove();
+        CURRENT_TENANT.remove();
     }
 }

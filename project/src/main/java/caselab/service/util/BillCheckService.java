@@ -9,11 +9,6 @@ import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
-import javax.imageio.ImageIO;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -21,6 +16,11 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.imageio.ImageIO;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
@@ -40,7 +40,8 @@ public class BillCheckService {
             if (organization != null && organization.isActive()) {
                 organization.setActive(false);
                 log.info("Организация '{}' (ID: {}) деактивирована из-за истечения срока оплаты счета (ID: {}).",
-                    organization.getName(), organization.getId(), bill.getId());
+                    organization.getName(), organization.getId(), bill.getId()
+                );
 
                 try {
                     // Генерация и отправка чека
@@ -52,6 +53,7 @@ public class BillCheckService {
             }
         }
     }
+
     public File generateQrCodeForBill(Bill bill) throws Exception {
         String qrContent = String.format(
             "Bill ID: %d\nOrganization: %s\nAmount: %s\nDue Date: %s",
@@ -91,7 +93,10 @@ public class BillCheckService {
             .recipient(bill.getUser().getEmail())
             .sender("admin@solifex.ru")
             .subject("Оплата счета")
-            .text(String.format("Ваш счет (ID: %d) не был оплачен. Проверьте вложенный чек для подробностей.", bill.getId()))
+            .text(String.format(
+                "Ваш счет (ID: %d) не был оплачен. Проверьте вложенный чек для подробностей.",
+                bill.getId()
+            ))
             .attachments(List.of(qrCodeFile))
             .build();
 

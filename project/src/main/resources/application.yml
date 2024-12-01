@@ -70,12 +70,12 @@ bucket4j:
       url: /.*
       http-response-body: "{ \"status\": 429, \"error\": \"Too Many Requests\", \"message\": \"You have exhausted your API Request Quota\" }"
       rate-limits:
-          cache-key: "getRemoteAddr()"
-          bandwidths:
-            - capacity: 1000
-              time: 1
-              unit: minutes
-              refill-speed: interval
+        cache-key: "getRemoteAddr()"
+        bandwidths:
+          - capacity: 1000
+            time: 1
+            unit: minutes
+            refill-speed: interval
 
 server:
   port: 8080
