@@ -5,6 +5,7 @@ import caselab.controller.document.facade.payload.DocumentFacadeResponse;
 import caselab.controller.document.facade.payload.PatchDocumentRequest;
 import caselab.controller.document.facade.payload.UpdateDocumentRequest;
 import caselab.controller.document.payload.DocumentResponse;
+import caselab.domain.entity.search.SearchRequest;
 import caselab.elastic.service.DocumentElasticService;
 import caselab.service.document.facade.DocumentFacadeService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,6 +16,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ProblemDetail;
@@ -26,6 +28,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -188,5 +191,26 @@ public class DocumentFacadeController {
         @RequestParam(name = "size", defaultValue = "10") Integer size
     ) {
         return documentElasticService.searchValuesElastic(query, page, size);
+    }
+
+    @Operation(summary = "Возвращает документы по фильтрам",
+               description = "Возвращает документы доступные пользователю, "
+                   + "либо все документы если запрос делает администратор по указанным фильтрам")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Успешное получение всех документов",
+                     content = @Content(schema = @Schema(implementation = DocumentFacadeResponse.class))),
+        @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @PostMapping("/advanced_search")
+    Page<DocumentFacadeResponse> getAllDocumentsWithFilters(
+        @RequestParam(value = "pageNum", required = false) Integer pageNum,
+        @RequestParam(value = "pageSize", required = false) Integer pageSize,
+        @Parameter(description = "Значение может быть desc или asc")
+        @RequestParam(value = "sortStrategy", required = false, defaultValue = "desc") String sortStrategy,
+        @NotNull(message = "{search.request.is_null}") @RequestBody SearchRequest searchRequest,
+        Authentication authentication
+    ) {
+        return documentFacadeService.getAllDocuments(pageNum, pageSize, sortStrategy, searchRequest, authentication);
     }
 }

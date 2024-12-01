@@ -11,6 +11,7 @@ import caselab.controller.signature.payload.SignatureResponse;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.GlobalPermission;
 import caselab.domain.entity.enums.GlobalPermissionName;
+import caselab.domain.entity.search.SearchRequest;
 import caselab.domain.repository.ApplicationUserRepository;
 import caselab.domain.repository.DocumentVersionRepository;
 import caselab.domain.repository.SignatureRepository;
@@ -116,6 +117,7 @@ public class DocumentFacadeService {
         Integer pageNum,
         Integer pageSize,
         String sortStrategy,
+        SearchRequest searchRequest,
         Authentication auth
     ) {
         var user = userUtilService.findUserByAuthentication(auth);
@@ -128,19 +130,36 @@ public class DocumentFacadeService {
         PageRequest pageable = PageUtil.toPageable(pageNum, pageSize);
 
         if (adminCheck.isPresent()) {
-            return getAllAdminDocuments(pageable, sortStrategy, user);
+            return getAllAdminDocuments(pageable, sortStrategy, user, searchRequest);
         }
 
-        return getAllUserDocuments(pageable, sortStrategy, user);
+        return getAllUserDocuments(pageable, sortStrategy, user, searchRequest);
+    }
+
+    public Page<DocumentFacadeResponse> getAllDocuments(
+        Integer pageNum,
+        Integer pageSize,
+        String sortStrategy,
+        Authentication auth
+    ) {
+        return getAllDocuments(
+            pageNum,
+            pageSize,
+            sortStrategy,
+            new SearchRequest(null),
+            // Передаем фильтры как null, для совместимости с прошлым получением всех документов
+            auth
+        );
     }
 
     private Page<DocumentFacadeResponse> getAllAdminDocuments(
         Pageable pageable,
         String sortStrategy,
-        ApplicationUser user
+        ApplicationUser user,
+        SearchRequest searchRequest
     ) {
 
-        List<DocumentResponse> allDocuments = documentService.getAllDocuments();
+        List<DocumentResponse> allDocuments = documentService.getAllDocuments(searchRequest);
 
         List<DocumentFacadeResponse> responseList = allDocuments.stream()
             .map(this::enrichResponse)
@@ -153,10 +172,11 @@ public class DocumentFacadeService {
     private Page<DocumentFacadeResponse> getAllUserDocuments(
         Pageable pageable,
         String sortStrategy,
-        ApplicationUser user
+        ApplicationUser user,
+        SearchRequest searchRequest
     ) {
 
-        List<DocumentFacadeResponse> responseList = documentService.getAllDocuments(user).stream()
+        List<DocumentFacadeResponse> responseList = documentService.getAllDocuments(user, searchRequest).stream()
             .map(doc -> enrichResponse(doc, user))
             .sorted(Comparator.comparing(it -> it.getLatestVersion().getCreatedAt()))
             .toList();
