@@ -1,7 +1,7 @@
 package caselab.configuration.security;
 
 import caselab.exception.entity.not_found.UserNotFoundException;
-import caselab.service.secutiry.ClaimsExtractorService;
+import caselab.service.security.ClaimsExtractorService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.security.SignatureException;

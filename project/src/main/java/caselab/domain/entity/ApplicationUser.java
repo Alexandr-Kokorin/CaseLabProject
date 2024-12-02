@@ -2,6 +2,7 @@ package caselab.domain.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -11,6 +12,7 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.Collection;
 import java.util.List;
@@ -48,6 +50,16 @@ public class ApplicationUser extends TenantAwareEntity implements UserDetails {
     @Column(nullable = false)
     private String hashedPassword;
 
+    @Column(name = "position", nullable = false)
+    private String position;
+
+    @Column(name = "is_working", nullable = false, columnDefinition = "boolean default false")
+    private Boolean isWorking;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "department_id", referencedColumnName = "id")
+    private Department department;
+
     @OneToMany(mappedBy = "applicationUser")
     private List<UserToDocument> usersToDocuments;
 
@@ -57,6 +69,10 @@ public class ApplicationUser extends TenantAwareEntity implements UserDetails {
 
     @OneToMany(mappedBy = "applicationUser")
     private List<Signature> signatures;
+
+    @OneToOne
+    @JoinColumn(columnDefinition = "substitution_id")
+    private Substitution substitution;
 
     @ManyToMany
     @JoinTable(

@@ -6,7 +6,7 @@ import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.ApplicationUserRepository;
 import caselab.exception.entity.not_found.UserNotFoundException;
-import caselab.service.secutiry.AuthenticationService;
+import caselab.service.security.AuthenticationService;
 import caselab.service.users.mapper.UserMapper;
 import caselab.service.util.UserUtilService;
 import jakarta.transaction.Transactional;

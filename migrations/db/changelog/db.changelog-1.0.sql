@@ -1,14 +1,32 @@
 --liquibase formatted sql
 
---changeset DenisKarpov:22
+--changeset DenisKarpov:24
 CREATE TABLE IF NOT EXISTS organization (
-    id          BIGSERIAL       PRIMARY KEY,
-    name        VARCHAR(255)    NOT NULL,
+    id          BIGSERIAL       PRIMARY KEY,                                        name        VARCHAR(255)    NOT NULL,
     inn         VARCHAR(10)     NOT NULL UNIQUE,
     is_active   BOOLEAN         DEFAULT TRUE NOT NULL,
     tenant_id   TEXT            NOT NULL,
     created_at  TIMESTAMP       DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at  TIMESTAMP       DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+--changeset seshxyz:22
+CREATE TABLE IF NOT EXISTS department(
+    id                       BIGSERIAL PRIMARY KEY,
+    name                     TEXT NOT NULL UNIQUE,
+    is_active                BOOLEAN NOT NULL DEFAULT TRUE,
+    is_top_department        BOOLEAN NOT NULL,
+    head_email_of_department TEXT,
+    parent_department_id     BIGINT REFERENCES department(id) ON DELETE CASCADE,
+
+    CONSTRAINT parent_id_is_not_the_same CHECK (id IS DISTINCT FROM department.parent_department_id)
+);
+
+-- changeset maksim25y:23
+CREATE TABLE IF NOT EXISTS substitution(
+    id                   BIGSERIAL PRIMARY KEY,
+    substitution_user_id BIGINT,
+    assigned             TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
 --changeset hottabych04:1
@@ -18,8 +36,13 @@ CREATE TABLE IF NOT EXISTS application_user
     email           TEXT      NOT NULL,
     display_name    TEXT      NOT NULL,
     hashed_password TEXT      NOT NULL,
+    position        TEXT,
+    is_working      BOOLEAN NOT NULL DEFAULT FALSE,
+    department_id   BIGINT REFERENCES department(id) ON DELETE SET NULL,
+    substitution_id BIGINT REFERENCES substitution(id) ON DELETE SET NULL,
     organization_id BIGINT    DEFAULT NULL,
     tenant_id       TEXT      NOT NULL,
+
     PRIMARY KEY (id),
     FOREIGN KEY (organization_id) REFERENCES organization(id)
 );
@@ -238,6 +261,7 @@ CREATE TABLE IF NOT EXISTS tariff(
     created_at      TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     user_count      INTEGER                  NOT NULL
 );
+
 -- Добавляем записи в таблицу tariff
 INSERT INTO tariff(name, price, tariff_details, created_at, user_count) VALUES
 ('Basic Plan', 10000, 'Основной тариф для небольших организаций.', DEFAULT, 100),

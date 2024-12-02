@@ -5,7 +5,6 @@ import caselab.controller.secutiry.payload.AuthenticationResponse;
 import caselab.controller.secutiry.payload.RefreshTokenRequest;
 import caselab.controller.secutiry.payload.RegisterRequest;
 import caselab.domain.entity.ApplicationUser;
-import caselab.domain.entity.Organization;
 import caselab.domain.entity.RefreshToken;
 import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.ApplicationUserRepository;
@@ -61,6 +60,7 @@ public class AuthenticationService {
             .displayName(request.displayName())
             .globalPermissions(List.of(globalPermission))
             .hashedPassword(encodePassword(request.password()))
+            .isWorking(false)
             .organization(organization)
             .build();
 

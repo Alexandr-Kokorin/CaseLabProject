@@ -14,6 +14,18 @@ public record UserResponse(
     @JsonProperty("display_name")
     @Schema(description = "Отображаемое имя пользователя", example = "Иван Иванов")
     String displayName,
+    @Schema(description = "Должность пользователя", example = "Программист")
+    @JsonProperty("position")
+    String position,
+    @Schema(description = "Работает ли пользователь (true/false)", example = "true")
+    @JsonProperty("is_working")
+    Boolean isWorking,
+    @Schema(description = "id подразделения пользователя", example = "2")
+    @JsonProperty("department_id")
+    Long departmentId,
+    @Schema(description = "id заменяющего", example = "2")
+    @JsonProperty("substitution_id")
+    Long substitutionId,
     @JsonProperty("roles")
     @Schema(description = "Роли пользователя", example = "[\"USER\"]")
     List<String> roles

@@ -1,9 +1,15 @@
 package caselab.controller.security;
 
 import caselab.controller.BaseControllerTest;
-import caselab.service.secutiry.ClaimsExtractorService;
+import caselab.service.notification.email.EmailService;
+import caselab.service.security.ClaimsExtractorService;
 import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.MockBean;
+
+import static org.hamcrest.Matchers.notNullValue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 public class AuthenticationControllerTest extends BaseControllerTest {
 
@@ -11,8 +17,8 @@ public class AuthenticationControllerTest extends BaseControllerTest {
 
     @Autowired
     private ClaimsExtractorService claimsExtractorService;
-    //    @MockBean
-//    private EmailService emailService;
+    @MockBean
+    private EmailService emailService;
     private String token;
     private String adminToken;
     private String email;

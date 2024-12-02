@@ -4,7 +4,7 @@ import caselab.controller.secutiry.payload.AuthenticationRequest;
 import caselab.controller.secutiry.payload.AuthenticationResponse;
 import caselab.controller.secutiry.payload.RefreshTokenRequest;
 import caselab.controller.secutiry.payload.RegisterRequest;
-import caselab.service.secutiry.AuthenticationService;
+import caselab.service.security.AuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
