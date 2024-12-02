@@ -2,7 +2,8 @@
 
 --changeset DenisKarpov:24
 CREATE TABLE IF NOT EXISTS organization (
-    id          BIGSERIAL       PRIMARY KEY,                                        name        VARCHAR(255)    NOT NULL,
+    id          BIGSERIAL       PRIMARY KEY,
+    name        VARCHAR(255)    NOT NULL,
     inn         VARCHAR(10)     NOT NULL UNIQUE,
     is_active   BOOLEAN         DEFAULT TRUE NOT NULL,
     tenant_id   TEXT            NOT NULL,
@@ -18,6 +19,7 @@ CREATE TABLE IF NOT EXISTS department(
     is_top_department        BOOLEAN NOT NULL,
     head_email_of_department TEXT,
     parent_department_id     BIGINT REFERENCES department(id) ON DELETE CASCADE,
+    tenant_id                TEXT         NOT NULL,
 
     CONSTRAINT parent_id_is_not_the_same CHECK (id IS DISTINCT FROM department.parent_department_id)
 );
@@ -26,7 +28,8 @@ CREATE TABLE IF NOT EXISTS department(
 CREATE TABLE IF NOT EXISTS substitution(
     id                   BIGSERIAL PRIMARY KEY,
     substitution_user_id BIGINT,
-    assigned             TIMESTAMP WITH TIME ZONE NOT NULL
+    assigned             TIMESTAMP WITH TIME ZONE NOT NULL,
+    tenant_id            TEXT                     NOT NULL
 );
 
 --changeset hottabych04:1
@@ -263,14 +266,13 @@ CREATE TABLE IF NOT EXISTS tariff(
 );
 
 -- Добавляем записи в таблицу tariff
-INSERT INTO tariff(name, price, tariff_details, created_at, user_count) VALUES
-('Basic Plan', 10000, 'Основной тариф для небольших организаций.', DEFAULT, 100),
-('Standard Plan', 25000, 'Стандартный тариф для малых и средних компаний.', DEFAULT, 1000),
-('Premium Plan', 50000, 'Расширенный тариф для крупных команд и организаций.', DEFAULT, 10000),
-('Business Plan', 100000, 'Тариф для бизнеса с масштабируемыми решениями.', DEFAULT, 20000),
-('Enterprise Plan', 250000, 'Корпоративный тариф с поддержкой больших объемов данных.', DEFAULT, 50000);
+INSERT INTO tariff(name, price, tariff_details, created_at, user_count)
+VALUES('Basic Plan', 10000, 'Основной тариф для небольших организаций.', DEFAULT, 100),
+      ('Standard Plan', 25000, 'Стандартный тариф для малых и средних компаний.', DEFAULT, 1000),
+      ('Premium Plan', 50000, 'Расширенный тариф для крупных команд и организаций.', DEFAULT, 10000),
+      ('Business Plan', 100000, 'Тариф для бизнеса с масштабируемыми решениями.', DEFAULT, 20000),
+      ('Enterprise Plan', 250000, 'Корпоративный тариф с поддержкой больших объемов данных.', DEFAULT, 50000);
 
--- changeset hottabych04:21
 CREATE TABLE IF NOT EXISTS bill(
     id          BIGSERIAL                PRIMARY KEY,
     tariff_id   BIGINT                   NOT NULL REFERENCES tariff(id) ON DELETE CASCADE,
@@ -278,5 +280,6 @@ CREATE TABLE IF NOT EXISTS bill(
     user_id   BIGINT                   NOT NULL REFERENCES application_user(id) ON DELETE CASCADE,
     issued_at   TIMESTAMP WITH TIME ZONE NOT NULL,
     is_paid BOOLEAN DEFAULT FALSE NOT NULL,
-    paid_until TIMESTAMP WITH TIME ZONE NOT NULL
+    paid_until TIMESTAMP WITH TIME ZONE NOT NULL,
+    tenant_id   TEXT            NOT NULL
 );

@@ -21,7 +21,7 @@ import lombok.ToString;
 @ToString
 @Entity
 @Table(name = "substitution")
-public class Substitution {
+public class Substitution extends TenantAwareEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

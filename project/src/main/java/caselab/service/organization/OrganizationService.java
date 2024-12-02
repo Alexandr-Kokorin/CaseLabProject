@@ -9,7 +9,7 @@ import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.OrganizationRepository;
 import caselab.exception.entity.already_exists.OrganizationAlreadyExistsException;
 import caselab.service.organization.mapper.OrganizationMapper;
-import caselab.service.secutiry.AuthenticationService;
+import caselab.service.security.AuthenticationService;
 import caselab.service.util.UserUtilService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
