@@ -6,7 +6,6 @@ import caselab.controller.attribute.payload.AttributeResponse;
 import caselab.controller.secutiry.payload.AuthenticationRequest;
 import caselab.controller.secutiry.payload.AuthenticationResponse;
 import caselab.domain.entity.Attribute;
-import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import lombok.SneakyThrows;
@@ -18,7 +17,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -45,7 +43,6 @@ public class AttributeControllerTest extends BaseControllerTest {
     private final String ATTRIBUTE_URI = "/api/v1/attributes";
     private static AuthenticationResponse token;
 
-
     public static Stream<Arguments> provideInvalidAttributeRequests() {
         return invalidAttributeRequests.get();
     }
@@ -63,7 +60,8 @@ public class AttributeControllerTest extends BaseControllerTest {
 
         var mvcResponse = mockMvc.perform(post("/api/v1/auth/authenticate")
                 .content(objectMapper.writeValueAsString(request))
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("X-TENANT-ID", "tenant_1"))
             .andExpect(
                 status().isOk()
             )
@@ -76,6 +74,7 @@ public class AttributeControllerTest extends BaseControllerTest {
 
         return token;
     }
+
     @SneakyThrows
     private AuthenticationResponse loginUser() {
         if (token != null) {
@@ -89,7 +88,8 @@ public class AttributeControllerTest extends BaseControllerTest {
 
         var mvcResponse = mockMvc.perform(post("/api/v1/auth/authenticate")
                 .content(objectMapper.writeValueAsString(request))
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("X-TENANT-ID", "tenant_1"))
             .andExpect(
                 status().isOk()
             )
@@ -102,7 +102,6 @@ public class AttributeControllerTest extends BaseControllerTest {
 
         return token;
     }
-
 
     @Test
     @SneakyThrows
@@ -117,7 +116,8 @@ public class AttributeControllerTest extends BaseControllerTest {
         var mvcResponse = mockMvc.perform(post(ATTRIBUTE_URI)
                 .header("Authorization", "Bearer " + token) // Вставка токена в заголовок
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(attributeRequest)))
+                .content(objectMapper.writeValueAsString(attributeRequest))
+                .header("X-TENANT-ID", "tenant_1"))
             .andExpectAll(
                 status().isOk(),
                 content().contentType(MediaType.APPLICATION_JSON)
@@ -144,24 +144,28 @@ public class AttributeControllerTest extends BaseControllerTest {
         mockMvc.perform(post(ATTRIBUTE_URI)
                 .header("Authorization", "Bearer " + token) // Вставка токена в заголовок
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(attributeRequest)))
+                .content(objectMapper.writeValueAsString(attributeRequest))
+                .header("X-TENANT-ID", "tenant_1"))
             .andExpectAll(
                 status().isBadRequest(),
                 content().contentType(MediaType.APPLICATION_PROBLEM_JSON)
             );
     }
+
     // Тут написал админа в тесте, потому что используется создание атрибута, доступ к которому
     //есть только у админа
     @Test
     @SneakyThrows
     @WithMockUser(username = "admin@gmail.com", roles = {"ADMIN"})
     public void testFindAttributeById_whenAttributeExists_shouldReturnAttributeById() {
-        var token = loginUser().accessToken();
+        var token = loginAdmin().accessToken();
         var existingAttribute = createAttribute("name", "type");
 
         var mvcResponse = mockMvc.perform(get(ATTRIBUTE_URI + "/" + existingAttribute.getId())
                 .header("Authorization", "Bearer " + token) // Вставка токена в заголовок
-                .accept(MediaType.APPLICATION_JSON))
+                .header("X-TENANT-ID", "tenant_1")
+                .accept(MediaType.APPLICATION_JSON)
+            )
             .andExpectAll(
                 status().isOk(),
                 content().contentType(MediaType.APPLICATION_JSON)
@@ -187,7 +191,8 @@ public class AttributeControllerTest extends BaseControllerTest {
         var token = loginUser().accessToken();
         mockMvc.perform(get(ATTRIBUTE_URI + "/" + 1)
                 .header("Authorization", "Bearer " + token) // Вставка токена в заголовок
-                .accept(MediaType.APPLICATION_JSON))
+                .accept(MediaType.APPLICATION_JSON)
+                .header("X-TENANT-ID", "tenant_1"))
             .andExpectAll(
                 status().isNotFound(),
                 content().contentType(MediaType.APPLICATION_PROBLEM_JSON)
@@ -263,7 +268,8 @@ public class AttributeControllerTest extends BaseControllerTest {
         var mvcResponse = mockMvc.perform(put(ATTRIBUTE_URI + "/" + existingAttribute.getId())
                 .header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(attributeRequest)))
+                .content(objectMapper.writeValueAsString(attributeRequest))
+                .header("X-TENANT-ID", "tenant_1"))
             .andExpectAll(
                 status().isOk(),
                 content().contentType(MediaType.APPLICATION_JSON)
@@ -293,7 +299,8 @@ public class AttributeControllerTest extends BaseControllerTest {
         mockMvc.perform(put(ATTRIBUTE_URI + "/" + existingAttribute.getId())
                 .header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(attributeRequest)))
+                .content(objectMapper.writeValueAsString(attributeRequest))
+                .header("X-TENANT-ID", "tenant_1"))
             .andExpectAll(
                 status().isBadRequest(),
                 content().contentType(MediaType.APPLICATION_PROBLEM_JSON)
@@ -315,7 +322,8 @@ public class AttributeControllerTest extends BaseControllerTest {
         mockMvc.perform(put(ATTRIBUTE_URI + "/1")
                 .header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(attributeRequest)))
+                .content(objectMapper.writeValueAsString(attributeRequest))
+                .header("X-TENANT-ID", "tenant_1"))
             .andExpectAll(
                 status().isNotFound(),
                 content().contentType(MediaType.APPLICATION_PROBLEM_JSON)
@@ -330,7 +338,8 @@ public class AttributeControllerTest extends BaseControllerTest {
 
         deleteAttribute(existingAttribute.getId());
 
-        mockMvc.perform(get(ATTRIBUTE_URI + "/" + existingAttribute.getId()))
+        mockMvc.perform(get(ATTRIBUTE_URI + "/" + existingAttribute.getId())
+                .header("X-TENANT-ID", "tenant_1"))
             .andExpectAll(
                 status().isNotFound(),
                 content().contentType(MediaType.APPLICATION_PROBLEM_JSON)
@@ -342,13 +351,13 @@ public class AttributeControllerTest extends BaseControllerTest {
     @WithMockUser(username = "admin@gmail.com", roles = {"ADMIN"})
     public void testDeleteAttribute_whenAttributeNotFound() {
         var token = loginAdmin().accessToken();
-        mockMvc.perform(delete(ATTRIBUTE_URI + "/1"))
+        mockMvc.perform(delete(ATTRIBUTE_URI + "/1")
+                .header("X-TENANT-ID", "tenant_1"))
             .andExpectAll(
                 status().isNotFound(),
                 content().contentType(MediaType.APPLICATION_PROBLEM_JSON)
             );
     }
-
 
     @WithMockUser(username = "admin@gmail.com", roles = {"ADMIN"})
     private Attribute createAttribute(String name, String type) throws Exception {
@@ -361,7 +370,8 @@ public class AttributeControllerTest extends BaseControllerTest {
         var mvcResponse = mockMvc.perform(post(ATTRIBUTE_URI)
                 .header("Authorization", "Bearer " + token) // Вставка токена в заголовок
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(attributeRequest)))
+                .content(objectMapper.writeValueAsString(attributeRequest))
+                .header("X-TENANT-ID", "tenant_1"))
             .andExpect(
                 status().isOk())
             .andReturn()
@@ -371,7 +381,8 @@ public class AttributeControllerTest extends BaseControllerTest {
     }
 
     private void deleteAttribute(Long id) throws Exception {
-        mockMvc.perform(delete(ATTRIBUTE_URI + "/" + id))
+        mockMvc.perform(delete(ATTRIBUTE_URI + "/" + id)
+                .header("X-TENANT-ID", "tenant_1"))
             .andExpect(status().isNoContent());
     }
 }

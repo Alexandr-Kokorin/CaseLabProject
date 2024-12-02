@@ -15,7 +15,6 @@ import org.mockito.Mock;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MvcResult;
-
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
@@ -27,7 +26,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-
 public class ApplicationUserControllerTest extends BaseControllerTest {
 
     private final String AUTH_URI = "/api/v1/auth";
@@ -35,10 +33,12 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
     private static AuthenticationResponse authToken;
     @Mock
     private EmailService emailService;
+
     @BeforeEach
     void setUp() {
         doNothing().when(emailService).sendNotification(any(EmailNotificationDetails.class));
     }
+
     @SneakyThrows
     private AuthenticationResponse login() {
         if (authToken != null) {
@@ -52,7 +52,9 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
 
         var mvcResponse = mockMvc.perform(post("/api/v1/auth/authenticate")
                 .content(objectMapper.writeValueAsString(request))
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("X-TENANT-ID", "tenant_1")
+            )
             .andExpect(status().isOk())
             .andReturn();
 
@@ -71,7 +73,8 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
         var token = login().accessToken();
 
         mockMvc.perform(get(URL + "/all")
-                .header("Authorization", "Bearer " + token))
+                .header("Authorization", "Bearer " + token)
+                .header("X-TENANT-ID", "tenant_1"))
             .andExpectAll(
                 status().isOk(),
                 jsonPath("$").isArray()
@@ -82,7 +85,8 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
     @SneakyThrows
     @DisplayName("Should return 403 for unauthorized access to get all users")
     public void shouldReturn403ForUnauthorizedAccessToGetAllUsers() {
-        mockMvc.perform(get(URL + "/all"))
+        mockMvc.perform(get(URL + "/all")
+                .header("X-TENANT-ID", "tenant_1"))
             .andExpect(status().isForbidden());
     }
 
@@ -96,7 +100,8 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
         mockMvc.perform(get(URL)
                 .header("Authorization", "Bearer " + token)
                 .param("email", email)
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("X-TENANT-ID", "tenant_1"))
             .andExpectAll(
                 status().isOk(),
                 jsonPath("$.email").value(email),
@@ -114,7 +119,9 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
         mockMvc.perform(get(URL)
                 .header("Authorization", "Bearer " + token)
                 .param("email", invalidEmail)
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("X-TENANT-ID", "tenant_1")
+            )
             .andExpect(status().isBadRequest());
     }
 
@@ -125,7 +132,9 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
         String email = "auth@example.com";
         mockMvc.perform(get(URL)
                 .param("email", email)
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("X-TENANT-ID", "tenant_1")
+            )
             .andExpect(status().isForbidden());
     }
 
@@ -139,7 +148,9 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
         mockMvc.perform(get(URL)
                 .header("Authorization", "Bearer " + token)
                 .param("email", nonExistingEmail)
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("X-TENANT-ID", "tenant_1")
+            )
             .andExpect(status().isNotFound());
     }
 
@@ -158,7 +169,9 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
         mockMvc.perform(put(URL)
                 .header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(request))
+                .content(request)
+                .header("X-TENANT-ID", "tenant_1")
+            )
             .andExpectAll(
                 status().isOk(),
                 jsonPath("$.display_name").value(updateRequest.displayName())
@@ -178,7 +191,9 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
         mockMvc.perform(put(URL)
                 .header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(invalidUpdateRequest)))
+                .content(objectMapper.writeValueAsString(invalidUpdateRequest))
+                .header("X-TENANT-ID", "tenant_1")
+            )
             .andExpect(status().isBadRequest());
     }
 
@@ -195,14 +210,16 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
 
         mockMvc.perform(put(URL)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(request))
+                .content(request)
+                .header("X-TENANT-ID", "tenant_1")
+            )
             .andExpect(status().isForbidden());
     }
 
     @Test
     @SneakyThrows
     @DisplayName("Should delete user successfully")
-    @WithMockUser(username = "admin@gmail.com",roles = "{ADMIN}")
+    @WithMockUser(username = "admin@gmail.com", roles = "{ADMIN}")
     public void shouldDeleteUser() {
         var token = login().accessToken();
 
@@ -217,7 +234,9 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
     @SneakyThrows
     @DisplayName("Should return 403 for unauthorized access to delete user")
     public void shouldReturn403ForUnauthorizedAccessToDeleteUser() {
-        mockMvc.perform(delete(URL))
+        mockMvc.perform(delete(URL)
+                .header("X-TENANT-ID", "tenant_1")
+            )
             .andExpect(status().isForbidden());
     }
 
@@ -225,7 +244,9 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
     private String performRegistrationAndGetToken(RegisterRequest request) {
         var response = mockMvc.perform(post(AUTH_URI + "/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                .content(objectMapper.writeValueAsString(request))
+                .header("X-TENANT-ID", "tenant_1")
+            )
             .andExpectAll(
                 status().is2xxSuccessful(),
                 content().contentType(MediaType.APPLICATION_JSON),

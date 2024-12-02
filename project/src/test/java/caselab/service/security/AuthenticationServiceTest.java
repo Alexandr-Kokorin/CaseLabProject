@@ -5,6 +5,7 @@ import caselab.controller.secutiry.payload.AuthenticationResponse;
 import caselab.controller.secutiry.payload.RegisterRequest;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.GlobalPermission;
+import caselab.domain.entity.Organization;
 import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.ApplicationUserRepository;
 import caselab.domain.repository.GlobalPermissionRepository;
@@ -30,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -71,12 +73,17 @@ public class AuthenticationServiceTest {
             .password("password123")
             .build();
 
+        Authentication authentication = mock(Authentication.class);
+        ApplicationUser adminUser = ApplicationUser.builder()
+            .email("admin@mail.com")
+            .organization(mock(Organization.class))
+            .build();
+
+        when(userUtilService.findUserByAuthentication(authentication)).thenReturn(adminUser);
         when(globalPermissionRepository.findByName(GlobalPermissionName.USER)).thenReturn(mockGlobalPermission());
         when(passwordEncoder.encode(anyString())).thenReturn("hashedPassword");
-        when(appUserRepository.save(any(ApplicationUser.class)))
-            .thenReturn(null); // Ничего не возвращаем, просто сохраняем
 
-        authenticationService.registerUser(registerRequest, any(Authentication.class));
+        authenticationService.registerUser(registerRequest, authentication);
 
         assertAll(
             () -> verify(appUserRepository).save(any(ApplicationUser.class))
@@ -86,20 +93,30 @@ public class AuthenticationServiceTest {
     @Test
     @DisplayName("Ошибка при повторной регистрации с тем же email")
     void registerUser_userExists_throwsException() {
+        // Arrange
         RegisterRequest registerRequest = RegisterRequest.builder()
             .email("test@mail.com")
             .displayName("Test User")
             .password("password123")
             .build();
 
-        when(appUserRepository.findByEmail(anyString())).thenReturn(Optional.of(mockApplicationUser()));
+        Authentication authentication = mock(Authentication.class);
 
+        ApplicationUser adminUser = ApplicationUser.builder()
+            .email("admin@mail.com")
+            .organization(mock(Organization.class))
+            .build();
+
+        when(userUtilService.findUserByAuthentication(authentication)).thenReturn(adminUser);
+        when(appUserRepository.findByEmail(registerRequest.email())).thenReturn(Optional.of(mockApplicationUser()));
+
+        // Act & Assert
         assertAll(
             () -> assertThrows(
                 UserAlreadyExistsException.class,
-                () -> authenticationService.registerUser(registerRequest, any(Authentication.class))
+                () -> authenticationService.registerUser(registerRequest, authentication)
             ),
-            () -> verify(appUserRepository).findByEmail(anyString()),
+            () -> verify(appUserRepository).findByEmail(registerRequest.email()),
             () -> verify(appUserRepository, never()).save(any(ApplicationUser.class))
         );
     }
@@ -163,9 +180,17 @@ public class AuthenticationServiceTest {
     // Вспомогательные методы для мокирования данных
 
     private ApplicationUser mockApplicationUser() {
+        Organization organization = Organization.builder()
+            .id(1L)
+            .name("TestOrgName")
+            .inn("1234567890")
+            .tenantId("tenant_1")
+            .build();
+
         return ApplicationUser.builder()
             .email("test@mail.com")
             .displayName("Test User")
+            .organization(organization)
             .hashedPassword("hashedPassword")
             .build();
     }
