@@ -30,6 +30,8 @@ public class BillCheckService {
     private final BillRepository billRepository;
     private final EmailService emailService;
 
+    private final static int QRCODE_SIZE = 300;
+
     @Scheduled(cron = "0 0 0 * * ?") // Проверка запускается каждый день в полночь
     public void checkAllBills() {
         LocalDateTime now = LocalDateTime.now();
@@ -67,7 +69,7 @@ public class BillCheckService {
         Map<EncodeHintType, Object> hints = new HashMap<>();
         hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
 
-        BitMatrix bitMatrix = qrCodeWriter.encode(qrContent, BarcodeFormat.QR_CODE, 300, 300, hints);
+        BitMatrix bitMatrix = qrCodeWriter.encode(qrContent, BarcodeFormat.QR_CODE, QRCODE_SIZE, QRCODE_SIZE, hints);
         BufferedImage qrImage = toBufferedImage(bitMatrix);
 
         File qrFile = new File("qr_code_" + bill.getId() + ".png");

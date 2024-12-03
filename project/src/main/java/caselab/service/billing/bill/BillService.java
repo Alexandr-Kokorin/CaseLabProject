@@ -35,6 +35,8 @@ public class BillService {
     private final BillMapper billMapper;
     private final OrganizationRepository organizationRepository;
 
+    private final static int BILLING_PERIOD = 30;
+
     public BillResponse getBillById(Long id, Authentication auth) {
         checkPermission(auth);
         var bill = findBillById(id);
@@ -90,7 +92,7 @@ public class BillService {
             .tariff(tariff)
             .user(user)
             .issuedAt(LocalDateTime.now())
-            .paidUntil(LocalDateTime.now().plusDays(31))
+            .paidUntil(LocalDateTime.now().plusDays(BILLING_PERIOD + 1))
             .build();
 
         billRepository.save(bill);
@@ -111,7 +113,7 @@ public class BillService {
         Bill bill = billRepository.findByUserOrganizationId(organizationId)
             .orElseThrow(() -> new BillNotFoundException(organizationId));
 
-        bill.setPaidUntil(LocalDateTime.now().plusDays(30));
+        bill.setPaidUntil(LocalDateTime.now().plusDays(BILLING_PERIOD));
         billRepository.save(bill);
 
         log.info("Организация с ID {} активирована, срок действия счета продлен до {}",
