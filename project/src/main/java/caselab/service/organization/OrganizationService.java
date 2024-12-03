@@ -13,6 +13,7 @@ import caselab.multitenancy.TenantContext;
 import caselab.service.organization.mapper.OrganizationMapper;
 import caselab.service.security.AuthenticationService;
 import caselab.service.util.UserUtilService;
+import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -44,6 +45,7 @@ public class OrganizationService {
         checkOrganizationExistenceByTenantId(orgName);
         checkInnUniqueness(request.inn(), null);
         organization.setTenantId(orgName);
+        organization.setEmployees(new ArrayList<>());
 
         registerOrganizationAdmin(request, orgName, organization);
 

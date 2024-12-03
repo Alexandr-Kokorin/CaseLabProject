@@ -41,8 +41,9 @@ public class Bill extends TenantAwareEntity {
     @Column(nullable = false)
     private LocalDateTime issuedAt;
 
+    @Builder.Default
     @Column(nullable = false)
-    private Boolean isPaid;
+    private Boolean isPaid = false;
 
     @Column(nullable = false)
     private LocalDateTime paidUntil;

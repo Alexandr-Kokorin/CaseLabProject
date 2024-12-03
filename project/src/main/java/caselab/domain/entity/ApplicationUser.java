@@ -63,7 +63,7 @@ public class ApplicationUser extends TenantAwareEntity implements UserDetails {
     @OneToMany(mappedBy = "applicationUser")
     private List<UserToDocument> usersToDocuments;
 
-    @ManyToOne(optional = false)
+    @ManyToOne
     @JoinColumn(name = "organization_id")
     private Organization organization;
 

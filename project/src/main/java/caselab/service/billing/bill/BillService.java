@@ -1,7 +1,6 @@
 package caselab.service.billing.bill;
 
 import caselab.controller.billing.bill.payload.BillResponse;
-import caselab.controller.billing.bill.payload.CreateBillRequest;
 import caselab.controller.billing.bill.payload.UpdateBillRequest;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.Bill;
@@ -35,8 +34,6 @@ public class BillService {
     private final UserUtilService userUtilService;
     private final BillMapper billMapper;
     private final OrganizationRepository organizationRepository;
-
-
 
     public BillResponse getBillById(Long id, Authentication auth) {
         checkPermission(auth);
