@@ -8,6 +8,9 @@ import java.io.ByteArrayOutputStream;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xddf.usermodel.chart.XDDFDataSource;
@@ -49,7 +52,7 @@ public class AnalyticsExportService {
         plotter.plot(categories, List.of(values));
     }
 
-    private void fillAndPlotLocalDate(List<LocalDateEntry> entries, XSSFSheet sheet, Plotter plotter) {
+    private void fillAndPlotLocalDate(List<LocalDateEntry> entries, XSSFSheet sheet, Plotter plotter, XSSFWorkbook wb) {
         int n = entries.size();
 
         if (n == 0) {
@@ -59,7 +62,14 @@ public class AnalyticsExportService {
 
         for (int i = 0; i < n; i++) {
             Row row = sheet.createRow(i);
-            row.createCell(0).setCellValue(entries.get(i).getCategory());
+            Cell cell = row.createCell(0);
+
+            CellStyle style = wb.createCellStyle();
+            CreationHelper createHelper = wb.getCreationHelper();
+            style.setDataFormat(createHelper.createDataFormat().getFormat("d/m/yy"));
+
+            cell.setCellStyle(style);
+            cell.setCellValue(entries.get(i).getCategory());
             for (int j = 0; j < m; j++) {
                 row.createCell(j + 1).setCellValue(entries.get(i).getValues().get(j));
             }
@@ -93,7 +103,7 @@ public class AnalyticsExportService {
                 "Дата",
                 axisName,
                 List.of(axisName)
-            ));
+            ), wb);
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             wb.write(out);
             return out.toByteArray();
@@ -162,7 +172,7 @@ public class AnalyticsExportService {
                 "Неделя",
                 "Количество документов ",
                 List.of("Подписаны", "Отклонены")
-            ));
+            ), wb);
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             wb.write(out);
             return out.toByteArray();
