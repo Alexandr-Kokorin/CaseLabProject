@@ -9,6 +9,8 @@ import caselab.controller.types.payload.DocumentTypeRequest;
 import caselab.controller.types.payload.DocumentTypeResponse;
 import caselab.controller.types.payload.DocumentTypeToAttributeRequest;
 import java.util.List;
+import java.util.Map;
+import caselab.domain.entity.search.SearchRequest;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,10 +28,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 public class DocumentTypesControllerTest extends BaseControllerTest {
 
-    private String adminToken;
-    private String userToken;
     private final String URL = "/api/v1/document_types";
     private final String VALID_DOCUMENT_TYPE_NAME = "DocumentTypeName";
+    private String adminToken;
+    private String userToken;
     private Long attributeId;
     private Long documentTypeId;
 
@@ -118,6 +120,16 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
         return objectMapper.readValue(
             mvcResponse.getResponse().getContentAsString(),
             valueType
+        );
+    }
+
+    @SneakyThrows
+    private <T> List<T> readPageContent(MvcResult mvcResponse, Class<T> valueType) {
+        var jsonNode = objectMapper.readTree(mvcResponse.getResponse().getContentAsString());
+        var contentNode = jsonNode.get("content");
+        return objectMapper.readValue(
+            contentNode.toString(),
+            objectMapper.getTypeFactory().constructCollectionType(List.class, valueType)
         );
     }
 
@@ -255,5 +267,60 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
             .andReturn();
 
         assertThat(mvcResponse.getResponse().getStatus()).isEqualTo(200);
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Успешная фильтрация типов документов админом")
+    public void advancedSearchDocumentTypes_success_admin() {
+        // Given
+        var filters = Map.of("name", List.of((Object) "DocumentTypeName"));
+        var searchRequest = SearchRequest.builder().filters(filters).build();
+
+        // When
+        var mvcResponse = mockMvc.perform(post(URL + "/advanced_search")
+                .header("Authorization", "Bearer " + adminToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(searchRequest))
+                .param("pageNum", "0")
+                .param("pageSize", "10")
+                .param("sortStrategy", "asc"))
+            .andExpect(status().isOk())
+            .andReturn();
+
+        var response = readPageContent(mvcResponse, DocumentTypeResponse.class);
+
+        assertAll(
+            "Проверка успешной фильтрации типов документов",
+            () -> assertThat(response).isNotEmpty(),
+            () -> assertThat(response.get(0).name()).isEqualTo("DocumentTypeName")
+        );
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Фильтрация типов документов возвращает пустой результат при несоответствии фильтров")
+    public void advancedSearchDocumentTypes_emptyResult() {
+        // Given
+        var filters = Map.of("name", List.of((Object) "NonExistentDocumentType"));
+        var searchRequest = SearchRequest.builder().filters(filters).build();
+
+        // When
+        var mvcResponse = mockMvc.perform(post(URL + "/advanced_search")
+                .header("Authorization", "Bearer " + adminToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(searchRequest))
+                .param("pageNum", "0")
+                .param("pageSize", "10")
+                .param("sortStrategy", "asc"))
+            .andExpect(status().isOk())
+            .andReturn();
+
+        var response = readPageContent(mvcResponse, DocumentTypeResponse.class);
+
+        assertAll(
+            "Проверка успешной фильтрации типов документов",
+            () -> assertThat(response).isEmpty()
+        );
     }
 }

@@ -9,6 +9,8 @@ import caselab.domain.entity.DocumentType;
 import caselab.domain.entity.document.type.to.attribute.DocumentTypeToAttribute;
 import caselab.domain.entity.document.type.to.attribute.DocumentTypeToAttributeId;
 import caselab.domain.entity.enums.GlobalPermissionName;
+import caselab.domain.entity.search.GenericSpecifications;
+import caselab.domain.entity.search.SearchRequest;
 import caselab.domain.repository.AttributeRepository;
 import caselab.domain.repository.DocumentRepository;
 import caselab.domain.repository.DocumentTypeToAttributeRepository;
@@ -63,12 +65,26 @@ public class DocumentTypesService {
     public Page<DocumentTypeResponse> getAllDocumentTypes(
         Integer pageNum,
         Integer pageSize,
-        String sortStrategy
+        String sortStrategy,
+        SearchRequest searchRequest
     ) {
         Pageable pageable = PageUtil.toPageable(pageNum, pageSize, Sort.by("name"), sortStrategy);
 
-        return documentTypesRepository.findAll(pageable)
+        return documentTypesRepository.findAll(GenericSpecifications.filterBy(searchRequest.getFilters()), pageable)
             .map(documentTypeMapper::entityToResponse);
+    }
+
+    public Page<DocumentTypeResponse> getAllDocumentTypes(
+        Integer pageNum,
+        Integer pageSize,
+        String sortStrategy
+    ) {
+        return getAllDocumentTypes(
+            pageNum,
+            pageSize,
+            sortStrategy,
+            new SearchRequest(null) // Передаем null, для совместимости с прошлым получением всех сущностей
+        );
     }
 
     public DocumentTypeResponse updateDocumentType(

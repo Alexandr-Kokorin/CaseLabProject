@@ -114,3 +114,17 @@ jwt:
   secret: ${JWT_SECRET:55d731c263e1ddb8e50eec214ccf010207b82cfb415c76976751a12f1f04c2ca}
   accessTokenTtl: 60 # in minutes, equals 1 hour
   refreshTokenTtl: 1440 # in minutes, equals 1 day
+
+generic:
+  filters:
+    - id
+    - name
+    - email
+    - displayName
+    - documentTypesToAttributes.isOptional
+    - documentTypesToAttributes.attribute.id
+    - documentTypesToAttributes.attribute.name
+    - documentTypesToAttributes.attribute.type
+    - documentType.id
+    - documentType.name
+    - status

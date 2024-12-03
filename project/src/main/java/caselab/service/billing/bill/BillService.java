@@ -36,21 +36,7 @@ public class BillService {
     private final BillMapper billMapper;
     private final OrganizationRepository organizationRepository;
 
-    public BillResponse createBill(CreateBillRequest req, Authentication auth) {
-        ApplicationUser user = checkPermission(auth);
 
-        Tariff tariff = findTariffById(req.tariffId());
-
-        Bill bill = Bill.builder()
-            .tariff(tariff)
-            .user(user)
-            .issuedAt(LocalDateTime.now())
-            .build();
-
-        Bill save = billRepository.save(bill);
-
-        return billMapper.toResponse(save);
-    }
 
     public BillResponse getBillById(Long id, Authentication auth) {
         checkPermission(auth);
@@ -95,7 +81,7 @@ public class BillService {
     }
 
     //метод для создания счета при создании организации
-    public BillResponse createBillForOrganization(ApplicationUser user, Organization organization) {
+    public void createBillForOrganization(ApplicationUser user, Organization organization) {
         int employeeCount = organization.getEmployees().size();
 
         Tariff tariff = tariffRepository.findAll().stream()
@@ -110,10 +96,10 @@ public class BillService {
             .paidUntil(LocalDateTime.now().plusDays(31))
             .build();
 
-        Bill saved = billRepository.save(bill);
-
-        return billMapper.toResponse(saved);
-
+        billRepository.save(bill);
+        log.info("Организация {} зарегестрировала счет с ID {}, срок действия счета до {}",
+            organization.getName(), bill.getId(), bill.getPaidUntil()
+        );
     }
 
     //Метод для восстановления организации в статус активной
