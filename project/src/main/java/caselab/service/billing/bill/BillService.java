@@ -36,21 +36,7 @@ public class BillService {
     private final BillMapper billMapper;
     private final OrganizationRepository organizationRepository;
 
-    public BillResponse createBill(CreateBillRequest req, Authentication auth) {
-        ApplicationUser user = checkPermission(auth);
 
-        Tariff tariff = findTariffById(req.tariffId());
-
-        Bill bill = Bill.builder()
-            .tariff(tariff)
-            .user(user)
-            .issuedAt(LocalDateTime.now())
-            .build();
-
-        Bill save = billRepository.save(bill);
-
-        return billMapper.toResponse(save);
-    }
 
     public BillResponse getBillById(Long id, Authentication auth) {
         checkPermission(auth);

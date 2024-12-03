@@ -34,23 +34,6 @@ public class BillController {
 
     private final BillService billService;
 
-    @Operation(summary = "Добавить биллинг",
-               description = "Добавляет биллинг по существующему тарифу в базу данных")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Успешное сохранение",
-                     content = @Content(schema = @Schema(implementation = BillResponse.class))),
-        @ApiResponse(responseCode = "400", description = "Неверный ввод",
-                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
-        @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
-                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
-    })
-    @PostMapping
-    public BillResponse createBill(
-        @Valid @RequestBody CreateBillRequest request,
-        Authentication authentication
-    ) {
-        return billService.createBill(request, authentication);
-    }
 
     @Operation(summary = "Получить биллинг по id",
                description = "Возвращает биллинг по его id")
@@ -70,45 +53,6 @@ public class BillController {
         return billService.getBillById(id, authentication);
     }
 
-    @Operation(summary = "Обновить биллинг по id",
-               description = "Обновляет тариф к которму привзан биллинг по его id")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Успешное обновление",
-                     content = @Content(schema = @Schema(implementation = BillResponse.class))),
-        @ApiResponse(responseCode = "404", description = "Биллинг с указанным id не найден",
-                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
-        @ApiResponse(responseCode = "400", description = "Неверный ввод",
-                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
-        @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
-                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
-    })
-    @PutMapping("/{id}")
-    public BillResponse updateBillById(
-        @PathVariable Long id,
-        @Valid @RequestBody UpdateBillRequest request,
-        Authentication authentication
-    ) {
-        return billService.updateBill(id, request, authentication);
-    }
-
-    @Operation(summary = "Удалить биллинг по id",
-               description = "Удаляет биллинг по id из базы данных")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "204", description = "Успешное удаление",
-                     content = @Content),
-        @ApiResponse(responseCode = "404", description = "Биллинг с указанным id не найден",
-                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
-        @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
-                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
-    })
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteBillById(
-        @PathVariable Long id,
-        Authentication authentication
-    ) {
-        billService.deleteBill(id, authentication);
-        return ResponseEntity.noContent().build();
-    }
 
     @Operation(summary = "Обновить статус организации на активный",
                description = "Устанавливает статус организации как активный после успешной оплаты")
