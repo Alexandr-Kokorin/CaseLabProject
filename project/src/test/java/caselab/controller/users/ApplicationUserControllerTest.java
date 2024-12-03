@@ -5,6 +5,7 @@ import caselab.controller.secutiry.payload.AuthenticationRequest;
 import caselab.controller.secutiry.payload.AuthenticationResponse;
 import caselab.controller.secutiry.payload.RegisterRequest;
 import caselab.controller.users.payload.UserUpdateRequest;
+import caselab.domain.entity.search.SearchRequest;
 import caselab.service.notification.email.EmailNotificationDetails;
 import caselab.service.notification.email.EmailService;
 import lombok.SneakyThrows;
@@ -16,6 +17,8 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.util.List;
+import java.util.Map;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
@@ -27,18 +30,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-
 public class ApplicationUserControllerTest extends BaseControllerTest {
 
+    private static AuthenticationResponse authToken;
     private final String AUTH_URI = "/api/v1/auth";
     private final String URL = "/api/v1/users";
-    private static AuthenticationResponse authToken;
     @Mock
     private EmailService emailService;
+
     @BeforeEach
     void setUp() {
         doNothing().when(emailService).sendNotification(any(EmailNotificationDetails.class));
     }
+
     @SneakyThrows
     private AuthenticationResponse login() {
         if (authToken != null) {
@@ -202,7 +206,7 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
     @Test
     @SneakyThrows
     @DisplayName("Should delete user successfully")
-    @WithMockUser(username = "admin@gmail.com",roles = "{ADMIN}")
+    @WithMockUser(username = "admin@gmail.com", roles = "{ADMIN}")
     public void shouldDeleteUser() {
         var token = login().accessToken();
 
@@ -218,6 +222,82 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
     @DisplayName("Should return 403 for unauthorized access to delete user")
     public void shouldReturn403ForUnauthorizedAccessToDeleteUser() {
         mockMvc.perform(delete(URL))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Should return filtered list of users")
+    public void shouldReturnFilteredUsers() {
+        var token = login().accessToken();
+
+        var searchRequest = SearchRequest.builder()
+            .filters(Map.of(
+                "email", List.of("user@example.com")
+            ))
+            .build();
+
+        mockMvc.perform(post(URL + "/all/advanced_search")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(searchRequest)))
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$").isArray(),
+                jsonPath("$[0].email").value("user@example.com"),
+                jsonPath("$[0].roles").isArray()
+            );
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Should return empty list for unmatched filters")
+    public void shouldReturnEmptyListForUnmatchedFilters() {
+        var token = login().accessToken();
+
+        var searchRequest = SearchRequest.builder()
+            .filters(Map.of(
+                "email", List.of("nonexistent@example.com")
+            ))
+            .build();
+
+        mockMvc.perform(post(URL + "/all/advanced_search")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(searchRequest)))
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$").isArray(),
+                jsonPath("$").isEmpty()
+            );
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Should return 400 for invalid search request")
+    public void shouldReturn400ForInvalidSearchRequest() {
+        var token = login().accessToken();
+
+        mockMvc.perform(post(URL + "/all/advanced_search")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Should return 403 for unauthorized access to advanced search")
+    public void shouldReturn403ForUnauthorizedAccessToAdvancedSearch() {
+        var searchRequest = SearchRequest.builder()
+            .filters(Map.of(
+                "email", List.of("user@example.com")
+            ))
+            .build();
+
+        mockMvc.perform(post(URL + "/all/advanced_search")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(searchRequest)))
             .andExpect(status().isForbidden());
     }
 

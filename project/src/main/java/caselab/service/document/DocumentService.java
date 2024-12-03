@@ -10,6 +10,8 @@ import caselab.domain.entity.DocumentType;
 import caselab.domain.entity.UserToDocument;
 import caselab.domain.entity.enums.DocumentPermissionName;
 import caselab.domain.entity.enums.DocumentStatus;
+import caselab.domain.entity.search.GenericSpecifications;
+import caselab.domain.entity.search.SearchRequest;
 import caselab.domain.repository.DocumentPermissionRepository;
 import caselab.domain.repository.DocumentRepository;
 import caselab.domain.repository.DocumentTypesRepository;
@@ -71,18 +73,22 @@ public class DocumentService {
         return documentMapper.entityToResponse(document);
     }
 
-    public List<DocumentResponse> getAllDocuments(ApplicationUser user) {
+    public List<DocumentResponse> getAllDocuments(ApplicationUser user, SearchRequest searchRequest) {
+        List<Document> documents = user
+            .getUsersToDocuments()
+            .stream()
+            .map(UserToDocument::getDocument)
+            .toList();
+        searchRequest.addFilter("id", documents.stream()
+            .map(document -> (Object) document.getId())
+            .toList());
         return toDocumentResponse(
-            user
-                .getUsersToDocuments()
-                .stream()
-                .map(UserToDocument::getDocument)
-        );
+            documentRepository.findAll(GenericSpecifications.filterBy(searchRequest.getFilters())).stream());
     }
 
-    public List<DocumentResponse> getAllDocuments() {
+    public List<DocumentResponse> getAllDocuments(SearchRequest searchRequest) {
         return toDocumentResponse(
-            documentRepository.findAll().stream()
+            documentRepository.findAll(GenericSpecifications.filterBy(searchRequest.getFilters())).stream()
         );
     }
 
