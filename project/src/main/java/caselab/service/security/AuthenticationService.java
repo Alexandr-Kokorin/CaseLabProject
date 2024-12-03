@@ -12,6 +12,7 @@ import caselab.domain.repository.ApplicationUserRepository;
 import caselab.domain.repository.GlobalPermissionRepository;
 import caselab.exception.entity.already_exists.UserAlreadyExistsException;
 import caselab.exception.entity.not_found.UserNotFoundException;
+import caselab.service.billing.bill.BillService;
 import caselab.service.notification.email.EmailNotificationDetails;
 import caselab.service.notification.email.EmailService;
 import caselab.service.util.UserUtilService;
@@ -42,6 +43,8 @@ public class AuthenticationService {
 
     private final RefreshTokenService refreshTokenService;
 
+    private final BillService billService;
+
     public void registerUser(RegisterRequest request, Authentication authentication) {
         var admin = userUtilService.findUserByAuthentication(authentication);
         userUtilService.checkUserGlobalPermission(admin, GlobalPermissionName.ADMIN);
@@ -66,6 +69,9 @@ public class AuthenticationService {
             .build();
 
         appUserRepository.save(user);
+
+        billService.createBillForOrganization(user, organization);
+
         sendMessage(request);
     }
 

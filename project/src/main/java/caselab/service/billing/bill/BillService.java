@@ -95,7 +95,7 @@ public class BillService {
     }
 
     //метод для создания счета при создании организации
-    public BillResponse createBillForOrganization(ApplicationUser user, Organization organization) {
+    public void createBillForOrganization(ApplicationUser user, Organization organization) {
         int employeeCount = organization.getEmployees().size();
 
         Tariff tariff = tariffRepository.findAll().stream()
@@ -110,10 +110,10 @@ public class BillService {
             .paidUntil(LocalDateTime.now().plusDays(31))
             .build();
 
-        Bill saved = billRepository.save(bill);
-
-        return billMapper.toResponse(saved);
-
+        billRepository.save(bill);
+        log.info("Организация {} зарегестрировала счет с ID {}, срок действия счета до {}",
+            organization.getName(), bill.getId(), bill.getPaidUntil()
+        );
     }
 
     //Метод для восстановления организации в статус активной
