@@ -25,7 +25,8 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 @Tag(name = "Шаблоны", description = "API для работы с печатными шаблонами документов")
 public class TemplateController {
-    private static final String DOCX_MIME_TYPE = "application/msword";
+    private static final String DOCX_MIME_TYPE =
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
     private final TemplateService templateService;
 
