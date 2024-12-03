@@ -8,6 +8,8 @@ import caselab.domain.entity.Organization;
 import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.OrganizationRepository;
 import caselab.exception.entity.already_exists.OrganizationAlreadyExistsException;
+import caselab.exception.entity.not_found.OrganizationNotFoundException;
+import caselab.multitenancy.TenantContext;
 import caselab.service.organization.mapper.OrganizationMapper;
 import caselab.service.security.AuthenticationService;
 import caselab.service.util.UserUtilService;
@@ -25,53 +27,35 @@ public class OrganizationService {
 
     private final OrganizationRepository orgRepository;
     private final OrganizationMapper orgMapper;
-    private final AuthenticationService authService;
     private final UserUtilService userUtilService;
+    private final AuthenticationService authService;
 
-    public OrganizationResponse createOrganization(CreateOrganizationRequest request, String tenantId) {
+    public OrganizationResponse createOrganization(CreateOrganizationRequest request, Authentication auth) {
+        var user = userUtilService.findUserByAuthentication(auth);
+
+        userUtilService.checkUserGlobalPermission(user, GlobalPermissionName.SUPER_ADMIN);
+
+        var orgName = request.name();
+        if (orgRepository.existsByName(orgName)) {
+            throw new OrganizationAlreadyExistsException("именем", orgName);
+        }
+
         Organization organization = orgMapper.createRequestToEntity(request);
-
-        checkOrganizationExistenceByTenantId(tenantId);
+        checkOrganizationExistenceByTenantId(orgName);
         checkInnUniqueness(request.inn(), null);
+        organization.setTenantId(orgName);
 
-        organization.setTenantId(tenantId);
-        organization = orgRepository.save(organization);
-
-        registerOrganizationAdmin(request, organization);
+        registerOrganizationAdmin(request, orgName, organization);
 
         return orgMapper.entityToResponse(organization);
     }
 
-    public OrganizationResponse getOrganization(Authentication auth) {
-        var user = userUtilService.findUserByAuthentication(auth);
-        return orgMapper.entityToResponse(user.getOrganization());
-    }
-
-    public OrganizationResponse updateOrganization(UpdateOrganizationRequest request, Authentication auth) {
-        var user = userUtilService.findUserByAuthentication(auth);
-
-        userUtilService.checkUserGlobalPermission(
-            user, GlobalPermissionName.ADMIN);
-
-        var currentOrg = user.getOrganization();
-        checkInnUniqueness(request.inn(), currentOrg.getInn());
-
-        orgMapper.updateEntityFromRequest(currentOrg, request);
-
-        return orgMapper.entityToResponse(orgRepository.save(currentOrg));
-    }
-
-    public void deleteOrganization(Authentication auth) {
-        var user = userUtilService.findUserByAuthentication(auth);
-        var org = user.getOrganization();
-
-        userUtilService.checkUserGlobalPermission(
-            user, GlobalPermissionName.ADMIN);
-
-        orgRepository.delete(org);
-    }
-
-    private void registerOrganizationAdmin(CreateOrganizationRequest request, Organization organization) {
+    private void registerOrganizationAdmin(
+        CreateOrganizationRequest request,
+        String tenantId,
+        Organization organization
+    ) {
+        TenantContext.setTenantId(tenantId);
         RegisterRequest registerRequest = RegisterRequest.builder()
             .email(request.email())
             .displayName(request.displayName())
@@ -79,6 +63,40 @@ public class OrganizationService {
             .build();
 
         authService.registerOrgAdmin(registerRequest, organization);
+    }
+
+    public OrganizationResponse getOrganization(Long id, Authentication auth) {
+        var user = userUtilService.findUserByAuthentication(auth);
+        userUtilService.checkUserGlobalPermission(user, GlobalPermissionName.SUPER_ADMIN);
+
+        return orgMapper.entityToResponse(findOrganizationById(id));
+    }
+
+    public OrganizationResponse updateOrganization(Long id, UpdateOrganizationRequest request, Authentication auth) {
+        var user = userUtilService.findUserByAuthentication(auth);
+        userUtilService.checkUserGlobalPermission(
+            user, GlobalPermissionName.SUPER_ADMIN);
+
+        var currentOrg = findOrganizationById(id);
+        checkInnUniqueness(request.inn(), currentOrg.getInn());
+
+        orgMapper.updateEntityFromRequest(currentOrg, request);
+
+        return orgMapper.entityToResponse(orgRepository.save(currentOrg));
+    }
+
+    public void deleteOrganization(Long id, Authentication auth) {
+        var user = userUtilService.findUserByAuthentication(auth);
+        userUtilService.checkUserGlobalPermission(
+            user, GlobalPermissionName.SUPER_ADMIN);
+
+        var org = findOrganizationById(id);
+
+        orgRepository.delete(org);
+    }
+
+    private Organization findOrganizationById(Long id) {
+        return orgRepository.findById(id).orElseThrow(() -> new OrganizationNotFoundException(id));
     }
 
     private void checkInnUniqueness(String inn, String currentInn) {

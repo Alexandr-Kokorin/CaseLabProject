@@ -7,4 +7,6 @@ public interface OrganizationRepository extends JpaRepository<Organization, Long
     boolean existsByTenantId(String tenantId);
 
     boolean existsByInn(String inn);
+
+    boolean existsByName(String name);
 }

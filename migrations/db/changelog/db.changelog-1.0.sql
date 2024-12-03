@@ -3,7 +3,7 @@
 --changeset DenisKarpov:24
 CREATE TABLE IF NOT EXISTS organization (
     id          BIGSERIAL       PRIMARY KEY,
-    name        VARCHAR(255)    NOT NULL,
+    name        VARCHAR(255)    NOT NULL UNIQUE,
     inn         VARCHAR(10)     NOT NULL UNIQUE,
     is_active   BOOLEAN         DEFAULT TRUE NOT NULL,
     tenant_id   TEXT            NOT NULL,
@@ -232,10 +232,7 @@ SELECT 'CREATOR'
 
 --changeset ???:17
 INSERT INTO global_permission (name)
-VALUES ('USER');
-
-INSERT INTO global_permission (name)
-VALUES ('ADMIN');
+VALUES ('USER'), ('ADMIN'), ('SUPER_ADMIN');
 
 --changeset ghostofendless:18
 CREATE TABLE IF NOT EXISTS subscription
@@ -283,3 +280,11 @@ CREATE TABLE IF NOT EXISTS bill(
     paid_until TIMESTAMP WITH TIME ZONE NOT NULL,
     tenant_id   TEXT            NOT NULL
 );
+
+INSERT INTO application_user (email, display_name, hashed_password, position, is_working, department_id,
+                              substitution_id, organization_id, tenant_id)
+VALUES ('superadmin@gmail.com', 'John Doe', '$2a$10$WFRQhlz7Ul85HsRjMg3XNutiB//3HLloe3vTuW6GDPD9eeXeYXiJe', 'Super Admin',
+        TRUE, NULL, NULL, NULL, 'super-admin-tenant');
+
+INSERT INTO global_permission_to_user(application_user_id, global_permission_id)
+VALUES (1, 3);

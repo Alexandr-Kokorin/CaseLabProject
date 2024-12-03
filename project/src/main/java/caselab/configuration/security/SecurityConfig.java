@@ -42,7 +42,6 @@ public class SecurityConfig {
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                     .requestMatchers("/actuator/**").permitAll()
                     .requestMatchers("/api/v1/auth/refresh-token").permitAll()
-                    .requestMatchers("/api/v2/organizations/register").permitAll()
                     .anyRequest().authenticated()) // запрос требует аутентификацию
             .sessionManagement(sessionManagementConfigurer ->
                 sessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

@@ -12,29 +12,28 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
+@SecurityRequirement(name = "JWT")
 @RequestMapping("/api/v2/organizations")
 @Tag(name = "Организации", description = "API управления организациями")
 public class OrganizationController {
 
     private final OrganizationService orgService;
 
-    @SecurityRequirement(name = "JWT")
     @Operation(summary = "Получение организации по индексу",
                description = "Возвращает организацию по ее индексу")
     @ApiResponses(value = {
@@ -43,9 +42,12 @@ public class OrganizationController {
         @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
-    @GetMapping
-    public OrganizationResponse getOrganization(Authentication authentication) {
-        return orgService.getOrganization(authentication);
+    @GetMapping("/{id}")
+    public OrganizationResponse getOrganization(
+        @PathVariable Long id,
+        Authentication authentication
+    ) {
+        return orgService.getOrganization(id, authentication);
     }
 
     @Operation(summary = "Создать организацию",
@@ -61,12 +63,11 @@ public class OrganizationController {
     @PostMapping("/register")
     public OrganizationResponse createOrganization(
         @RequestBody @Valid CreateOrganizationRequest createOrganizationRequest,
-        @RequestHeader("X-TENANT-ID") @NotBlank String tenantId
+        Authentication authentication
     ) {
-        return orgService.createOrganization(createOrganizationRequest, tenantId);
+        return orgService.createOrganization(createOrganizationRequest, authentication);
     }
 
-    @SecurityRequirement(name = "JWT")
     @Operation(summary = "Обновить организацию",
                description = "Возвращает обновленную организацию")
     @ApiResponses(value = {
@@ -77,15 +78,15 @@ public class OrganizationController {
         @ApiResponse(responseCode = "403", description = "Доступ запрещен",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
-    @PutMapping
+    @PutMapping("/{id}")
     public OrganizationResponse updateOrganization(
+        @PathVariable Long id,
         @RequestBody @Valid UpdateOrganizationRequest request,
         Authentication authentication
     ) {
-        return orgService.updateOrganization(request, authentication);
+        return orgService.updateOrganization(id, request, authentication);
     }
 
-    @SecurityRequirement(name = "JWT")
     @Operation(summary = "Удалить организацию",
                description = "Удаляет организацию, которой владеет пользователь из базы данных")
     @ApiResponses(value = {
@@ -94,10 +95,12 @@ public class OrganizationController {
         @ApiResponse(responseCode = "403", description = "Доступ запрещен",
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
-    @DeleteMapping
-    public ResponseEntity<Void> removeOrganization(Authentication authentication) {
-        orgService.deleteOrganization(authentication);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> removeOrganization(
+        @PathVariable Long id,
+        Authentication authentication
+    ) {
+        orgService.deleteOrganization(id, authentication);
         return ResponseEntity.noContent().build();
     }
 }
-
