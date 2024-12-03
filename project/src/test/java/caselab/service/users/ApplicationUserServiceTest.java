@@ -16,6 +16,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -84,7 +87,7 @@ public class ApplicationUserServiceTest {
 
     @Test
     void findAllUsers_shouldReturnListOfUserResponses() {
-        when(userRepository.findAll()).thenReturn(users);
+        when(userRepository.findAll(any(Specification.class))).thenReturn(users);
 
         for (int i = 0; i < users.size(); i++) {
             when(userMapper.entityToResponse(users.get(i))).thenReturn(userResponses.get(i));

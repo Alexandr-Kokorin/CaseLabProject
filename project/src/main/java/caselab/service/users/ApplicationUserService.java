@@ -4,6 +4,8 @@ import caselab.controller.users.payload.UserResponse;
 import caselab.controller.users.payload.UserUpdateRequest;
 import caselab.domain.entity.ApplicationUser;
 import caselab.domain.entity.enums.GlobalPermissionName;
+import caselab.domain.entity.search.GenericSpecifications;
+import caselab.domain.entity.search.SearchRequest;
 import caselab.domain.repository.ApplicationUserRepository;
 import caselab.exception.entity.not_found.UserNotFoundException;
 import caselab.service.security.AuthenticationService;
@@ -26,11 +28,16 @@ public class ApplicationUserService {
     private final ApplicationUserRepository userRepository;
     private final UserMapper mapper;
 
-    public List<UserResponse> findAllUsers() {
-        List<ApplicationUser> users = userRepository.findAll();
+    public List<UserResponse> findAllUsers(SearchRequest searchRequest) {
+        List<ApplicationUser> users =
+            userRepository.findAll(GenericSpecifications.filterBy(searchRequest.getFilters()));
         return users.stream()
             .map(mapper::entityToResponse)
             .toList();
+    }
+
+    public List<UserResponse> findAllUsers() {
+        return findAllUsers(new SearchRequest(null)); // Передаем фильтры как null, для совместимсти
     }
 
     public UserResponse findUser(String email) {

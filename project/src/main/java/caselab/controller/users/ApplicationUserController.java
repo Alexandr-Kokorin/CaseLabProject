@@ -2,6 +2,7 @@ package caselab.controller.users;
 
 import caselab.controller.users.payload.UserResponse;
 import caselab.controller.users.payload.UserUpdateRequest;
+import caselab.domain.entity.search.SearchRequest;
 import caselab.service.users.ApplicationUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ProblemDetail;
@@ -20,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -46,6 +49,22 @@ public class ApplicationUserController {
     @GetMapping("/all")
     public List<UserResponse> findAllUsers() {
         return userService.findAllUsers();
+    }
+
+    @Operation(summary = "Получить список пользователей по фильтрам",
+               description = "Возвращает отфильтрованный список пользователей")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Успешное получение",
+                     content = @Content(
+                         array = @ArraySchema(schema = @Schema(implementation = UserResponse.class)))),
+        @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @PostMapping("/all/advanced_search")
+    public List<UserResponse> findAllUsersWithFilters(
+        @NotNull(message = "{search.request.is_null}") @RequestBody SearchRequest searchRequest
+    ) {
+        return userService.findAllUsers(searchRequest);
     }
 
     @GetMapping("/current")

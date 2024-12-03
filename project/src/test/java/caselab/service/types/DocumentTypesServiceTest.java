@@ -34,6 +34,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -141,13 +142,13 @@ class DocumentTypesServiceTest {
         Page<DocumentType> documentTypes = new PageImpl<>(List.of(documentType));
         DocumentTypeResponse documentTypeResponse = response;
 
-        when(documentTypeRepository.findAll(any(Pageable.class))).thenReturn(documentTypes);
+        when(documentTypeRepository.findAll(any(Specification.class), any(Pageable.class)))
+            .thenReturn(documentTypes);
         when(documentTypeMapper.entityToResponse(documentType)).thenReturn(response);
-
         Page<DocumentTypeResponse> result = documentTypesService.getAllDocumentTypes(null, null, "desc");
 
         assertThat(result.getContent().get(0)).isEqualTo(documentTypeResponse);
-        verify(documentTypeRepository).findAll(any(Pageable.class));
+        verify(documentTypeRepository).findAll(any(Specification.class), any(Pageable.class));
         verify(documentTypeMapper).entityToResponse(documentType);
     }
 
