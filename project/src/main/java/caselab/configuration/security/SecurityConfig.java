@@ -24,6 +24,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final TenantFilter tenantFilter;
     private final AuthenticationProvider authenticationProvider;
+    private final OrganizationActivationFilter organizationActivationFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -47,6 +48,7 @@ public class SecurityConfig {
             .sessionManagement(sessionManagementConfigurer ->
                 sessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authenticationProvider(authenticationProvider)
+            .addFilterBefore(organizationActivationFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(tenantFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
