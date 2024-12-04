@@ -34,7 +34,7 @@ public class TariffService {
 
     public TariffResponse createTariff(Authentication authentication, @Valid CreateTariffRequest tariffRequest) {
         userUtilService.checkUserGlobalPermission(
-            userUtilService.findUserByAuthentication(authentication), GlobalPermissionName.ADMIN);
+            userUtilService.findUserByAuthentication(authentication), GlobalPermissionName.SUPER_ADMIN);
         checkTariffExists(tariffRequest);
         Tariff tariff = new Tariff();
         tariff.setName(tariffRequest.name());
@@ -64,7 +64,7 @@ public class TariffService {
         UpdateTariffRequest tariffRequest
     ) {
         userUtilService.checkUserGlobalPermission(
-            userUtilService.findUserByAuthentication(authentication), GlobalPermissionName.ADMIN);
+            userUtilService.findUserByAuthentication(authentication), GlobalPermissionName.SUPER_ADMIN);
 
         var tariff = findTariffById(id);
         var updatedTariff = tariffMapper.entityFromRequest(tariffRequest);
@@ -81,7 +81,7 @@ public class TariffService {
     public void deleteTariff(Authentication authentication, Long id) {
 
         userUtilService.checkUserGlobalPermission(
-            userUtilService.findUserByAuthentication(authentication), GlobalPermissionName.ADMIN);
+            userUtilService.findUserByAuthentication(authentication), GlobalPermissionName.SUPER_ADMIN);
 
         var tariff = findTariffById(id);
 
