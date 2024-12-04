@@ -104,7 +104,7 @@ public class BillService {
     //Метод для восстановления организации в статус активной
     public void activateOrganization(Long organizationId, Authentication authentication) {
         ApplicationUser user = userUtilService.findUserByAuthentication(authentication);
-        userUtilService.checkUserGlobalPermission(user, GlobalPermissionName.ADMIN);
+        userUtilService.checkUserGlobalPermission(user, GlobalPermissionName.SUPER_ADMIN);
 
         Organization organization = findOrganizationById(organizationId);
         organization.setActive(true);
