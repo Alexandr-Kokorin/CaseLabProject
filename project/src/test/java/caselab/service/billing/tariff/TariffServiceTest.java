@@ -58,7 +58,7 @@ public class TariffServiceTest {
         Authentication authentication = Mockito.mock(Authentication.class);
         when(tariffRepository.save(Mockito.any(Tariff.class))).thenReturn(tariff);
         when(userUtilService.findUserByAuthentication(authentication)).thenReturn(user);
-        doNothing().when(userUtilService).checkUserGlobalPermission(user, GlobalPermissionName.ADMIN);
+        doNothing().when(userUtilService).checkUserGlobalPermission(user, GlobalPermissionName.SUPER_ADMIN);
         when(tariffMapper.entityToResponse(tariff)).thenReturn(tariffResponse);
 
         TariffResponse tariffResponseTest = tariffService.createTariff(authentication, createRequest);
@@ -71,7 +71,7 @@ public class TariffServiceTest {
             () -> assertEquals(1.0, tariffResponseTest.price())
         );
 
-        verify(userUtilService).checkUserGlobalPermission(user, GlobalPermissionName.ADMIN);
+        verify(userUtilService).checkUserGlobalPermission(user, GlobalPermissionName.SUPER_ADMIN);
         verify(tariffRepository).save(Mockito.any(Tariff.class));
         verify(tariffMapper).entityToResponse(tariff);
 
@@ -159,7 +159,7 @@ public class TariffServiceTest {
 
         Authentication authentication = Mockito.mock(Authentication.class);
         when(userUtilService.findUserByAuthentication(authentication)).thenReturn(user);
-        doNothing().when(userUtilService).checkUserGlobalPermission(user, GlobalPermissionName.ADMIN);
+        doNothing().when(userUtilService).checkUserGlobalPermission(user, GlobalPermissionName.SUPER_ADMIN);
         when(tariffRepository.findById(1L)).thenReturn(java.util.Optional.of(tariff));
         when(tariffMapper.entityFromRequest(updateRequest)).thenReturn(updatedTariff);
         when(tariffMapper.entityToResponse(updatedTariff)).thenReturn(tariffResponse);
@@ -175,7 +175,7 @@ public class TariffServiceTest {
             () -> assertEquals(2.0, result.price())
         );
 
-        verify(userUtilService).checkUserGlobalPermission(user, GlobalPermissionName.ADMIN);
+        verify(userUtilService).checkUserGlobalPermission(user, GlobalPermissionName.SUPER_ADMIN);
         verify(tariffRepository).findById(1L);
         verify(tariffRepository).save(updatedTariff);
         verify(tariffMapper).entityFromRequest(updateRequest);
@@ -190,12 +190,12 @@ public class TariffServiceTest {
 
         Authentication authentication = Mockito.mock(Authentication.class);
         when(userUtilService.findUserByAuthentication(authentication)).thenReturn(user);
-        doNothing().when(userUtilService).checkUserGlobalPermission(user, GlobalPermissionName.ADMIN);
+        doNothing().when(userUtilService).checkUserGlobalPermission(user, GlobalPermissionName.SUPER_ADMIN);
         when(tariffRepository.findById(1L)).thenReturn(java.util.Optional.of(tariff));
 
         tariffService.deleteTariff(authentication, 1L);
 
-        verify(userUtilService).checkUserGlobalPermission(user, GlobalPermissionName.ADMIN);
+        verify(userUtilService).checkUserGlobalPermission(user, GlobalPermissionName.SUPER_ADMIN);
         verify(tariffRepository).findById(1L);
         verify(tariffRepository).delete(tariff);
     }
