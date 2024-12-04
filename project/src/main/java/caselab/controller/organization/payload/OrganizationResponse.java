@@ -15,6 +15,9 @@ import lombok.Setter;
 @AllArgsConstructor
 @Schema(description = "Ответ, содержащий информацию о организации")
 public class OrganizationResponse {
+    @Schema(description = "id организации")
+    private Long id;
+
     @Schema(description = "Имя организации")
     private String name;
 
