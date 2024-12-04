@@ -8,6 +8,8 @@ import caselab.controller.users.payload.UserUpdateRequest;
 import caselab.domain.entity.search.SearchRequest;
 import caselab.service.notification.email.EmailNotificationDetails;
 import caselab.service.notification.email.EmailService;
+import java.util.List;
+import java.util.Map;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -16,8 +18,6 @@ import org.mockito.Mock;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MvcResult;
-import java.util.List;
-import java.util.Map;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
@@ -257,6 +257,7 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
 
         mockMvc.perform(post(URL + "/all/advanced_search")
                 .header("Authorization", "Bearer " + token)
+                .header("X-TENANT-ID", "tenant_1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(searchRequest)))
             .andExpectAll(
@@ -281,6 +282,7 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
 
         mockMvc.perform(post(URL + "/all/advanced_search")
                 .header("Authorization", "Bearer " + token)
+                .header("X-TENANT-ID", "tenant_1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(searchRequest)))
             .andExpectAll(
@@ -298,6 +300,7 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
 
         mockMvc.perform(post(URL + "/all/advanced_search")
                 .header("Authorization", "Bearer " + token)
+                .header("X-TENANT-ID", "tenant_1")
                 .contentType(MediaType.APPLICATION_JSON)
             )
             .andExpect(status().isBadRequest());
@@ -314,6 +317,7 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
             .build();
 
         mockMvc.perform(post(URL + "/all/advanced_search")
+                .header("X-TENANT-ID", "tenant_1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(searchRequest)))
             .andExpect(status().isForbidden());
