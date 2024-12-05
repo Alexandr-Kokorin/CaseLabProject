@@ -1,33 +1,37 @@
 package caselab.elastic.service;
 
-import caselab.controller.document.payload.DocumentResponse;
-import caselab.domain.entity.Document;
-import caselab.domain.repository.DocumentRepository;
+import caselab.controller.document.facade.payload.DocumentFacadeResponse;
+import caselab.domain.entity.UserToDocument;
+import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.elastic.interfaces.ElasticSearchInterface;
 import caselab.elastic.repository.DocumentElasticRepository;
-import caselab.service.document.mapper.DocumentMapper;
+import caselab.service.document.facade.DocumentFacadeService;
+import caselab.service.util.PageUtil;
+import caselab.service.util.UserUtilService;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import static java.util.Comparator.comparingInt;
 
 @Service
 @RequiredArgsConstructor
-public class DocumentElasticService implements ElasticSearchInterface<DocumentResponse> {
+public class DocumentElasticService implements ElasticSearchInterface<DocumentFacadeResponse> {
     private final DocumentElasticRepository documentElasticRepository;
-    private final DocumentRepository documentRepository;
-    private final DocumentMapper documentMapper;
+    private final DocumentFacadeService documentFacadeService;
+    private final UserUtilService utilService;
 
     @Override
-    public Page<DocumentResponse> searchValuesElastic(String searchText, Integer page, Integer size) {
-        var pageable = PageRequest.of(page - 1, size);
+    public Page<DocumentFacadeResponse> searchValuesElastic(
+        String searchText,
+        Integer page,
+        Integer size,
+        Authentication authentication
+    ) {
+        var pageable = PageUtil.toPageable(page, size);
         var searchResults = documentElasticRepository.searchByQuery(searchText, pageable);
 
         Map<Long, Integer> idsMap = new HashMap<>();
@@ -39,13 +43,21 @@ public class DocumentElasticService implements ElasticSearchInterface<DocumentRe
 
         Set<Long> ids = idsMap.keySet();
 
-        List<Document> documentsFromDb = documentRepository.findAllById(ids);
-        documentsFromDb.sort(comparingInt(attribute -> idsMap.get(attribute.getId())));
+        var user = utilService.findUserByAuthentication(authentication);
 
-        var result = documentsFromDb.stream()
-            .map(documentMapper::entityToResponse)
-            .toList();
+        var permissions = user.getGlobalPermissions();
 
-        return new PageImpl<>(result, pageable, searchResults.getTotalElements());
+        var isAdmin = permissions.stream().anyMatch(per -> per.getName().equals(GlobalPermissionName.ADMIN));
+
+        if (!isAdmin) {
+            var userDocumentsIds = utilService.findUserByAuthentication(authentication).getUsersToDocuments().stream()
+                .filter(usd -> ids.contains(usd.getDocument().getId()))
+                .toList().stream()
+                .map(UserToDocument::getId).toList();
+            return documentFacadeService.getAllDocumentsByIds(userDocumentsIds, pageable);
+        }
+
+        return documentFacadeService.getAllDocumentsByIds(ids.stream().toList(), pageable);
     }
+
 }
