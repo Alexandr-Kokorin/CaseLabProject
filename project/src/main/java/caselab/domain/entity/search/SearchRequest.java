@@ -63,8 +63,7 @@ public class SearchRequest {
         }
         if (!filters.containsKey(key)) {
             filters.put(key, new ArrayList<>());
-        } else {
-            filters.get(key).addAll(values);
         }
+        filters.get(key).addAll(values);
     }
 }
