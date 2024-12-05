@@ -257,6 +257,7 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
 
         mockMvc.perform(post(URL + "/all/advanced_search")
                 .header("Authorization", "Bearer " + token)
+                .header("X-TENANT-ID", "tenant_1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(searchRequest)))
             .andExpectAll(
@@ -281,6 +282,7 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
 
         mockMvc.perform(post(URL + "/all/advanced_search")
                 .header("Authorization", "Bearer " + token)
+                .header("X-TENANT-ID", "tenant_1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(searchRequest)))
             .andExpectAll(
@@ -298,6 +300,7 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
 
         mockMvc.perform(post(URL + "/all/advanced_search")
                 .header("Authorization", "Bearer " + token)
+                .header("X-TENANT-ID", "tenant_1")
                 .contentType(MediaType.APPLICATION_JSON)
             )
             .andExpect(status().isBadRequest());
@@ -314,6 +317,7 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
             .build();
 
         mockMvc.perform(post(URL + "/all/advanced_search")
+                .header("X-TENANT-ID", "tenant_1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(searchRequest)))
             .andExpect(status().isForbidden());
