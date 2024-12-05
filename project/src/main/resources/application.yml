@@ -23,8 +23,6 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         enable_lazy_load_no_trans: true
-        format_sql: true
-    show-sql: true
 
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVER:localhost:9094}
@@ -51,8 +49,8 @@ spring:
   mail:
     host: ${MAIL_HOST:postbox.cloud.yandex.net}
     port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME:YCAJEjVQ7IBvk3hmZsuExqj2W}
-    password: ${MAIL_PASSWORD:BFM5aj9oS7NYXRUuHLYx2DdLFtBlzmlRSaLPMUvuz0es}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
     properties:
       mail:
         smtp:
@@ -87,8 +85,6 @@ server:
 logging:
   config: classpath:log4j2-plain.xml
   level:
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type: TRACE
     org.apache.kafka: warn
 
 spring-doc:

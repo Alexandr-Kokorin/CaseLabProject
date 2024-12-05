@@ -28,12 +28,12 @@
         <Logger name="sun.rmi" level="WARN"/>
         <Logger name="sun.rmi.transport" level="WARN"/>
 
-                <Logger name="org.hibernate" level="info"/>
-                <Logger name="org.hibernate.SQL" level="debug"/>
-                <Logger name="org.hibernate.orm.jdbc.bind" level="trace"/>
-                <Logger name="org.hibernate.stat" level="debug"/>
-                <Logger name="org.hibernate.SQL_SLOW" level="info"/>
-                <Logger name="org.hibernate.cache" level="debug"/>
+<!--                <Logger name="org.hibernate" level="info"/>-->
+<!--                <Logger name="org.hibernate.SQL" level="debug"/>-->
+<!--                <Logger name="org.hibernate.orm.jdbc.bind" level="trace"/>-->
+<!--                <Logger name="org.hibernate.stat" level="debug"/>-->
+<!--                <Logger name="org.hibernate.SQL_SLOW" level="info"/>-->
+<!--                <Logger name="org.hibernate.cache" level="debug"/>-->
 
 
 

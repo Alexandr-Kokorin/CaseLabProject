@@ -273,7 +273,7 @@ VALUES('Basic Plan', 10000, 'Основной тариф для небольши
 CREATE TABLE IF NOT EXISTS bill(
        id             BIGSERIAL                PRIMARY KEY,
        tariff_id      BIGINT                   NOT NULL REFERENCES tariff(id) ON DELETE CASCADE,
-       user_id        BIGINT                   NOT NULL REFERENCES application_user(id) ON DELETE CASCADE,
+       email            TEXT NOT NULL,
        organization_id BIGINT                  NOT NULL REFERENCES organization(id) ON DELETE CASCADE,
        issued_at      TIMESTAMP WITH TIME ZONE NOT NULL,
        is_paid        BOOLEAN DEFAULT FALSE NOT NULL,
