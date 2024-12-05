@@ -4,7 +4,6 @@ import caselab.controller.document.facade.payload.CreateDocumentRequest;
 import caselab.controller.document.facade.payload.DocumentFacadeResponse;
 import caselab.controller.document.facade.payload.PatchDocumentRequest;
 import caselab.controller.document.facade.payload.UpdateDocumentRequest;
-import caselab.controller.document.payload.DocumentResponse;
 import caselab.domain.entity.search.SearchRequest;
 import caselab.elastic.service.DocumentElasticService;
 import caselab.service.document.facade.DocumentFacadeService;
@@ -182,15 +181,16 @@ public class DocumentFacadeController {
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @GetMapping("/search")
-    public Page<DocumentResponse> search(
+    public Page<DocumentFacadeResponse> search(
         @Parameter(description = "Слово или фраза по которой будет осуществляться поиск", example = "Приказ")
         @RequestParam("query") String query,
-        @Parameter(description = "Номер страницы для выдачи из всех найденных", example = "1")
-        @RequestParam(name = "page", defaultValue = "1") Integer page,
+        @Parameter(description = "Номер страницы для выдачи из всех найденных", example = "0")
+        @RequestParam(name = "page", defaultValue = "0") Integer page,
         @Parameter(description = "Количество страниц в выдаче", example = "9")
-        @RequestParam(name = "size", defaultValue = "10") Integer size
+        @RequestParam(name = "size", defaultValue = "10") Integer size,
+        Authentication authentication
     ) {
-        return documentElasticService.searchValuesElastic(query, page, size);
+        return documentElasticService.searchValuesElastic(query, page, size, authentication);
     }
 
     @Operation(summary = "Возвращает документы по фильтрам",

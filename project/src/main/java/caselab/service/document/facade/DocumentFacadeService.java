@@ -72,8 +72,6 @@ public class DocumentFacadeService {
             documentResponse.documentVersionIds().getLast()
         );
 
-        // TODO: Переделать логику, что бы админ получал список всех подписей
-
         return new DocumentFacadeResponse(documentResponse, latestVersionResponse, null);
     }
 
@@ -253,5 +251,18 @@ public class DocumentFacadeService {
     public void documentToArchive(Long id, Authentication auth) {
         var user = userUtilService.findUserByAuthentication(auth);
         documentService.documentToArchive(id, user);
+    }
+
+    public Page<DocumentFacadeResponse> getAllDocumentsByIds(List<Long> ids, Pageable pageable) {
+        var foundDocuments = documentService.getAllDocumentsByIds(ids);
+        var documentResponses = foundDocuments.stream()
+            .map(this::enrichResponse)
+            .sorted(Comparator.comparing(it -> it.getLatestVersion().getCreatedAt()))
+            .toList();
+
+        List<DocumentFacadeResponse> pageList = documentResponses.stream()
+            .toList();
+
+        return new PageImpl<>(pageList, pageable, documentResponses.size());
     }
 }
