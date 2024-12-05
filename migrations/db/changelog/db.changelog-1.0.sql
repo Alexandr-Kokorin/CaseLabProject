@@ -271,15 +271,15 @@ VALUES('Basic Plan', 10000, 'Основной тариф для небольши
       ('Enterprise Plan', 250000, 'Корпоративный тариф с поддержкой больших объемов данных.', DEFAULT, 50000);
 
 CREATE TABLE IF NOT EXISTS bill(
-    id          BIGSERIAL                PRIMARY KEY,
-    tariff_id   BIGINT                   NOT NULL REFERENCES tariff(id) ON DELETE CASCADE,
---  заменить user на company в будущем
-    user_id   BIGINT                   NOT NULL REFERENCES application_user(id) ON DELETE CASCADE,
-    issued_at   TIMESTAMP WITH TIME ZONE NOT NULL,
-    is_paid BOOLEAN DEFAULT FALSE NOT NULL,
-    paid_until TIMESTAMP WITH TIME ZONE NOT NULL,
-    tenant_id   TEXT            NOT NULL
+       id             BIGSERIAL                PRIMARY KEY,
+       tariff_id      BIGINT                   NOT NULL REFERENCES tariff(id) ON DELETE CASCADE,
+       user_id        BIGINT                   NOT NULL REFERENCES application_user(id) ON DELETE CASCADE,
+       organization_id BIGINT                  NOT NULL REFERENCES organization(id) ON DELETE CASCADE,
+       issued_at      TIMESTAMP WITH TIME ZONE NOT NULL,
+       is_paid        BOOLEAN DEFAULT FALSE NOT NULL,
+       paid_until     TIMESTAMP WITH TIME ZONE NOT NULL
 );
+
 
 INSERT INTO application_user (email, display_name, hashed_password, position, is_working, department_id,
                               substitution_id, organization_id, tenant_id)

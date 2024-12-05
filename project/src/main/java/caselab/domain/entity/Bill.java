@@ -16,6 +16,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.aspectj.weaver.ast.Or;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -24,7 +25,8 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "bill")
-public class Bill extends TenantAwareEntity {
+
+public class Bill {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,7 +36,7 @@ public class Bill extends TenantAwareEntity {
     @JoinColumn(name = "tariff_id", nullable = false)
     private Tariff tariff;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
     private ApplicationUser user;
 
@@ -47,4 +49,8 @@ public class Bill extends TenantAwareEntity {
 
     @Column(nullable = false)
     private LocalDateTime paidUntil;
+
+    @OneToOne
+    @JoinColumn(name = "organization_id", nullable = false)
+    private Organization organization;
 }

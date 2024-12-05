@@ -10,6 +10,7 @@ import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.BillRepository;
 import caselab.domain.repository.OrganizationRepository;
 import caselab.domain.repository.TariffRepository;
+import caselab.exception.OrganizationAlreadyBlockedException;
 import caselab.exception.entity.not_found.BillNotFoundException;
 import caselab.exception.entity.not_found.OrganizationNotFoundException;
 import caselab.exception.entity.not_found.TariffNotFoundException;
@@ -17,6 +18,8 @@ import caselab.service.billing.bill.mapper.BillMapper;
 import caselab.service.util.UserUtilService;
 import java.time.LocalDateTime;
 import java.util.Comparator;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -35,7 +38,9 @@ public class BillService {
     private final BillMapper billMapper;
     private final OrganizationRepository organizationRepository;
 
+
     private final static int BILLING_PERIOD = 30;
+    private final static int ONE_DAY = 1;
 
     public BillResponse getBillById(Long id, Authentication auth) {
         checkPermission(auth);
@@ -93,6 +98,7 @@ public class BillService {
             .user(user)
             .issuedAt(LocalDateTime.now())
             .paidUntil(LocalDateTime.now().plusDays(BILLING_PERIOD + 1))
+            .organization(organization)
             .build();
 
         billRepository.save(bill);
@@ -101,7 +107,35 @@ public class BillService {
         );
     }
 
-    //Метод для восстановления организации в статус активной
+    //Метод для блокировки организации
+    public void blockOrganization(Long organizationId, Authentication authentication) {
+        ApplicationUser user = userUtilService.findUserByAuthentication(authentication);
+        userUtilService.checkUserGlobalPermission(user, GlobalPermissionName.SUPER_ADMIN);
+
+        Organization organization = findOrganizationById(organizationId);
+
+        if (!organization.isActive()) {
+            log.info("Не получилось заблокировать организацию {} с ID {} (уже заблокирована)",
+                organization.getName(), organizationId);
+            throw new OrganizationAlreadyBlockedException(organization.getName());
+        }
+
+        organization.setActive(false);
+        Bill bill = billRepository.findByOrganization(organization)
+                .orElseThrow(() -> new OrganizationNotFoundException(organizationId));
+
+        bill.setIsPaid(false);
+
+        bill.setPaidUntil(LocalDateTime.now().minusDays(ONE_DAY));
+        organizationRepository.save(organization);
+
+        log.info("Организация с ID {} была заблокирована пользователем {}.",
+            organizationId, user.getEmail());
+    }
+
+
+
+    // Метод для восстановления организации в статус активной
     public void activateOrganization(Long organizationId, Authentication authentication) {
         ApplicationUser user = userUtilService.findUserByAuthentication(authentication);
         userUtilService.checkUserGlobalPermission(user, GlobalPermissionName.SUPER_ADMIN);
@@ -110,9 +144,10 @@ public class BillService {
         organization.setActive(true);
         organizationRepository.save(organization);
 
-        Bill bill = billRepository.findByUserOrganizationId(organizationId)
+        Bill bill = billRepository.findByOrganization(organization)
             .orElseThrow(() -> new BillNotFoundException(organizationId));
 
+        // Обновить срок действия счёта
         bill.setPaidUntil(LocalDateTime.now().plusDays(BILLING_PERIOD));
         billRepository.save(bill);
 
@@ -121,8 +156,10 @@ public class BillService {
         );
     }
 
+
     private Organization findOrganizationById(Long id) {
         return organizationRepository.findById(id)
             .orElseThrow(() -> new OrganizationNotFoundException(id));
     }
+
 }
