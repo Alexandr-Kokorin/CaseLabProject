@@ -10,6 +10,7 @@ import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.BillRepository;
 import caselab.domain.repository.OrganizationRepository;
 import caselab.domain.repository.TariffRepository;
+import caselab.exception.OrganizationAdminMatchException;
 import caselab.exception.OrganizationAlreadyBlockedException;
 import caselab.exception.entity.not_found.BillNotFoundException;
 import caselab.exception.entity.not_found.OrganizationNotFoundException;
@@ -18,8 +19,6 @@ import caselab.service.billing.bill.mapper.BillMapper;
 import caselab.service.util.UserUtilService;
 import java.time.LocalDateTime;
 import java.util.Comparator;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -43,8 +42,11 @@ public class BillService {
     private final static int ONE_DAY = 1;
 
     public BillResponse getBillById(Long id, Authentication auth) {
-        checkPermission(auth);
+        var user = checkPermission(auth);
         var bill = findBillById(id);
+        if (!user.getOrganization().getInn().toString().equals(bill.getOrganization().getInn().toString())) {
+            throw new OrganizationAdminMatchException(user.getId(), bill.getOrganization().getId());
+        }
         return billMapper.toResponse(bill);
     }
 
@@ -95,7 +97,7 @@ public class BillService {
 
         Bill bill = Bill.builder()
             .tariff(tariff)
-            .user(user)
+            .email(user.getEmail())
             .issuedAt(LocalDateTime.now())
             .paidUntil(LocalDateTime.now().plusDays(BILLING_PERIOD + 1))
             .organization(organization)

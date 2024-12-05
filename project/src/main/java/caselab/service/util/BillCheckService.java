@@ -38,7 +38,7 @@ public class BillCheckService {
 
         List<Bill> expiredBills = billRepository.findAllByPaidUntilBefore(now);
         for (Bill bill : expiredBills) {
-            Organization organization = bill.getUser().getOrganization();
+            Organization organization = bill.getOrganization();
             if (organization != null && organization.isActive()) {
                 organization.setActive(false);
                 log.info("Организация '{}' (ID: {}) деактивирована из-за истечения срока оплаты счета (ID: {}).",
@@ -60,7 +60,7 @@ public class BillCheckService {
         String qrContent = String.format(
             "Bill ID: %d\nOrganization: %s\nAmount: %s\nDue Date: %s",
             bill.getId(),
-            bill.getUser().getOrganization().getName(),
+            bill.getOrganization().getName(),
             bill.getTariff().getPrice(),
             bill.getPaidUntil()
         );
@@ -92,7 +92,7 @@ public class BillCheckService {
 
     private void sendBillNotification(Bill bill, File qrCodeFile) {
         EmailNotificationDetails emailDetails = EmailNotificationDetails.builder()
-            .recipient(bill.getUser().getEmail())
+            .recipient(bill.getEmail())
             .sender("admin@solifex.ru")
             .subject("Оплата счета")
             .text(String.format(
@@ -103,7 +103,7 @@ public class BillCheckService {
             .build();
 
         emailService.sendNotification(emailDetails);
-        log.info("Чек для счета (ID: {}) отправлен на почту: {}", bill.getId(), bill.getUser().getEmail());
+        log.info("Чек для счета (ID: {}) отправлен на почту: {}", bill.getId(), bill.getEmail());
     }
 }
 
