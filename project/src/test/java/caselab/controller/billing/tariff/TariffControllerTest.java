@@ -64,7 +64,7 @@ public class TariffControllerTest extends BaseControllerTest {
             .build();
         var mvcResponse = mockMvc.perform(post(TARIFF_URI)
                 .header("Authorization", "Bearer " + token)
-                .header("X-TENANT-ID", "tenant_1")
+                .header("X-TENANT-ID", "super-admin-tenant")
                 .content(objectMapper.writeValueAsString(request))
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest())
@@ -104,7 +104,7 @@ public class TariffControllerTest extends BaseControllerTest {
 
         var mvcResponseUpdate = mockMvc.perform(put(TARIFF_URI+"/"+createResponse.id())
                 .header("Authorization", "Bearer " + token)
-                .header("X-TENANT-ID", "tenant_1")
+                .header("X-TENANT-ID", "super-admin-tenant")
                 .content(objectMapper.writeValueAsString(updateTariffRequest))
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
@@ -164,7 +164,7 @@ public class TariffControllerTest extends BaseControllerTest {
 
         var updateMvc = mockMvc.perform(put(TARIFF_URI+"/"+response.id())
                 .header("Authorization", "Bearer " + tokenAdmin)
-                .header("X-TENANT-ID", "tenant_1")
+                .header("X-TENANT-ID", "super-admin-tenant")
                 .content(objectMapper.writeValueAsString(tariffUpdateRequest))
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest())
@@ -182,7 +182,7 @@ public class TariffControllerTest extends BaseControllerTest {
 
         var mvcResponse = mockMvc.perform(get(TARIFF_URI)
                 .header("Authorization", "Bearer " + adminToken)
-                .header("X-TENANT-ID", "tenant_1")
+                .header("X-TENANT-ID", "super-admin-tenant")
             .param("pageNum", "0")
             .param("pageSize", "10")
             .param("sortStrategy", "ASC"))
@@ -217,7 +217,7 @@ public class TariffControllerTest extends BaseControllerTest {
 
         var mvcDelete = mockMvc.perform(delete(TARIFF_URI + "/" + response.id())
                 .header("Authorization", "Bearer " + adminToken)
-                .header("X-TENANT-ID", "tenant_1"))
+                .header("X-TENANT-ID", "super-admin-tenant"))
             .andExpect(status().isNoContent());
     }
 
@@ -250,7 +250,7 @@ public class TariffControllerTest extends BaseControllerTest {
 
         var mvcDelete = mockMvc.perform(delete(TARIFF_URI + "/" + response.id()+1)
                 .header("Authorization", "Bearer " + adminToken)
-                .header("X-TENANT-ID", "tenant_1"))
+                .header("X-TENANT-ID", "super-admin-tenant"))
             .andExpect(status().isNotFound());
 
         deleteRequest(response.id(), adminToken);
@@ -307,7 +307,7 @@ public class TariffControllerTest extends BaseControllerTest {
     private void deleteRequest(Long id, String token) {
         mockMvc.perform(delete(TARIFF_URI + "/" + id)
                 .header("Authorization", "Bearer " + token)
-                .header("X-TENANT-ID", "tenant_1"))
+                .header("X-TENANT-ID", "super-admin-tenant"))
             .andExpect(status().isNoContent());
     }
     @SneakyThrows
@@ -316,7 +316,7 @@ public class TariffControllerTest extends BaseControllerTest {
                 .header("Authorization", "Bearer " + token)
                 .content(request)
                 .contentType(MediaType.APPLICATION_JSON)
-                .header("X-TENANT-ID", "tenant_1"))
+                .header("X-TENANT-ID", "super-admin-tenant"))
             .andExpect(status().isOk())
             .andReturn();
     }
@@ -345,14 +345,14 @@ public class TariffControllerTest extends BaseControllerTest {
         }
 
         var request = AuthenticationRequest.builder()
-            .email("admin@gmail.com")
+            .email("superadmin@gmail.com")
             .password("admin321@&123")
             .build();
 
         var mvcResponse = mockMvc.perform(post("/api/v1/auth/authenticate")
                 .content(objectMapper.writeValueAsString(request))
                 .contentType(MediaType.APPLICATION_JSON)
-                .header("X-TENANT-ID", "tenant_1"))
+                .header("X-TENANT-ID", "super-admin-tenant"))
             .andExpect(
                 status().isOk()
             )
