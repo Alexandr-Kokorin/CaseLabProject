@@ -15,7 +15,7 @@ VALUES ('admin@gmail.com', 'Admin', '$2a$10$WFRQhlz7Ul85HsRjMg3XNutiB//3HLloe3vT
         'tenant_1');
 
 INSERT INTO global_permission_to_user(application_user_id, global_permission_id)
-VALUES (1, 2),
-       (2, 1),
-       (3, 1);
+VALUES (2, 2),
+       (3, 1),
+       (4, 1);
 

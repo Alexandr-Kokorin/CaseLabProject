@@ -8,9 +8,9 @@ import caselab.controller.secutiry.payload.AuthenticationResponse;
 import caselab.controller.types.payload.DocumentTypeRequest;
 import caselab.controller.types.payload.DocumentTypeResponse;
 import caselab.controller.types.payload.DocumentTypeToAttributeRequest;
+import caselab.domain.entity.search.SearchRequest;
 import java.util.List;
 import java.util.Map;
-import caselab.domain.entity.search.SearchRequest;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -93,9 +93,10 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
     private MvcResult createRequest(String url, String request, String token) {
         return mockMvc.perform(post(url)
                 .header("Authorization", "Bearer " + token)
+                .header("X-TENANT-ID", "tenant_1")
                 .content(request)
                 .contentType(MediaType.APPLICATION_JSON)
-                .header("X-TENANT-ID", "tenant_1"))
+            )
             .andExpect(status().isOk())
             .andReturn();
     }
@@ -280,6 +281,7 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
         // When
         var mvcResponse = mockMvc.perform(post(URL + "/advanced_search")
                 .header("Authorization", "Bearer " + adminToken)
+                .header("X-TENANT-ID", "tenant_1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(searchRequest))
                 .param("pageNum", "0")
@@ -308,6 +310,7 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
         // When
         var mvcResponse = mockMvc.perform(post(URL + "/advanced_search")
                 .header("Authorization", "Bearer " + adminToken)
+                .header("X-TENANT-ID", "tenant_1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(searchRequest))
                 .param("pageNum", "0")

@@ -49,8 +49,8 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
         }
 
         var request = AuthenticationRequest.builder()
-            .email("auth@example.com")
-            .password("password")
+            .email("admin@gmail.com")
+            .password("admin321@&123")
             .build();
 
         var mvcResponse = mockMvc.perform(post("/api/v1/auth/authenticate")
