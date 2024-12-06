@@ -41,8 +41,8 @@ import org.springframework.stereotype.Service;
 public class AnalyticsService {
 
     private final Map<String, Integer> days = Map.of(
-        "week", 7,
-        "day", 1,
+        "week", 6,
+        "day", 0,
         "month", 30
     );
     private final DocumentRepository documentRepository;
@@ -53,7 +53,7 @@ public class AnalyticsService {
 
     public List<ReportDocuments> getReportDocuments(String period) {
         var endDate = OffsetDateTime.now();
-        var startDate = endDate.minusDays(days.get(period) != null ? days.get(period) : 1);
+        var startDate = endDate.minusDays(days.get(period) != null ? days.get(period) : 0);
         var allDocuments = documentRepository.findAll();
 
         List<ReportDocuments> reportDocuments = new ArrayList<>();
