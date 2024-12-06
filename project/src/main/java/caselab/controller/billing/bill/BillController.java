@@ -46,6 +46,29 @@ public class BillController {
         return billService.getBillById(id, authentication);
     }
 
+    @Operation(summary = "Заблокировать деятельность организации",
+               description = "Устанавливает статус организации как неактивный")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Организация успешно заблокирована",
+                     content = @Content(schema = @Schema(implementation = Void.class))),
+        @ApiResponse(responseCode = "404", description = "Организация с указанным id не найдена",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+        @ApiResponse(responseCode = "403", description = "Ошибка аутентификации",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+        @ApiResponse(responseCode = "400", description = "Организация уже заблокирована",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @PostMapping("/block-organization/{organizationId}")
+    public ResponseEntity<Void> blockOrganization(
+        @PathVariable("organizationId") Long organizationId,
+        Authentication authentication
+    ) {
+        billService.blockOrganization(organizationId, authentication);
+        return ResponseEntity.ok().build();
+    }
+
+
+
     @Operation(summary = "Обновить статус организации на активный",
                description = "Устанавливает статус организации как активный после успешной оплаты")
     @ApiResponses(value = {

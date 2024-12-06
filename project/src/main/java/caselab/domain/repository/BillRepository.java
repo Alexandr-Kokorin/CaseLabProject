@@ -1,6 +1,7 @@
 package caselab.domain.repository;
 
 import caselab.domain.entity.Bill;
+import caselab.domain.entity.Organization;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -12,5 +13,5 @@ public interface BillRepository extends JpaRepository<Bill, Long> {
 
     List<Bill> findAllByPaidUntilBefore(LocalDateTime now);
 
-    Optional<Bill> findByUserOrganizationId(Long organizationId);
+    Optional<Bill> findByOrganization(Organization organization);
 }
