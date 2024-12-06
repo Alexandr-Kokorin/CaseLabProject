@@ -31,10 +31,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(exclude = "id")
+@EqualsAndHashCode(exclude = "id", callSuper = false)
 @Entity
 @Table(name = "application_user", indexes = @Index(columnList = "login"))
-public class ApplicationUser implements UserDetails {
+public class ApplicationUser extends TenantAwareEntity implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -63,6 +63,10 @@ public class ApplicationUser implements UserDetails {
     @OneToMany(mappedBy = "applicationUser")
     private List<UserToDocument> usersToDocuments;
 
+    @ManyToOne
+    @JoinColumn(name = "organization_id")
+    private Organization organization;
+
     @OneToMany(mappedBy = "applicationUser")
     private List<Signature> signatures;
 
@@ -77,6 +81,7 @@ public class ApplicationUser implements UserDetails {
         inverseJoinColumns = @JoinColumn(name = "global_permission_id", nullable = false)
     )
     private List<GlobalPermission> globalPermissions;
+
     @OneToMany(mappedBy = "applicationUser")
     private List<Vote> votes;
 

@@ -14,7 +14,7 @@
 
     <properties>
         <jwt.version>0.12.6</jwt.version>
-        <springdoc.version>2.3.0</springdoc.version>
+        <springdoc.version>2.7.0</springdoc.version>
         <springmail.version>3.3.4</springmail.version>
         <mapstruct.version>1.6.0.RC1</mapstruct.version>
         <bucket4j.version>8.1.0</bucket4j.version>
@@ -298,6 +298,12 @@
             <groupId>org.docx4j</groupId>
             <artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
             <version>11.5.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>core</artifactId>
+            <version>3.5.3</version>
         </dependency>
     </dependencies>
 

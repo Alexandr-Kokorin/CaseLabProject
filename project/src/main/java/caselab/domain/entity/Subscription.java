@@ -16,12 +16,12 @@ import lombok.Setter;
 @Builder
 @Setter
 @Getter
-@EqualsAndHashCode(exclude = {"id"})
+@EqualsAndHashCode(exclude = {"id"}, callSuper = false)
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "subscription")
-public class Subscription {
+public class Subscription extends TenantAwareEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

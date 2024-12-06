@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/api/v1/document-template")
+@RequestMapping("/api/v2/document-template")
 @SecurityRequirement(name = "JWT")
 @RequiredArgsConstructor
 @Tag(name = "Шаблоны", description = "API для работы с печатными шаблонами документов")

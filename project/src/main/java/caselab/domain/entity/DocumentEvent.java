@@ -14,7 +14,7 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class DocumentEvent {
+public class DocumentEvent extends TenantAwareEntity {
 
     private Long documentId;
     private String userEmail;

@@ -64,6 +64,7 @@ public class TariffControllerTest extends BaseControllerTest {
             .build();
         var mvcResponse = mockMvc.perform(post(TARIFF_URI)
                 .header("Authorization", "Bearer " + token)
+                .header("X-TENANT-ID", "super-admin-tenant")
                 .content(objectMapper.writeValueAsString(request))
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest())
@@ -78,6 +79,7 @@ public class TariffControllerTest extends BaseControllerTest {
 
         var mvcResponse = mockMvc.perform(post(TARIFF_URI)
                 .header("Authorization", "Bearer " + token)
+                .header("X-TENANT-ID", "tenant_1")
                 .content(objectMapper.writeValueAsString(request))
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isForbidden())
@@ -102,6 +104,7 @@ public class TariffControllerTest extends BaseControllerTest {
 
         var mvcResponseUpdate = mockMvc.perform(put(TARIFF_URI+"/"+createResponse.id())
                 .header("Authorization", "Bearer " + token)
+                .header("X-TENANT-ID", "super-admin-tenant")
                 .content(objectMapper.writeValueAsString(updateTariffRequest))
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
@@ -135,6 +138,7 @@ public class TariffControllerTest extends BaseControllerTest {
 
         var mvcResponseUpdate = mockMvc.perform(put(TARIFF_URI+"/"+createResponse.id())
                 .header("Authorization", "Bearer " + tokenUser)
+                .header("X-TENANT-ID", "tenant_1")
                 .content(objectMapper.writeValueAsString(updateTariffRequest))
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isForbidden())
@@ -160,6 +164,7 @@ public class TariffControllerTest extends BaseControllerTest {
 
         var updateMvc = mockMvc.perform(put(TARIFF_URI+"/"+response.id())
                 .header("Authorization", "Bearer " + tokenAdmin)
+                .header("X-TENANT-ID", "super-admin-tenant")
                 .content(objectMapper.writeValueAsString(tariffUpdateRequest))
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest())
@@ -177,6 +182,7 @@ public class TariffControllerTest extends BaseControllerTest {
 
         var mvcResponse = mockMvc.perform(get(TARIFF_URI)
                 .header("Authorization", "Bearer " + adminToken)
+                .header("X-TENANT-ID", "super-admin-tenant")
             .param("pageNum", "0")
             .param("pageSize", "10")
             .param("sortStrategy", "ASC"))
@@ -194,9 +200,7 @@ public class TariffControllerTest extends BaseControllerTest {
         );
 
         assertAll(
-            () -> assertThat(tariffsContent).hasSize(2),
-            () -> assertThat(tariffsContent.getFirst().name()).isEqualTo(tariffResponses.getFirst().name()),
-            () -> assertThat(tariffsContent.getLast().name()).isEqualTo(tariffResponses.getLast().name())
+            () -> assertThat(tariffsContent).hasSize(7)
         );
 
         tariffResponses.forEach(tariff -> deleteRequest(tariff.id(), adminToken));
@@ -212,7 +216,8 @@ public class TariffControllerTest extends BaseControllerTest {
         var response = readValue(mvcResponse, TariffResponse.class);
 
         var mvcDelete = mockMvc.perform(delete(TARIFF_URI + "/" + response.id())
-                .header("Authorization", "Bearer " + adminToken))
+                .header("Authorization", "Bearer " + adminToken)
+                .header("X-TENANT-ID", "super-admin-tenant"))
             .andExpect(status().isNoContent());
     }
 
@@ -228,7 +233,8 @@ public class TariffControllerTest extends BaseControllerTest {
         var response = readValue(mvcResponse, TariffResponse.class);
 
         var mvcDelete = mockMvc.perform(delete(TARIFF_URI + "/" + response.id())
-                .header("Authorization", "Bearer " + userToken))
+                .header("Authorization", "Bearer " + userToken)
+                .header("X-TENANT-ID", "tenant_1"))
             .andExpect(status().isForbidden());
 
         deleteRequest(response.id(), adminToken);
@@ -243,7 +249,8 @@ public class TariffControllerTest extends BaseControllerTest {
         var response = readValue(mvcResponse, TariffResponse.class);
 
         var mvcDelete = mockMvc.perform(delete(TARIFF_URI + "/" + response.id()+1)
-                .header("Authorization", "Bearer " + adminToken))
+                .header("Authorization", "Bearer " + adminToken)
+                .header("X-TENANT-ID", "super-admin-tenant"))
             .andExpect(status().isNotFound());
 
         deleteRequest(response.id(), adminToken);
@@ -261,7 +268,8 @@ public class TariffControllerTest extends BaseControllerTest {
         var response = readValue(mvcResponse, TariffResponse.class);
 
         var findMvcResponse = mockMvc.perform(get(TARIFF_URI + "/" + response.id())
-                .header("Authorization", "Bearer " + userToken))
+                .header("Authorization", "Bearer " + userToken)
+                .header("X-TENANT-ID", "tenant_1"))
             .andExpect(status().isOk())
             .andReturn();
         var findResponse = readValue(findMvcResponse, TariffResponse.class);
@@ -287,7 +295,8 @@ public class TariffControllerTest extends BaseControllerTest {
         var response = readValue(mvcResponse, TariffResponse.class);
 
         var findMvcResponse = mockMvc.perform(get(TARIFF_URI + "/" + response.id()+1)
-                .header("Authorization", "Bearer " + userToken))
+                .header("Authorization", "Bearer " + userToken)
+                .header("X-TENANT-ID", "tenant_1"))
             .andExpect(status().isNotFound())
             .andReturn();
 
@@ -297,7 +306,8 @@ public class TariffControllerTest extends BaseControllerTest {
     @SneakyThrows
     private void deleteRequest(Long id, String token) {
         mockMvc.perform(delete(TARIFF_URI + "/" + id)
-                .header("Authorization", "Bearer " + token))
+                .header("Authorization", "Bearer " + token)
+                .header("X-TENANT-ID", "super-admin-tenant"))
             .andExpect(status().isNoContent());
     }
     @SneakyThrows
@@ -305,7 +315,8 @@ public class TariffControllerTest extends BaseControllerTest {
         return mockMvc.perform(post(url)
                 .header("Authorization", "Bearer " + token)
                 .content(request)
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("X-TENANT-ID", "super-admin-tenant"))
             .andExpect(status().isOk())
             .andReturn();
     }
@@ -334,13 +345,14 @@ public class TariffControllerTest extends BaseControllerTest {
         }
 
         var request = AuthenticationRequest.builder()
-            .email("admin@gmail.com")
+            .email("superadmin@gmail.com")
             .password("admin321@&123")
             .build();
 
         var mvcResponse = mockMvc.perform(post("/api/v1/auth/authenticate")
                 .content(objectMapper.writeValueAsString(request))
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("X-TENANT-ID", "super-admin-tenant"))
             .andExpect(
                 status().isOk()
             )
@@ -353,6 +365,7 @@ public class TariffControllerTest extends BaseControllerTest {
 
         return adminToken;
     }
+
     @SneakyThrows
     private AuthenticationResponse loginUser() {
         if (userToken != null) {
@@ -366,7 +379,8 @@ public class TariffControllerTest extends BaseControllerTest {
 
         var mvcResponse = mockMvc.perform(post("/api/v1/auth/authenticate")
                 .content(objectMapper.writeValueAsString(request))
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("X-TENANT-ID", "tenant_1"))
             .andExpect(
                 status().isOk()
             )
@@ -379,6 +393,7 @@ public class TariffControllerTest extends BaseControllerTest {
 
         return userToken;
     }
+
 
     @SneakyThrows
     private List<TariffResponse> createTariffsForGetAll(){

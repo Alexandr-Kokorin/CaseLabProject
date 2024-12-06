@@ -25,7 +25,7 @@ import org.hibernate.annotations.OnDeleteAction;
 @AllArgsConstructor
 @Entity
 @Table(name = "signature")
-public class Signature {
+public class Signature extends TenantAwareEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
