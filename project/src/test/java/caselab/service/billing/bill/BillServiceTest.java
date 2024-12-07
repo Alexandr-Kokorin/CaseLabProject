@@ -173,12 +173,11 @@ public class BillServiceTest {
     @DisplayName("Ошибка при создании счета для организации из-за отсутствия подходящего тарифа")
     public void createBillForOrganization_TariffNotFound() {
         var user = createAdminUser();
-        var organization = createOrganizationWithEmployees(100); // У организации слишком много сотрудников
+        var organization = createOrganizationWithEmployees(100);
 
         // Репозиторий тарифов возвращает список, где ни один тариф не подходит
         when(tariffRepository.findAll()).thenReturn(Collections.emptyList());
 
-        // Проверяем, что метод выбрасывает TariffNotFoundException
         assertThrows(
             TariffNotFoundException.class,
             () -> billService.createBillForOrganization(user, organization)
