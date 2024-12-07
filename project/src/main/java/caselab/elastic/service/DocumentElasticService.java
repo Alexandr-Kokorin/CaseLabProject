@@ -1,7 +1,6 @@
 package caselab.elastic.service;
 
 import caselab.controller.document.facade.payload.DocumentFacadeResponse;
-import caselab.domain.entity.UserToDocument;
 import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.elastic.interfaces.ElasticSearchInterface;
 import caselab.elastic.repository.DocumentElasticRepository;
@@ -53,7 +52,7 @@ public class DocumentElasticService implements ElasticSearchInterface<DocumentFa
             var userDocumentsIds = utilService.findUserByAuthentication(authentication).getUsersToDocuments().stream()
                 .filter(usd -> ids.contains(usd.getDocument().getId()))
                 .toList().stream()
-                .map(UserToDocument::getId).toList();
+                .map(usd -> usd.getDocument().getId()).toList();
             return documentFacadeService.getAllDocumentsByIds(userDocumentsIds, pageable);
         }
 
