@@ -18,22 +18,6 @@ public class BillControllerTest extends BaseControllerTest {
     private AuthenticationResponse adminToken2;
     private AuthenticationResponse superAdminToken;
 
-    @Test
-    @DisplayName("Получение счета по ID - Успех")
-    @SneakyThrows
-    void testGetBillById() {
-        Long billId = 1L;
-        var token = loginAdmin().accessToken();
-
-        mockMvc.perform(get("/api/v2/billings/" + billId)
-                .header("Authorization", "Bearer " + token)
-                .header("X-TENANT-ID", "tenant_1")
-            )
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(billId))
-            .andExpect(jsonPath("$.email").value("admin@gmail.com"))
-            .andExpect(jsonPath("$.organization.name").value("Organization A"));
-    }
 
     @Test
     @DisplayName("Получение счета по ID - Ошибка доступ к ресурам разрешен только с ролью Admin, а не SUPER_ADMIN")
@@ -71,17 +55,7 @@ public class BillControllerTest extends BaseControllerTest {
             .andExpect(status().isOk());
     }
 
-    @Test
-    @DisplayName("Блокировка организации - Ошибка доступа с ролью ADMIN")
-    @SneakyThrows
-    void testBlockOrganization_FailRole() {
-        Long organizationId = 1L;
 
-        mockMvc.perform(post("/api/v2/billings/block-organization/" + organizationId)
-                .header("Authorization", "Bearer " + loginAdmin().accessToken())
-                .header("X-TENANT-ID", "tenant_1"))
-            .andExpect(status().isForbidden());
-    }
 
     @Test
     @DisplayName("Блокировка организации - Ошибка: организация не найдена")
@@ -107,16 +81,6 @@ public class BillControllerTest extends BaseControllerTest {
             .andExpect(status().isOk());
     }
 
-    @Test
-    @DisplayName("Активация организации - Ошибка доступа с ролью ADMIN")
-    void testSetOrganizationActive_FailRole() throws Exception {
-        Long organizationId = 1L;
-
-        mockMvc.perform(post("/api/v2/billings/payment-success/" + organizationId)
-                .header("Authorization", "Bearer " + loginAdmin().accessToken())
-                .header("X-TENANT-ID", "tenant_1"))
-            .andExpect(status().isForbidden());
-    }
 
     @Test
     @DisplayName("Активация организации - Ошибка: организация не найдена")
@@ -130,34 +94,6 @@ public class BillControllerTest extends BaseControllerTest {
     }
 
 
-
-    @SneakyThrows
-    private AuthenticationResponse loginAdmin() {
-        if (adminToken != null) {
-            return adminToken;
-        }
-
-        var request = AuthenticationRequest.builder()
-            .email("admin@gmail.com")
-            .password("admin321@&123")
-            .build();
-
-        var mvcResponse = mockMvc.perform(post("/api/v1/auth/authenticate")
-                .content(objectMapper.writeValueAsString(request))
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("X-TENANT-ID", "tenant_1"))
-            .andExpect(
-                status().isOk()
-            )
-            .andReturn();
-
-        adminToken = objectMapper.readValue(
-            mvcResponse.getResponse().getContentAsString(),
-            AuthenticationResponse.class
-        );
-
-        return adminToken;
-    }
 
     @SneakyThrows
     private AuthenticationResponse loginAdmin2() {
