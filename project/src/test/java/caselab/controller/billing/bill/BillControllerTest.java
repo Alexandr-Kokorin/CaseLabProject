@@ -14,23 +14,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 public class BillControllerTest extends BaseControllerTest {
 
-    private final String TARIFF_URI = "/api/v2/tariffs";
-
     private AuthenticationResponse adminToken;
     private AuthenticationResponse superAdminToken;
-
-
-
 
     @Test
     @DisplayName("Получение счета по ID - Успех")
     @SneakyThrows
     void testGetBillById() {
         Long billId = 1L;
+        var token = loginAdmin().accessToken();
 
         mockMvc.perform(get("/api/v2/billings/" + billId)
-                .header("Authorization", "Bearer " + loginAdmin1().accessToken())
-                .header("X-TENANT-ID", "tenant_1"))
+                .header("Authorization", "Bearer " + token)
+                .header("X-TENANT-ID", "tenant_1")
+            )
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(billId))
             .andExpect(jsonPath("$.email").value("admin@gmail.com"))
@@ -80,7 +77,7 @@ public class BillControllerTest extends BaseControllerTest {
         Long organizationId = 1L;
 
         mockMvc.perform(post("/api/v2/billings/block-organization/" + organizationId)
-                .header("Authorization", "Bearer " + loginAdmin1().accessToken())
+                .header("Authorization", "Bearer " + loginAdmin().accessToken())
                 .header("X-TENANT-ID", "tenant_1"))
             .andExpect(status().isForbidden());
     }
@@ -115,7 +112,7 @@ public class BillControllerTest extends BaseControllerTest {
         Long organizationId = 1L;
 
         mockMvc.perform(post("/api/v2/billings/payment-success/" + organizationId)
-                .header("Authorization", "Bearer " + loginAdmin1().accessToken())
+                .header("Authorization", "Bearer " + loginAdmin().accessToken())
                 .header("X-TENANT-ID", "tenant_1"))
             .andExpect(status().isForbidden());
     }
@@ -134,7 +131,7 @@ public class BillControllerTest extends BaseControllerTest {
 
 
     @SneakyThrows
-    private AuthenticationResponse loginAdmin1() {
+    private AuthenticationResponse loginAdmin() {
         if (adminToken != null) {
             return adminToken;
         }
