@@ -320,6 +320,7 @@ public class TariffControllerTest extends BaseControllerTest {
             .andExpect(status().isOk())
             .andReturn();
     }
+
     @SneakyThrows
     private <T> T readValue(MvcResult mvcResponse, Class<T> valueType) {
         return objectMapper.readValue(
