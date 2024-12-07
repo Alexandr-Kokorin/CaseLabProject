@@ -22,10 +22,16 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.Authentication;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -123,6 +129,61 @@ public class BillServiceTest {
         verify(billRepository).findById(1L);
     }
 
+    @Test
+    @DisplayName("Создание счета для организации")
+    public void createBillForOrganization_Success() {
+        var user = createAdminUser();
+        var organization = createOrganizationWithEmployees(10);
+        var tariff = createTariff();
+
+        when(tariffRepository.findAll()).thenReturn(List.of(tariff));
+        when(billRepository.save(Mockito.any(Bill.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        billService.createBillForOrganization(user, organization);
+
+        verify(tariffRepository).findAll();
+        verify(billRepository).save(Mockito.any(Bill.class));
+    }
+
+    @Test
+    @DisplayName("Блокировка организации")
+    public void blockOrganization_Success() {
+        var user = createSuperAdminUser();
+        var organization = createActiveOrganization();
+        var bill = createPaidBill(organization);
+
+        Authentication authentication = Mockito.mock(Authentication.class);
+        when(userUtilService.findUserByAuthentication(authentication)).thenReturn(user);
+        doNothing().when(userUtilService).checkUserGlobalPermission(user, GlobalPermissionName.SUPER_ADMIN);
+        when(organizationRepository.findById(organization.getId())).thenReturn(Optional.of(organization));
+        when(billRepository.findByOrganization(organization)).thenReturn(Optional.of(bill));
+
+        billService.blockOrganization(organization.getId(), authentication);
+
+        assertFalse(organization.isActive());
+        assertFalse(bill.getIsPaid());
+        verify(organizationRepository).save(organization);
+    }
+
+    @Test
+    @DisplayName("Активация организации")
+    public void activateOrganization_Success() {
+        var user = createSuperAdminUser();
+        var organization = createInactiveOrganization();
+        var bill = createPaidBill(organization);
+
+        Authentication authentication = Mockito.mock(Authentication.class);
+        when(userUtilService.findUserByAuthentication(authentication)).thenReturn(user);
+        doNothing().when(userUtilService).checkUserGlobalPermission(user, GlobalPermissionName.SUPER_ADMIN);
+        when(organizationRepository.findById(organization.getId())).thenReturn(Optional.of(organization));
+        when(billRepository.findByOrganization(organization)).thenReturn(Optional.of(bill));
+
+        billService.activateOrganization(organization.getId(), authentication);
+
+        assertTrue(organization.isActive());
+        verify(billRepository).save(bill);
+    }
+
 
     // Вспомогательные методы для создания объектов
     private Bill createBill() {
@@ -180,11 +241,51 @@ public class BillServiceTest {
             .inn("1234567890")
             .build();
     }
+
+
+
     private ApplicationUser createAdminUser() {
         return ApplicationUser.builder()
             .id(1L)
             .email("admin@test.com")
             .organization(createOrganization())
+            .build();
+    }
+
+    private ApplicationUser createSuperAdminUser() {
+        return ApplicationUser.builder()
+            .id(2L)
+            .email("superadmin@test.com")
+            .organization(createOrganization())
+            .build();
+    }
+
+
+    private Organization createOrganizationWithEmployees(int employeeCount) {
+        var organization = createOrganization();
+        organization.setEmployees(new ArrayList<>(Collections.nCopies(employeeCount, new ApplicationUser())));
+        return organization;
+    }
+
+    private Organization createActiveOrganization() {
+        var organization = createOrganization();
+        organization.setActive(true);
+        return organization;
+    }
+
+    private Organization createInactiveOrganization() {
+        var organization = createOrganization();
+        organization.setActive(false);
+        return organization;
+    }
+
+    private Bill createPaidBill(Organization organization) {
+        return Bill.builder()
+            .id(1L)
+            .organization(organization)
+            .email("test@organization.com")
+            .isPaid(true)
+            .paidUntil(LocalDateTime.now().plusDays(30))
             .build();
     }
 }

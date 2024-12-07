@@ -4,8 +4,8 @@ import caselab.controller.billing.tariff.payload.TariffResponse;
 import caselab.controller.organization.payload.OrganizationResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Builder;
 import java.time.LocalDateTime;
+import lombok.Builder;
 
 @Schema(description = "Ответ, содержащий информацию о биллинге")
 @Builder
