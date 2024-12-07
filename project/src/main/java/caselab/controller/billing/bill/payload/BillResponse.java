@@ -4,9 +4,11 @@ import caselab.controller.billing.tariff.payload.TariffResponse;
 import caselab.controller.organization.payload.OrganizationResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Builder;
 import java.time.LocalDateTime;
 
 @Schema(description = "Ответ, содержащий информацию о биллинге")
+@Builder
 public record BillResponse(
     @JsonProperty("id")
     @Schema(description = "Id биллинга", example = "1")
