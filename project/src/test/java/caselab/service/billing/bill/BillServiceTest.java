@@ -11,7 +11,10 @@ import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.BillRepository;
 import caselab.domain.repository.OrganizationRepository;
 import caselab.domain.repository.TariffRepository;
+import caselab.exception.OrganizationAdminMatchException;
+import caselab.exception.OrganizationAlreadyBlockedException;
 import caselab.exception.entity.not_found.BillNotFoundException;
+import caselab.exception.entity.not_found.TariffNotFoundException;
 import caselab.service.billing.bill.mapper.BillMapper;
 import caselab.service.util.UserUtilService;
 import org.junit.jupiter.api.DisplayName;
@@ -34,6 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -94,6 +98,26 @@ public class BillServiceTest {
         verify(billRepository).findById(999L);
     }
 
+    @Test
+    @DisplayName("Ошибка при получении счета: пользователь не администратор организации")
+    public void getBillById_OrganizationAdminMismatch() {
+        var user = createAdminUser();
+        var bill = createBill();
+        bill.getOrganization().setInn("9876543210"); // Измененный ИНН для несовпадения
+
+        Authentication authentication = Mockito.mock(Authentication.class);
+        when(userUtilService.findUserByAuthentication(authentication)).thenReturn(user);
+        doNothing().when(userUtilService).checkUserGlobalPermission(user, GlobalPermissionName.ADMIN);
+        when(billRepository.findById(bill.getId())).thenReturn(Optional.of(bill));
+
+        assertThrows(
+            OrganizationAdminMatchException.class,
+            () -> billService.getBillById(bill.getId(), authentication)
+        );
+
+        verify(billRepository).findById(bill.getId());
+    }
+
 
     @Test
     @DisplayName("Успешное удаление счета")
@@ -146,6 +170,25 @@ public class BillServiceTest {
     }
 
     @Test
+    @DisplayName("Ошибка при создании счета для организации из-за отсутствия подходящего тарифа")
+    public void createBillForOrganization_TariffNotFound() {
+        var user = createAdminUser();
+        var organization = createOrganizationWithEmployees(100); // У организации слишком много сотрудников
+
+        // Репозиторий тарифов возвращает список, где ни один тариф не подходит
+        when(tariffRepository.findAll()).thenReturn(Collections.emptyList());
+
+        // Проверяем, что метод выбрасывает TariffNotFoundException
+        assertThrows(
+            TariffNotFoundException.class,
+            () -> billService.createBillForOrganization(user, organization)
+        );
+
+        verify(tariffRepository).findAll();
+        verifyNoInteractions(billRepository);
+    }
+
+    @Test
     @DisplayName("Блокировка организации")
     public void blockOrganization_Success() {
         var user = createSuperAdminUser();
@@ -166,6 +209,25 @@ public class BillServiceTest {
     }
 
     @Test
+    @DisplayName("Ошибка при блокировке уже заблокированной организации")
+    public void blockOrganization_AlreadyBlocked() {
+        var user = createSuperAdminUser();
+        var organization = createInactiveOrganization();
+
+        Authentication authentication = Mockito.mock(Authentication.class);
+        when(userUtilService.findUserByAuthentication(authentication)).thenReturn(user);
+        doNothing().when(userUtilService).checkUserGlobalPermission(user, GlobalPermissionName.SUPER_ADMIN);
+        when(organizationRepository.findById(organization.getId())).thenReturn(Optional.of(organization));
+
+        assertThrows(
+            OrganizationAlreadyBlockedException.class,
+            () -> billService.blockOrganization(organization.getId(), authentication)
+        );
+
+        verify(organizationRepository).findById(organization.getId());
+    }
+
+    @Test
     @DisplayName("Активация организации")
     public void activateOrganization_Success() {
         var user = createSuperAdminUser();
@@ -182,6 +244,26 @@ public class BillServiceTest {
 
         assertTrue(organization.isActive());
         verify(billRepository).save(bill);
+    }
+
+    @Test
+    @DisplayName("Ошибка при активации организации: счет не найден")
+    public void activateOrganization_BillNotFound() {
+        var user = createSuperAdminUser();
+        var organization = createInactiveOrganization();
+
+        Authentication authentication = Mockito.mock(Authentication.class);
+        when(userUtilService.findUserByAuthentication(authentication)).thenReturn(user);
+        doNothing().when(userUtilService).checkUserGlobalPermission(user, GlobalPermissionName.SUPER_ADMIN);
+        when(organizationRepository.findById(organization.getId())).thenReturn(Optional.of(organization));
+        when(billRepository.findByOrganization(organization)).thenReturn(Optional.empty());
+
+        assertThrows(
+            BillNotFoundException.class,
+            () -> billService.activateOrganization(organization.getId(), authentication)
+        );
+
+        verify(billRepository).findByOrganization(organization);
     }
 
 
