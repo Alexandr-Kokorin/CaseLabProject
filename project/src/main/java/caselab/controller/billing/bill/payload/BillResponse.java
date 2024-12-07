@@ -2,7 +2,6 @@ package caselab.controller.billing.bill.payload;
 
 import caselab.controller.billing.tariff.payload.TariffResponse;
 import caselab.controller.organization.payload.OrganizationResponse;
-import caselab.domain.entity.Tariff;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
