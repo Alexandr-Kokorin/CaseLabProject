@@ -15,6 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class BillControllerTest extends BaseControllerTest {
 
     private AuthenticationResponse adminToken;
+    private AuthenticationResponse adminToken2;
     private AuthenticationResponse superAdminToken;
 
     @Test
@@ -160,8 +161,8 @@ public class BillControllerTest extends BaseControllerTest {
 
     @SneakyThrows
     private AuthenticationResponse loginAdmin2() {
-        if (adminToken != null) {
-            return adminToken;
+        if (adminToken2 != null) {
+            return adminToken2;
         }
 
         var request = AuthenticationRequest.builder()
@@ -178,33 +179,15 @@ public class BillControllerTest extends BaseControllerTest {
             )
             .andReturn();
 
-        adminToken = objectMapper.readValue(
+        adminToken2 = objectMapper.readValue(
             mvcResponse.getResponse().getContentAsString(),
             AuthenticationResponse.class
         );
 
-        return adminToken;
+        return adminToken2;
     }
 
-    @SneakyThrows
-    private AuthenticationResponse loginAsOrganizationAdmin(String email, String password) {
-        var request = AuthenticationRequest.builder()
-            .email(email)
-            .password(password)
-            .build();
 
-        var mvcResponse = mockMvc.perform(post("/api/v1/auth/authenticate")
-                .content(objectMapper.writeValueAsString(request))
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("X-TENANT-ID", "tenant_1"))
-            .andExpect(status().isOk())
-            .andReturn();
-
-        return objectMapper.readValue(
-            mvcResponse.getResponse().getContentAsString(),
-            AuthenticationResponse.class
-        );
-    }
     @SneakyThrows
     private AuthenticationResponse loginSuperAdmin() {
         if (superAdminToken != null) {
