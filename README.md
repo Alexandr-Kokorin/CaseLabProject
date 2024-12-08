@@ -57,9 +57,10 @@
 5. Теперь можно протестировать приложение перейдя по следующему адресу:
       ```
       http://localhost:8080/swagger-ui/index.html
+      или через Postman
       ...
-     Данные для входа в аккаунт администратора:
-      Почта: admin@gmail.com
+     Данные для входа в аккаунт главного администратора:
+      Почта: superadmin@gmail.com
       Пароль: admin321@&123
       Данные для входа в аккаунт Grafana:
       Login: admin
@@ -107,7 +108,7 @@ Cоздана ветка *develop*, ответвленная от *main*. Осн
 
 **База данных**
 При проектировании БД был использован архитектурный стиль [EAV (Entity-Attribute-Value)](https://habr.com/ru/companies/tensor/articles/657895/)
-![diagram_main](https://github.com/user-attachments/assets/852da4c2-3e8a-4058-bb80-2bf94d50bf77)
+![diagrams](https://github.com/user-attachments/assets/2f12f467-1863-4c73-bc55-c7e32118bc7c)
 
 **Диаграмма состояний**
 ![{210F54AE-5C37-4702-BD82-40DC68A9C730}](https://github.com/user-attachments/assets/9613bf67-e641-446e-ab54-c4ac45af404f)
