@@ -17,7 +17,7 @@
 * Kafka
 * Prometheus
 * Elastic Search
-* Logstach
+* Logstash
 * Minio
 
 ---
