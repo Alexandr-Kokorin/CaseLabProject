@@ -39,15 +39,15 @@ public interface DepartmentMapper {
         @Mapping(source = "headEmailOfDepartment", target = "headEmailOfDepartment"),
         @Mapping(target = "childDepartments", ignore = true)
     })
-    DepartmentResponse entityToResponseWithNotHierarchy(Department department);
+    DepartmentResponse entityToResponseWithoutHierarchy(Department department);
 
     default List<DepartmentResponse> mapChildDepartments(Department department) {
         return department.getChildDepartments()
             .stream()
-            .sorted(Comparator.comparing(Department::getId)) //
+            .sorted(Comparator.comparing(Department::getId))
             .map(childDep -> {
                 DepartmentResponse response =
-                    this.entityToResponse(childDep); // для икслючения perent_department_id в ответе
+                    this.entityToResponse(childDep);
                 if (response != null && childDep.getChildDepartments() != null) {
                     response = response.toBuilder()
                         .parentDepartment(null).build();

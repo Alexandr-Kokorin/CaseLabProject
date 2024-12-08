@@ -1,7 +1,5 @@
 package caselab.domain.entity;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -28,7 +26,6 @@ import org.hibernate.annotations.ColumnDefault;
 @AllArgsConstructor
 @Entity
 @Table(name = "department")
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Department extends TenantAwareEntity {
 
     @Id
@@ -36,7 +33,7 @@ public class Department extends TenantAwareEntity {
     @Column(nullable = false)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String name;
 
     @Column(name = "is_active", nullable = false, columnDefinition = "boolean default true")

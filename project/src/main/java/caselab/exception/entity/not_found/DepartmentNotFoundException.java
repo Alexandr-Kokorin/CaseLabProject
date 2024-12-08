@@ -10,8 +10,4 @@ public final class DepartmentNotFoundException extends ApplicationNotFoundExcept
         super("department.id.not.found", new Object[] {id});
     }
 
-    public DepartmentNotFoundException(String name) {
-        super("department.name.not.found", new Object[] {name});
-    }
-
 }

@@ -9,6 +9,7 @@ import lombok.Builder;
 
 @Builder(toBuilder = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@Schema(description = "Ответ с информацией о подразделении")
 public record DepartmentResponse(
 
     @Schema(description = "ID подразделения", example = "1")
