@@ -2,6 +2,70 @@
 
 # Проект Green СР 2024 Java
 
+## Описание решения
+Стек технологий:
+* Java 21
+* Spring Framework
+* Liquabase
+* PostgreSQL
+* Maven
+* Lombok
+* Testcontainers
+* JUnit
+* Docker/Docker Compose
+* Grafana
+* Kafka
+* Prometheus
+* Elastic Search
+* Logstach
+* Minio
+
+---
+
+## Инструкция по запуску
+**Требования: в системе должен быть установлен docker и docker-compose**
+
+1. Скачайте архив с репозиторием в удобное место у себя на компьютере:
+    ```
+    git clone https://github.com/Alexandr-Kokorin/CaseLabProject.git
+    ```
+2. Далее перейдите в директорию с файлом *docker-compose.yml*:
+    ```
+    cd CaseLabProject
+    cd docker
+    ```
+3. Теперь можно указать почту для нотификаций, указав адрес электронной почты и пароль приложения:
+   * С помощью любого удобного редактора откройте файл `.env`, находящийся в директории docker
+   и отредактируйте следующую переменную:
+     ```
+     ...
+     MAIL_USERNAME=<EMAIL>
+     MAIL_PASSWORD=<PASSWORD>
+     ...
+     Вместо `<EMAIL>` необходимо вставить адрес электронной почты.
+     Вместо `<PASSWORD>` необходимо вставить пароль приложения для указанного адреса почты.
+     ```
+4. Теперь можно запустить приложение:
+    * Для Linux систем:
+      ```
+      docker compose up
+      ```
+    * Для Windows систем:
+      ```
+      docker-compose up
+      ```
+5. Теперь можно протестировать приложение перейдя по следующему адресу:
+      ```
+      http://localhost:8080/swagger-ui/index.html
+      ...
+     Данные для входа в аккаунт администратора:
+      Почта: admin@mail.ru
+      Пароль: admin321@&123
+      Данные для входа в аккаунт Grafana:
+      Login: admin
+      Пароль: admin
+     ...
+      ```
 
 ## Правила работы с репозиторием
 
