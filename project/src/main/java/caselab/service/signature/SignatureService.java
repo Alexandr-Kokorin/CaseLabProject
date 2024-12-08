@@ -138,6 +138,9 @@ public class SignatureService {
             .orElseThrow(() -> new UserNotFoundException(email));
 
         return user.getSignatures().stream()
+            .filter(signature -> Objects.equals(
+                signature.getDocumentVersion().getDocument().getDocumentVersions().getFirst().getId(),
+                signature.getDocumentVersion().getId()))
             .map(signatureMapper::entityToResponse)
             .toList();
     }
@@ -145,7 +148,7 @@ public class SignatureService {
     public List<SignatureResponse> findAllSignaturesByDocumentId(Long documentId) {
         var documentVersion = documentRepository.findById(documentId)
             .orElseThrow(() -> new DocumentNotFoundException(documentId))
-            .getDocumentVersions().getLast();
+            .getDocumentVersions().getFirst();
 
         return documentVersion.getSignatures().stream()
             .map(signatureMapper::entityToResponse)
