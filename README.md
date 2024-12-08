@@ -107,6 +107,8 @@ Cоздана ветка *develop*, ответвленная от *main*. Осн
 
 **База данных**
 При проектировании БД был использован архитектурный стиль [EAV (Entity-Attribute-Value)](https://habr.com/ru/companies/tensor/articles/657895/)
+![diagrams](https://github.com/user-attachments/assets/ad3eafdd-3be9-4d23-80a4-e6a92daf95de)
+
 **Диаграмма состояний**
 ![{210F54AE-5C37-4702-BD82-40DC68A9C730}](https://github.com/user-attachments/assets/9613bf67-e641-446e-ab54-c4ac45af404f)
 
