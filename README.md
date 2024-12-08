@@ -59,7 +59,7 @@
       http://localhost:8080/swagger-ui/index.html
       ...
      Данные для входа в аккаунт администратора:
-      Почта: admin@mail.ru
+      Почта: admin@gmail.com
       Пароль: admin321@&123
       Данные для входа в аккаунт Grafana:
       Login: admin
