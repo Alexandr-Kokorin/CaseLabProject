@@ -15,8 +15,8 @@ public record DepartmentCreateRequest(
 
     @Schema(description = "Наименование подразделения", example = "Отдел отделов")
     @JsonProperty(value = "name", required = true)
-    @NotBlank
-    @Size(min = 2, max = 75, message = "{department.name.invalid_size}")
+    @NotBlank(message = "{department.name.is_blank}")
+    @Size(min = 2, max = 120, message = "{department.name.invalid_size}")
     String name,
 
     @Schema(description = "Является ли подразделение верхнеуровневым", example = "false")
@@ -28,14 +28,14 @@ public record DepartmentCreateRequest(
         + "\n(указывается при значении параметра is_top_department = false)",
             example = "1")
     @JsonProperty("parent_department_id")
-    @Digits(message = "{department.parent_id.invalid}", integer = 5, fraction = 0)
+    @Digits(message = "{department.parent_id.invalid}", integer = 10, fraction = 0)
     Long parentDepartment,
 
     @Schema(description = "Адрес электронной почты руководителя подразделения", example = "user@example.com")
     @Pattern(message = "{user.email.invalid}",
              regexp = "^[\\w-.]+@([\\w-]+\\.)+[\\w-]{2,4}$")
     @JsonProperty("head_email_of_department")
-    @NotBlank
+    @NotBlank(message = "{department.head.email.is_blank}")
     String headEmailOfDepartment
 
 ) {

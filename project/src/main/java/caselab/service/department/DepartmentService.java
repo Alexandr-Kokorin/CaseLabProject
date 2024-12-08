@@ -59,12 +59,12 @@ public class DepartmentService {
         user.setPosition("Начальник отдела");
         user.setDepartment(savedDep);
         userRepo.save(user);
-        return departmentMapper.entityToResponseWithNotHierarchy(savedDep);
+        return departmentMapper.entityToResponseWithoutHierarchy(savedDep);
     }
 
     public DepartmentResponse getDepartment(Long id) {
         var dep = findDepartmentById(id);
-        return departmentMapper.entityToResponseWithNotHierarchy(dep);
+        return departmentMapper.entityToResponseWithoutHierarchy(dep);
     }
 
     public DepartmentResponse updateDepartment(Long id, DepartmentUpdateRequest request) {
@@ -97,7 +97,7 @@ public class DepartmentService {
         }
 
         depRepo.save(dep);
-        return departmentMapper.entityToResponseWithNotHierarchy(dep);
+        return departmentMapper.entityToResponseWithoutHierarchy(dep);
     }
 
     public List<DepartmentResponse> getAllDepartmentsHierarchy() {

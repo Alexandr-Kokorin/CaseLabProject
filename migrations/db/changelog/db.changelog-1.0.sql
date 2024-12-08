@@ -14,15 +14,22 @@ CREATE TABLE IF NOT EXISTS organization (
 --changeset seshxyz:22
 CREATE TABLE IF NOT EXISTS department(
     id                       BIGSERIAL PRIMARY KEY,
-    name                     TEXT NOT NULL UNIQUE,
+    name                     TEXT NOT NULL,
     is_active                BOOLEAN NOT NULL DEFAULT TRUE,
     is_top_department        BOOLEAN NOT NULL,
     head_email_of_department TEXT,
     parent_department_id     BIGINT REFERENCES department(id) ON DELETE CASCADE,
-    tenant_id                TEXT         NOT NULL,
-
-    CONSTRAINT parent_id_is_not_the_same CHECK (id IS DISTINCT FROM department.parent_department_id)
+    tenant_id                TEXT         NOT NULL
 );
+
+--changeset seshxyz:25
+CREATE UNIQUE INDEX unique_department_null_parent
+    ON department (tenant_id, name)
+    WHERE parent_department_id IS NULL;
+
+CREATE UNIQUE INDEX unique_department_non_null_parent
+    ON department (tenant_id, name, parent_department_id)
+    WHERE parent_department_id IS NOT NULL;
 
 -- changeset maksim25y:23
 CREATE TABLE IF NOT EXISTS substitution(
