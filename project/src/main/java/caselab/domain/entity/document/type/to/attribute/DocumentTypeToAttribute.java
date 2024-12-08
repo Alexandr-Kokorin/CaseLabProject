@@ -2,6 +2,7 @@ package caselab.domain.entity.document.type.to.attribute;
 
 import caselab.domain.entity.Attribute;
 import caselab.domain.entity.DocumentType;
+import caselab.domain.entity.TenantAwareEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
@@ -24,7 +25,7 @@ import org.hibernate.annotations.OnDeleteAction;
 @AllArgsConstructor
 @Entity
 @Table(name = "document_type_to_attribute")
-public class DocumentTypeToAttribute {
+public class DocumentTypeToAttribute extends TenantAwareEntity {
 
     @EmbeddedId
     private DocumentTypeToAttributeId id = new DocumentTypeToAttributeId();

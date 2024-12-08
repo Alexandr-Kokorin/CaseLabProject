@@ -32,7 +32,7 @@ import lombok.ToString;
 @ToString
 @EntityListeners(DocumentEventListener.class)
 @Table(name = "document")
-public class Document {
+public class Document extends TenantAwareEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

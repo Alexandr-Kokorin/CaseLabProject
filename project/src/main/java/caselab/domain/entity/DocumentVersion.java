@@ -28,7 +28,7 @@ import org.hibernate.annotations.OnDeleteAction;
 @AllArgsConstructor
 @Entity
 @Table(name = "document_version")
-public class DocumentVersion {
+public class DocumentVersion extends TenantAwareEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

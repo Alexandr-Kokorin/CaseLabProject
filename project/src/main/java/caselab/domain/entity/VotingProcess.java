@@ -27,7 +27,7 @@ import org.hibernate.annotations.OnDeleteAction;
 @AllArgsConstructor
 @Entity
 @Table(name = "voting_process")
-public class VotingProcess {
+public class VotingProcess extends TenantAwareEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -29,7 +29,7 @@ import org.hibernate.annotations.ColumnDefault;
 @Entity
 @Table(name = "department")
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
-public class Department {
+public class Department extends TenantAwareEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

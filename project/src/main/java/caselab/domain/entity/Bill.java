@@ -24,6 +24,7 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "bill")
+
 public class Bill {
 
     @Id
@@ -34,10 +35,20 @@ public class Bill {
     @JoinColumn(name = "tariff_id", nullable = false)
     private Tariff tariff;
 
-    @OneToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private ApplicationUser user;
+    @Column(nullable = false)
+    private String email;
 
     @Column(nullable = false)
     private LocalDateTime issuedAt;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private Boolean isPaid = false;
+
+    @Column(nullable = false)
+    private LocalDateTime paidUntil;
+
+    @OneToOne
+    @JoinColumn(name = "organization_id", nullable = false)
+    private Organization organization;
 }

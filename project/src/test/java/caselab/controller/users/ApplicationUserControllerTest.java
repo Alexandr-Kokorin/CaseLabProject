@@ -8,6 +8,8 @@ import caselab.controller.users.payload.UserUpdateRequest;
 import caselab.domain.entity.search.SearchRequest;
 import caselab.service.notification.email.EmailNotificationDetails;
 import caselab.service.notification.email.EmailService;
+import java.util.List;
+import java.util.Map;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -16,9 +18,6 @@ import org.mockito.Mock;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MvcResult;
-
-import java.util.List;
-import java.util.Map;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
@@ -50,13 +49,15 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
         }
 
         var request = AuthenticationRequest.builder()
-            .email("auth@example.com")
-            .password("password")
+            .email("admin@gmail.com")
+            .password("admin321@&123")
             .build();
 
         var mvcResponse = mockMvc.perform(post("/api/v1/auth/authenticate")
                 .content(objectMapper.writeValueAsString(request))
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("X-TENANT-ID", "tenant_1")
+            )
             .andExpect(status().isOk())
             .andReturn();
 
@@ -75,7 +76,8 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
         var token = login().accessToken();
 
         mockMvc.perform(get(URL + "/all")
-                .header("Authorization", "Bearer " + token))
+                .header("Authorization", "Bearer " + token)
+                .header("X-TENANT-ID", "tenant_1"))
             .andExpectAll(
                 status().isOk(),
                 jsonPath("$").isArray()
@@ -86,7 +88,8 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
     @SneakyThrows
     @DisplayName("Should return 403 for unauthorized access to get all users")
     public void shouldReturn403ForUnauthorizedAccessToGetAllUsers() {
-        mockMvc.perform(get(URL + "/all"))
+        mockMvc.perform(get(URL + "/all")
+                .header("X-TENANT-ID", "tenant_1"))
             .andExpect(status().isForbidden());
     }
 
@@ -100,7 +103,8 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
         mockMvc.perform(get(URL)
                 .header("Authorization", "Bearer " + token)
                 .param("email", email)
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("X-TENANT-ID", "tenant_1"))
             .andExpectAll(
                 status().isOk(),
                 jsonPath("$.email").value(email),
@@ -118,7 +122,9 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
         mockMvc.perform(get(URL)
                 .header("Authorization", "Bearer " + token)
                 .param("email", invalidEmail)
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("X-TENANT-ID", "tenant_1")
+            )
             .andExpect(status().isBadRequest());
     }
 
@@ -129,7 +135,9 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
         String email = "auth@example.com";
         mockMvc.perform(get(URL)
                 .param("email", email)
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("X-TENANT-ID", "tenant_1")
+            )
             .andExpect(status().isForbidden());
     }
 
@@ -143,7 +151,9 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
         mockMvc.perform(get(URL)
                 .header("Authorization", "Bearer " + token)
                 .param("email", nonExistingEmail)
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("X-TENANT-ID", "tenant_1")
+            )
             .andExpect(status().isNotFound());
     }
 
@@ -162,7 +172,9 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
         mockMvc.perform(put(URL)
                 .header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(request))
+                .content(request)
+                .header("X-TENANT-ID", "tenant_1")
+            )
             .andExpectAll(
                 status().isOk(),
                 jsonPath("$.display_name").value(updateRequest.displayName())
@@ -182,7 +194,9 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
         mockMvc.perform(put(URL)
                 .header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(invalidUpdateRequest)))
+                .content(objectMapper.writeValueAsString(invalidUpdateRequest))
+                .header("X-TENANT-ID", "tenant_1")
+            )
             .andExpect(status().isBadRequest());
     }
 
@@ -199,7 +213,9 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
 
         mockMvc.perform(put(URL)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(request))
+                .content(request)
+                .header("X-TENANT-ID", "tenant_1")
+            )
             .andExpect(status().isForbidden());
     }
 
@@ -221,7 +237,9 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
     @SneakyThrows
     @DisplayName("Should return 403 for unauthorized access to delete user")
     public void shouldReturn403ForUnauthorizedAccessToDeleteUser() {
-        mockMvc.perform(delete(URL))
+        mockMvc.perform(delete(URL)
+                .header("X-TENANT-ID", "tenant_1")
+            )
             .andExpect(status().isForbidden());
     }
 
@@ -239,6 +257,7 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
 
         mockMvc.perform(post(URL + "/all/advanced_search")
                 .header("Authorization", "Bearer " + token)
+                .header("X-TENANT-ID", "tenant_1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(searchRequest)))
             .andExpectAll(
@@ -263,6 +282,7 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
 
         mockMvc.perform(post(URL + "/all/advanced_search")
                 .header("Authorization", "Bearer " + token)
+                .header("X-TENANT-ID", "tenant_1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(searchRequest)))
             .andExpectAll(
@@ -280,6 +300,7 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
 
         mockMvc.perform(post(URL + "/all/advanced_search")
                 .header("Authorization", "Bearer " + token)
+                .header("X-TENANT-ID", "tenant_1")
                 .contentType(MediaType.APPLICATION_JSON)
             )
             .andExpect(status().isBadRequest());
@@ -296,6 +317,7 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
             .build();
 
         mockMvc.perform(post(URL + "/all/advanced_search")
+                .header("X-TENANT-ID", "tenant_1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(searchRequest)))
             .andExpect(status().isForbidden());
@@ -305,7 +327,9 @@ public class ApplicationUserControllerTest extends BaseControllerTest {
     private String performRegistrationAndGetToken(RegisterRequest request) {
         var response = mockMvc.perform(post(AUTH_URI + "/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                .content(objectMapper.writeValueAsString(request))
+                .header("X-TENANT-ID", "tenant_1")
+            )
             .andExpectAll(
                 status().is2xxSuccessful(),
                 content().contentType(MediaType.APPLICATION_JSON),

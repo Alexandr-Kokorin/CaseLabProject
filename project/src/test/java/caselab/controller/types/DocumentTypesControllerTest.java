@@ -8,9 +8,9 @@ import caselab.controller.secutiry.payload.AuthenticationResponse;
 import caselab.controller.types.payload.DocumentTypeRequest;
 import caselab.controller.types.payload.DocumentTypeResponse;
 import caselab.controller.types.payload.DocumentTypeToAttributeRequest;
+import caselab.domain.entity.search.SearchRequest;
 import java.util.List;
 import java.util.Map;
-import caselab.domain.entity.search.SearchRequest;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,7 +46,8 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
 
         var mvcResponse = mockMvc.perform(post("/api/v1/auth/authenticate")
                 .content(objectMapper.writeValueAsString(request))
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("X-TENANT-ID", "tenant_1"))
             .andExpect(status().isOk())
             .andReturn();
 
@@ -92,8 +93,10 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
     private MvcResult createRequest(String url, String request, String token) {
         return mockMvc.perform(post(url)
                 .header("Authorization", "Bearer " + token)
+                .header("X-TENANT-ID", "tenant_1")
                 .content(request)
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+            )
             .andExpect(status().isOk())
             .andReturn();
     }
@@ -108,7 +111,8 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
     @SneakyThrows
     private void deleteRequest(String url, Long id, String token) {
         mockMvc.perform(delete(url + "/" + id)
-                .header("Authorization", "Bearer " + token))
+                .header("Authorization", "Bearer " + token)
+                .header("X-TENANT-ID", "tenant_1"))
             .andExpect(status().isNoContent());
     }
 
@@ -147,7 +151,7 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
             "Проверка успешного создания типа документа админом",
             () -> assertThat(response.name()).isEqualTo("Test Document Type"),
             () -> assertThat(response.attributeResponses().size()).isEqualTo(1),
-            () -> assertThat(response.attributeResponses().get(0).attributeId()).isEqualTo(attributeId)
+            () -> assertThat(response.attributeResponses().getFirst().attributeId()).isEqualTo(attributeId)
         );
 
         deleteRequest(URL, response.id(), adminToken);
@@ -166,7 +170,8 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
         mockMvc.perform(post(URL)
                 .header("Authorization", "Bearer " + userToken)
                 .content(objectMapper.writeValueAsString(request))
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("X-TENANT-ID", "tenant_1"))
             .andExpect(status().isForbidden());
     }
 
@@ -182,7 +187,8 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
         var mvcResponse = mockMvc.perform(put(URL + "/" + documentTypeId)
                 .header("Authorization", "Bearer " + adminToken)
                 .content(objectMapper.writeValueAsString(request))
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("X-TENANT-ID", "tenant_1"))
             .andExpect(status().isOk())
             .andReturn();
 
@@ -192,7 +198,7 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
             "Проверка успешного обновления типа документа админом",
             () -> assertThat(response.id()).isEqualTo(documentTypeId),
             () -> assertThat(response.name()).isEqualTo("Updated Document Type"),
-            () -> assertThat(response.attributeResponses().get(0).attributeId()).isEqualTo(attributeId)
+            () -> assertThat(response.attributeResponses().getFirst().attributeId()).isEqualTo(attributeId)
         );
     }
 
@@ -208,7 +214,8 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
         mockMvc.perform(put(URL + "/" + documentTypeId)
                 .header("Authorization", "Bearer " + userToken)
                 .content(objectMapper.writeValueAsString(request))
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("X-TENANT-ID", "tenant_1"))
             .andExpect(status().isForbidden());
     }
 
@@ -225,7 +232,8 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
     @DisplayName("Юзер не может удалить тип документа")
     public void deleteDocumentTypeById_forbidden_user() {
         mockMvc.perform(delete(URL + "/" + documentTypeId)
-                .header("Authorization", "Bearer " + userToken))
+                .header("Authorization", "Bearer " + userToken)
+                .header("X-TENANT-ID", "tenant_1"))
             .andExpect(status().isForbidden());
     }
 
@@ -234,7 +242,8 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
     @DisplayName("Юзер успешно получает тип документа по ID")
     public void getDocumentTypeById_success_admin() {
         var mvcResponse = mockMvc.perform(get(URL + "/" + documentTypeId)
-                .header("Authorization", "Bearer " + userToken))
+                .header("Authorization", "Bearer " + userToken)
+                .header("X-TENANT-ID", "tenant_1"))
             .andExpect(status().isOk())
             .andReturn();
 
@@ -244,7 +253,7 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
             "Проверка получения типа документа по ID админом",
             () -> assertThat(response.id()).isEqualTo(documentTypeId),
             () -> assertThat(response.name()).isEqualTo(VALID_DOCUMENT_TYPE_NAME),
-            () -> assertThat(response.attributeResponses().get(0).attributeId()).isEqualTo(attributeId)
+            () -> assertThat(response.attributeResponses().getFirst().attributeId()).isEqualTo(attributeId)
         );
     }
 
@@ -253,7 +262,8 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
     @DisplayName("Юзер успешно получает все типы документов")
     public void findAllDocumentTypes_success_admin() {
         var mvcResponse = mockMvc.perform(get(URL)
-                .header("Authorization", "Bearer " + userToken))
+                .header("Authorization", "Bearer " + userToken)
+                .header("X-TENANT-ID", "tenant_1"))
             .andExpect(status().isOk())
             .andReturn();
 
@@ -271,6 +281,7 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
         // When
         var mvcResponse = mockMvc.perform(post(URL + "/advanced_search")
                 .header("Authorization", "Bearer " + adminToken)
+                .header("X-TENANT-ID", "tenant_1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(searchRequest))
                 .param("pageNum", "0")
@@ -299,6 +310,7 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
         // When
         var mvcResponse = mockMvc.perform(post(URL + "/advanced_search")
                 .header("Authorization", "Bearer " + adminToken)
+                .header("X-TENANT-ID", "tenant_1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(searchRequest))
                 .param("pageNum", "0")
@@ -314,5 +326,4 @@ public class DocumentTypesControllerTest extends BaseControllerTest {
             () -> assertThat(response).isEmpty()
         );
     }
-
 }

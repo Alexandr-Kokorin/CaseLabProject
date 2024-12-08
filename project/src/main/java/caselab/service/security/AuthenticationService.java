@@ -5,16 +5,18 @@ import caselab.controller.secutiry.payload.AuthenticationResponse;
 import caselab.controller.secutiry.payload.RefreshTokenRequest;
 import caselab.controller.secutiry.payload.RegisterRequest;
 import caselab.domain.entity.ApplicationUser;
+import caselab.domain.entity.Organization;
 import caselab.domain.entity.RefreshToken;
 import caselab.domain.entity.enums.GlobalPermissionName;
 import caselab.domain.repository.ApplicationUserRepository;
 import caselab.domain.repository.GlobalPermissionRepository;
+import caselab.domain.repository.OrganizationRepository;
 import caselab.exception.entity.already_exists.UserAlreadyExistsException;
 import caselab.exception.entity.not_found.UserNotFoundException;
+import caselab.service.billing.bill.BillService;
 import caselab.service.notification.email.EmailNotificationDetails;
 import caselab.service.notification.email.EmailService;
 import caselab.service.util.UserUtilService;
-import jakarta.transaction.Transactional;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,6 +24,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import static caselab.domain.entity.enums.GlobalPermissionName.ADMIN;
 
 @SuppressWarnings("LineLength")
 @Service
@@ -41,21 +46,56 @@ public class AuthenticationService {
 
     private final RefreshTokenService refreshTokenService;
 
-    public void register(RegisterRequest request, Authentication authentication) {
-        userUtilService.checkUserGlobalPermission(
-            userUtilService.findUserByAuthentication(authentication), GlobalPermissionName.ADMIN);
+    private final BillService billService;
+
+    private final OrganizationRepository organizationRepository;
+
+    public void registerUser(RegisterRequest request, Authentication authentication) {
+        var admin = userUtilService.findUserByAuthentication(authentication);
+        userUtilService.checkUserGlobalPermission(admin, ADMIN);
+        var organization = admin.getOrganization();
+        var permission = GlobalPermissionName.USER;
 
         checkEmail(request.email());
+        var globalPermission = globalPermissionRepository.findByName(permission);
 
-        var globalPermission = globalPermissionRepository.findByName(GlobalPermissionName.USER);
         var user = ApplicationUser.builder()
             .email(request.email())
             .displayName(request.displayName())
             .globalPermissions(List.of(globalPermission))
             .hashedPassword(encodePassword(request.password()))
             .isWorking(false)
+            .organization(organization)
             .build();
+
         appUserRepository.save(user);
+        sendMessage(request);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void registerOrgAdmin(RegisterRequest request, Organization organization) {
+        register(request, organization);
+    }
+
+    private void register(RegisterRequest request, Organization organization) {
+        organizationRepository.save(organization);
+
+        checkEmail(request.email());
+        var globalPermission = globalPermissionRepository.findByName(GlobalPermissionName.ADMIN);
+
+        var user = ApplicationUser.builder()
+            .email(request.email())
+            .displayName(request.displayName())
+            .globalPermissions(List.of(globalPermission))
+            .hashedPassword(encodePassword(request.password()))
+            .isWorking(false)
+            .organization(organization)
+            .build();
+
+        appUserRepository.save(user);
+
+        billService.createBillForOrganization(user, organization);
+
         sendMessage(request);
     }
 
