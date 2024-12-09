@@ -295,10 +295,31 @@ public class DocumentVersionService {
         DocumentVersion documentVersion = documentVersionRepository.findById(id)
             .orElseThrow(() -> new DocumentVersionNotFoundException(id));
 
-        documentUtilService.assertHasPermission(
-            user, documentVersion.getDocument(),
-            DocumentPermissionName::canRead, "Read"
-        );
+        Document currentDocument = documentVersion.getDocument();
+
+        Long lastDocumentVersionId = currentDocument.getDocumentVersions().stream()
+            .map(DocumentVersion::getId)
+            .sorted()
+            .toList()
+            .getLast();
+
+        boolean checked;
+
+        if (Objects.equals(documentVersion.getId(), lastDocumentVersionId)) {
+            checked = documentUtilService.checkLacksPermission(
+                user, currentDocument,
+                DocumentPermissionName::canRead
+            );
+        } else {
+            checked = documentUtilService.checkLacksPermission(
+                user, currentDocument,
+                DocumentPermissionName::isCreator
+            );
+        }
+
+        if (checked) {
+            userUtilService.checkUserGlobalPermission(user, GlobalPermissionName.ADMIN);
+        }
 
         return documentVersionStorage.get(documentVersion.getContentName());
     }

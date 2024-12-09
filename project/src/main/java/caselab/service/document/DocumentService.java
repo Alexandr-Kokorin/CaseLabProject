@@ -173,6 +173,10 @@ public class DocumentService {
         documentRepository.save(document);
     }
 
+    public List<DocumentResponse> getAllDocumentsByIds(List<Long> ids) {
+        return toDocumentResponse(documentRepository.findAllById(ids).stream());
+    }
+
     private DocumentType findDocumentTypeById(Long id) {
         return documentTypeRepository.findById(id)
             .orElseThrow(() -> new DocumentTypeNotFoundException(id));

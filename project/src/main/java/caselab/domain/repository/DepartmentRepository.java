@@ -11,8 +11,10 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
 
     Optional<Department> findByHeadEmailOfDepartment(String email);
 
-    @Query("SELECT d FROM Department d WHERE d.name = :name AND d.parentDepartment.id = :id")
-    Optional<Department> findByNameAndParentDepartmentId(@Param("name") String name, @Param("id") Long id);
+    @Query("SELECT d FROM Department d WHERE d.name = :name "
+        + "AND (d.parentDepartment.id = :id OR :id IS NULL)")
+    Optional<Department> findByNameAndParentDepartmentId(@Param("name") String name,
+        @Param("id") Long id);
 
     List<Department> findAllByOrderByIdAsc();
 
