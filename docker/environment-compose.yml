@@ -28,7 +28,7 @@ services:
       postgresql:
         condition: service_healthy
     command:
-      - --changelog-file=db.changelog-dev.yml
+      - --changelog-file=db.changelog-master.yml
       - --driver=org.postgresql.Driver
       - --url=jdbc:postgresql://${POSTGRES_CONTAINER_NAME}:5432/${POSTGRES_DB}
       - --username=${POSTGRES_USER}
