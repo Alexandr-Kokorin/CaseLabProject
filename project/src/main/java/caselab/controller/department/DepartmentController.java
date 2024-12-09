@@ -181,7 +181,7 @@ public class DepartmentController {
                      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @PreAuthorize("hasAuthority('ADMIN')")
-    @PostMapping("/{id}/employees")
+    @GetMapping("/{id}/employees")
     public List<UserResponse> getAllEmployeesForDepartment(
         @PathVariable("id") Long id
     ) {
